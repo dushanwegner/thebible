@@ -12,6 +12,9 @@ if (!defined('ABSPATH')) { exit; }
 class TheBible_Plugin {
     const QV_FLAG = 'thebible';
     const QV_BOOK = 'thebible_book';
+    const QV_CHAPTER = 'thebible_ch';
+    const QV_VFROM = 'thebible_vfrom';
+    const QV_VTO = 'thebible_vto';
 
     private static $books = null; // array of [order, short_name, filename]
     private static $slug_map = null; // slug => array entry
@@ -24,7 +27,7 @@ class TheBible_Plugin {
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
 
-    private static function inject_nav_helpers($html) {
+    private static function inject_nav_helpers($html, $highlight_ids = []) {
         if (!is_string($html) || $html === '') return $html;
 
         // Ensure a stable anchor at the very top of the book content
@@ -42,14 +45,31 @@ class TheBible_Plugin {
             1
         );
 
-        // Prepend an up-arrow to every verses block linking back to top of book
+        // Prepend an up-arrow to verses blocks linking back to top of book, but skip the first (Chapter 1)
         $book_top = '#thebible-book-top';
         $vers_up = '<a class="thebible-up thebible-up-book" href="' . $book_top . '" aria-label="Back to book">&#8593;</a> ';
-        $html = preg_replace(
+        $count = 0;
+        $html = preg_replace_callback(
             '~<p\s+class=(["\"])verses\1>~',
-            '<p class="verses">' . $vers_up,
+            function($m) use (&$count, $vers_up) {
+                $count++;
+                if ($count === 1) {
+                    // First verses list (chapter 1): no up-arrow
+                    return $m[0];
+                }
+                return '<p class="verses">' . $vers_up;
+            },
             $html
         );
+
+        // Add highlight styles and scrolling script if IDs were provided
+        if (is_array($highlight_ids) && !empty($highlight_ids)) {
+            $style = '<style>.thebible .verse-highlight{background:#fff3cd;padding:0 .2em;border-radius:.15rem;box-shadow:inset 0 0 0 2px #ffe08a}</style>';
+            $ids_json = wp_json_encode(array_values(array_unique($highlight_ids)));
+            $script = '<script>(function(){var ids=' . $ids_json . ';var first=null;ids.forEach(function(id){var el=document.getElementById(id);if(el){el.classList.add("verse-highlight");if(!first) first=el;}});if(first){first.scrollIntoView({behavior:"smooth",block:"start"});}})();</script>';
+            // Append at the end so DOM exists
+            $html .= $style . $script;
+        }
 
         return $html;
     }
@@ -65,12 +85,18 @@ class TheBible_Plugin {
 
     public static function add_rewrite_rules() {
         add_rewrite_rule('^bible/?$', 'index.php?' . self::QV_FLAG . '=1', 'top');
+        // /bible/{book}
         add_rewrite_rule('^bible/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1', 'top');
+        // /bible/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
+        add_rewrite_rule('^bible/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1', 'top');
     }
 
     public static function add_query_vars($vars) {
         $vars[] = self::QV_FLAG;
         $vars[] = self::QV_BOOK;
+        $vars[] = self::QV_CHAPTER;
+        $vars[] = self::QV_VFROM;
+        $vars[] = self::QV_VTO;
         return $vars;
     }
 
@@ -164,8 +190,20 @@ class TheBible_Plugin {
             return;
         }
         $html = file_get_contents($file);
-        // Inject navigation helpers: top anchor, up to /bible from chapters, up to top from each verses block
-        $html = self::inject_nav_helpers($html);
+        // Build optional highlight targets from URL like /book/20:2-4
+        $targets = [];
+        $ch = absint( get_query_var( self::QV_CHAPTER ) );
+        $vf = absint( get_query_var( self::QV_VFROM ) );
+        $vt = absint( get_query_var( self::QV_VTO ) );
+        if ( $ch && $vf ) {
+            if ( ! $vt || $vt < $vf ) { $vt = $vf; }
+            // Build DOM ids like slug-ch-verse (e.g., genesis-20-2)
+            for ( $i = $vf; $i <= $vt; $i++ ) {
+                $targets[] = self::slugify( $entry['short_name'] ) . '-' . $ch . '-' . $i;
+            }
+        }
+        // Inject navigation helpers and optional highlight behavior
+        $html = self::inject_nav_helpers($html, $targets);
         status_header(200);
         nocache_headers();
         $title = $entry['short_name'];
