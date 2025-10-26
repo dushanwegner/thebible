@@ -107,6 +107,7 @@ class TheBible_Plugin {
         }
         // Sticky updater script: detect current chapter and update bar on scroll; offset for admin bar
         $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();var controls=bar.querySelector(".thebible-sticky__controls");var origControlsHtml=controls?controls.innerHTML:"";var linkPrev=bar.querySelector("[data-prev]");var linkNext=bar.querySelector("[data-next]");var linkTop=bar.querySelector("[data-top]");function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;bar.style.top=off+"px";}function disable(el,yes){if(!el)return;if(yes){el.classList.add("is-disabled");el.setAttribute("aria-disabled","true");el.setAttribute("tabindex","-1");}else{el.classList.remove("is-disabled");el.removeAttribute("aria-disabled");el.removeAttribute("tabindex");}}function smoothToEl(el,offsetPx){if(!el)return;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - (offsetPx||0);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}
+        function currentOffset(){var ab=document.getElementById("wpadminbar");var abH=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;var barH=bar?bar.offsetHeight:0;return abH+barH;}
         function versesList(){var list=[]; if(!container) return list; list=Array.prototype.slice.call(container.querySelectorAll("p[id]")); return list.filter(function(p){return /-\d+-\d+$/.test(p.id);});}
         function getVerseFromNode(node){
             if(!node) return null; var el = (node.nodeType===1? node : node.parentElement);
@@ -144,7 +145,7 @@ class TheBible_Plugin {
             else { ensureStandardControls(); }
             var topCut=window.innerHeight*0.2;var current=null;var currentIdx=0;for(var i=0;i<heads.length;i++){var h=heads[i];var r=h.getBoundingClientRect();if(r.top<=topCut){current=h;currentIdx=i;}else{break;}}if(!current){current=heads[0]||null;currentIdx=0;} if(!info){ var ch=1;if(current){var m=current.id.match(/-ch-(\d+)$/);if(m){ch=parseInt(m[1],10)||1;}} if(elCh){ elCh.textContent=String(ch);} }
             // controls
-            var ab=document.getElementById("wpadminbar");var off=((document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0) + (bar?bar.offsetHeight:0);
+            var off=currentOffset();
             // prev
             if(currentIdx<=0){
                 disable(linkPrev,true); disable(linkTop,true);
@@ -187,6 +188,25 @@ class TheBible_Plugin {
         document.addEventListener("mouseup", scheduleUpdate, {passive:true});
         document.addEventListener("keyup", scheduleUpdate, {passive:true});
         window.addEventListener("load",function(){setTopOffset();update();});
+        // Intercept in-content anchor clicks to scroll below sticky
+        document.addEventListener("click", function(e){
+            var a = e.target.closest("a[href^=#]");
+            if(!a) return;
+            var href = a.getAttribute("href") || "";
+            if(!href || href === "#") return;
+            var id = href.replace(/^#/, "");
+            var el = document.getElementById(id);
+            if(!el) return;
+            e.preventDefault();
+            smoothToEl(el, currentOffset());
+            if(history && history.replaceState){ history.replaceState(null, "", "#" + id); }
+        }, {passive:false});
+        // Adjust on hash navigation
+        window.addEventListener("hashchange", function(){
+            var id = location.hash.replace(/^#/, "");
+            var el = document.getElementById(id);
+            if(el) smoothToEl(el, currentOffset());
+        });
         setTopOffset();update();})();</script>';
         if ($append !== '') { $html .= $append; }
 
