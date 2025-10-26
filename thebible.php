@@ -23,6 +23,9 @@ class TheBible_Plugin {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
         add_filter('query_vars', [__CLASS__, 'add_query_vars']);
         add_action('template_redirect', [__CLASS__, 'handle_template_redirect']);
+        add_action('admin_menu', [__CLASS__, 'admin_menu']);
+        add_action('admin_init', [__CLASS__, 'register_settings']);
+        add_action('wp_head', [__CLASS__, 'print_custom_css']);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
@@ -285,7 +288,7 @@ class TheBible_Plugin {
         nocache_headers();
         $title = 'The Bible';
         $content = self::build_index_html();
-        self::output_with_theme($title, $content);
+        self::output_with_theme($title, $content, 'index');
     }
 
     private static function render_book($slug) {
@@ -323,7 +326,7 @@ class TheBible_Plugin {
         nocache_headers();
         $title = $entry['short_name'];
         $content = '<div class="thebible thebible-book">' . $html . '</div>';
-        self::output_with_theme($title, $content);
+        self::output_with_theme($title, $content, 'book');
     }
 
     private static function render_404() {
@@ -361,7 +364,31 @@ class TheBible_Plugin {
         return $out;
     }
 
-    private static function output_with_theme($title, $content_html) {
+    private static function output_with_theme($title, $content_html, $context = '') {
+        // Allow theme override templates (e.g., dwtheme/thebible/...).
+        // If a template is found, it is responsible for calling get_header/get_footer and echoing content.
+        $context = is_string($context) ? $context : '';
+        if ( function_exists('locate_template') ) {
+            $thebible_title   = $title;        // available to template
+            $thebible_content = $content_html; // available to template
+            $thebible_context = $context;      // 'index' | 'book'
+            $templates = [];
+            if ($context === 'book') {
+                $templates = [ 'thebible/single-book.php', 'thebible/thebible.php' ];
+            } elseif ($context === 'index') {
+                $templates = [ 'thebible/index.php', 'thebible/thebible.php' ];
+            } else {
+                $templates = [ 'thebible/thebible.php' ];
+            }
+            $found = locate_template( $templates, false, false );
+            if ( $found ) {
+                // Load the found template within current scope so our variables are available
+                require $found;
+                return;
+            }
+        }
+
+        // Fallback: use plugin's built-in wrapper
         if (function_exists('get_header')) get_header();
         echo '<main id="primary" class="site-main container mt-2">';
         echo '<article class="thebible-article">';
@@ -370,6 +397,89 @@ class TheBible_Plugin {
         echo '</article>';
         echo '</main>';
         if (function_exists('get_footer')) get_footer();
+    }
+
+    public static function register_settings() {
+        register_setting(
+            'thebible_options',
+            'thebible_custom_css',
+            [
+                'type'              => 'string',
+                'sanitize_callback' => function( $css ) { return is_string($css) ? $css : ''; },
+                'default'           => '',
+            ]
+        );
+    }
+
+    public static function admin_menu() {
+        add_menu_page(
+            'The Bible',
+            'The Bible',
+            'manage_options',
+            'thebible',
+            [ __CLASS__, 'render_settings_page' ],
+            'dashicons-book-alt',
+            58
+        );
+    }
+
+    public static function render_settings_page() {
+        if ( ! current_user_can( 'manage_options' ) ) return;
+        $css = get_option( 'thebible_custom_css', '' );
+        ?>
+        <div class="wrap">
+            <h1>The Bible</h1>
+            <form method="post" action="options.php">
+                <?php settings_fields( 'thebible_options' ); ?>
+                <table class="form-table" role="presentation">
+                    <tbody>
+                        <tr>
+                            <th scope="row"><label for="thebible_custom_css">Custom CSS (applied on Bible pages)</label></th>
+                            <td>
+                                <textarea name="thebible_custom_css" id="thebible_custom_css" class="large-text code" rows="14" style="font-family:monospace;"><?php echo esc_textarea( $css ); ?></textarea>
+                                <p class="description">Rendered on /bible and any /bible/{book} pages.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <?php submit_button(); ?>
+            </form>
+
+            <h2>CSS reference</h2>
+            <div class="thebible-css-reference" style="max-width:900px;">
+                <p>Selectors you can target:</p>
+                <ul style="list-style:disc;margin-left:1.2em;">
+                    <li><code>.thebible</code> wrapper on all plugin output</li>
+                    <li><code>.thebible-index</code> on /bible</li>
+                    <li><code>.thebible-book</code> around a rendered book</li>
+                    <li><code>.chapters</code> list of chapter links on top of a book</li>
+                    <li><code>.verses</code> blocks of verses</li>
+                    <li><code>.verse-highlight</code> added when a verse is highlighted from a URL fragment</li>
+                    <li><code>.thebible-sticky</code> top status bar with chapter info and controls
+                        <ul style="list-style:circle;margin-left:1.2em;">
+                            <li><code>.thebible-sticky__left</code>, <code>[data-label]</code>, <code>[data-ch]</code></li>
+                            <li><code>.thebible-sticky__controls</code> with <code>.thebible-ctl</code> buttons (<code>[data-prev]</code>, <code>[data-top]</code>, <code>[data-next]</code>)</li>
+                        </ul>
+                    </li>
+                    <li><code>.thebible-up</code> small up-arrow links inserted before chapters/verses</li>
+                </ul>
+                <p>Anchors and IDs:</p>
+                <ul style="list-style:disc;margin-left:1.2em;">
+                    <li>At very top of each book: <code>#thebible-book-top</code></li>
+                    <li>Chapter headings: <code>h2[id^="{book-slug}-ch-"]</code>, e.g. <code>#sophonias-ch-3</code></li>
+                    <li>Verse paragraphs: <code>p[id^="{book-slug}-"]</code> with pattern <code>{slug}-{chapter}-{verse}</code>, e.g. <code>#sophonias-3-5</code></li>
+                </ul>
+            </div>
+        </div>
+        <?php
+    }
+
+    public static function print_custom_css() {
+        $is_bible = get_query_var( self::QV_FLAG );
+        if ( ! $is_bible ) return;
+        $css = get_option( 'thebible_custom_css', '' );
+        if ( ! is_string( $css ) || $css === '' ) return;
+        echo '<style id="thebible-custom-css">' . $css . '</style>';
     }
 }
 
