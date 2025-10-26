@@ -27,7 +27,7 @@ class TheBible_Plugin {
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
 
-    private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null) {
+    private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null, $book_label = '') {
         if (!is_string($html) || $html === '') return $html;
 
         // Ensure a stable anchor at the very top of the book content
@@ -62,20 +62,30 @@ class TheBible_Plugin {
             $html
         );
 
+        // Add sticky status bar at top (book + current chapter)
+        $book_label = is_string($book_label) ? $book_label : '';
+        $book_slug_js = esc_js( self::slugify( $book_label ) );
+        $book_label_html = esc_html( $book_label );
+        $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"><span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> <span class="thebible-sticky__sep">—</span> <span class="thebible-sticky__chapter" data-ch>1</span></div>';
+        $html = $sticky . $html;
+
         // Add highlight styles and scrolling script
         $append = '';
+        // Basic styles for sticky and highlight
+        $append .= '<style>.thebible .thebible-sticky{position:sticky;top:0;z-index:10;background:#f8f9fa;border-bottom:1px solid rgba(0,0,0,.1);font-size:.9rem;padding:.25rem .5rem}.thebible .verse-highlight{background:#fff3cd;padding:0 .2em;border-radius:.15rem;box-shadow:inset 0 0 0 2px #ffe08a}</style>';
         if (is_array($highlight_ids) && !empty($highlight_ids)) {
-            $style = '<style>.thebible .verse-highlight{background:#fff3cd;padding:0 .2em;border-radius:.15rem;box-shadow:inset 0 0 0 2px #ffe08a}</style>';
             $ids_json = wp_json_encode(array_values(array_unique($highlight_ids)));
             // Scroll with 15% viewport offset so verse isn't glued to very top
             $script = '<script>(function(){var ids=' . $ids_json . ';var first=null;ids.forEach(function(id){var el=document.getElementById(id);if(el){el.classList.add("verse-highlight");if(!first) first=el;}});if(first){var r=first.getBoundingClientRect();var y=window.pageYOffset + r.top - (window.innerHeight*0.15);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}})();</script>';
-            $append .= $style . $script;
+            $append .= $script;
         } elseif (is_string($chapter_scroll_id) && $chapter_scroll_id !== '') {
             // Chapter-only: scroll to chapter heading without highlight and without extra offset
             $cid = esc_js($chapter_scroll_id);
             $script = '<script>(function(){var el=document.getElementById("' . $cid . '");if(el){el.scrollIntoView({behavior:"smooth",block:"start"});}})();</script>';
             $append .= $script;
         }
+        // Sticky updater script: detect current chapter and update bar on scroll; offset for admin bar
+        $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;bar.style.top=off+"px";}function update(){if(!heads.length){heads=headsList();}var topCut=window.innerHeight*0.2;var current=null;for(var i=0;i<heads.length;i++){var h=heads[i];var r=h.getBoundingClientRect();if(r.top<=topCut){current=h;}else{break;}}if(!current){current=heads[0]||null;}var ch=1;if(current){var m=current.id.match(/-ch-(\d+)$/);if(m){ch=parseInt(m[1],10)||1;}}var elCh=bar.querySelector("[data-ch]");if(elCh){elCh.textContent=String(ch);} }window.addEventListener("scroll",update,{passive:true});window.addEventListener("resize",function(){heads=headsList();setTopOffset();update();},{passive:true});document.addEventListener("DOMContentLoaded",function(){setTopOffset();update();});setTopOffset();update();})();</script>';
         if ($append !== '') { $html .= $append; }
 
         return $html;
@@ -216,7 +226,7 @@ class TheBible_Plugin {
             $chapter_scroll_id = $book_slug . '-ch-' . $ch;
         }
         // Inject navigation helpers and optional highlight/scroll behavior
-        $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id);
+        $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id, $entry['short_name']);
         status_header(200);
         nocache_headers();
         $title = $entry['short_name'];
