@@ -96,14 +96,34 @@ class TheBible_Plugin {
             $append .= $script;
         }
         // Sticky updater script: detect current chapter and update bar on scroll; offset for admin bar
-        $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();var linkPrev=bar.querySelector("[data-prev]");var linkNext=bar.querySelector("[data-next]");var linkTop=bar.querySelector("[data-top]");function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;bar.style.top=off+"px";}function disable(el,yes){if(!el)return;if(yes){el.classList.add("is-disabled");el.setAttribute("aria-disabled","true");el.setAttribute("tabindex","-1");}else{el.classList.remove("is-disabled");el.removeAttribute("aria-disabled");el.removeAttribute("tabindex");}}function smoothToEl(el,offsetPx){if(!el)return;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - (offsetPx||0);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}function update(){if(!heads.length){heads=headsList();}var topCut=window.innerHeight*0.2;var current=null;var currentIdx=0;for(var i=0;i<heads.length;i++){var h=heads[i];var r=h.getBoundingClientRect();if(r.top<=topCut){current=h;currentIdx=i;}else{break;}}if(!current){current=heads[0]||null;currentIdx=0;}var ch=1;if(current){var m=current.id.match(/-ch-(\d+)$/);if(m){ch=parseInt(m[1],10)||1;}}var elCh=bar.querySelector("[data-ch]");if(elCh){elCh.textContent=String(ch);} // controls
+        $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();var linkPrev=bar.querySelector("[data-prev]");var linkNext=bar.querySelector("[data-next]");var linkTop=bar.querySelector("[data-top]");function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;bar.style.top=off+"px";}function disable(el,yes){if(!el)return;if(yes){el.classList.add("is-disabled");el.setAttribute("aria-disabled","true");el.setAttribute("tabindex","-1");}else{el.classList.remove("is-disabled");el.removeAttribute("aria-disabled");el.removeAttribute("tabindex");}}function smoothToEl(el,offsetPx){if(!el)return;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - (offsetPx||0);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}
+        function versesList(){var list=[]; if(!container) return list; list=Array.prototype.slice.call(container.querySelectorAll("p[id]")); return list.filter(function(p){return /-\d+-\d+$/.test(p.id);});}
+        var verses=versesList();
+        function selectionInfo(){var sel=window.getSelection && window.getSelection(); if(!sel || sel.rangeCount===0 || sel.isCollapsed) return null; var range=sel.getRangeAt(0); // find first/last verse intersecting
+            var startIdx=-1, endIdx=-1; for(var i=0;i<verses.length;i++){var v=verses[i]; var r=document.createRange(); r.selectNode(v); var intersects= !(range.compareBoundaryPoints(Range.END_TO_START, r) <= 0 || range.compareBoundaryPoints(Range.START_TO_END, r) >= 0); if(intersects){ if(startIdx===-1) startIdx=i; endIdx=i; }} if(startIdx===-1) return null; var sid=verses[startIdx].id; var eid=verses[endIdx].id; var sm=sid.match(/-(\d+)-(\d+)$/); var em=eid.match(/-(\d+)-(\d+)$/); if(!sm||!em) return null; return { sCh: parseInt(sm[1],10), sV: parseInt(sm[2],10), eCh: parseInt(em[1],10), eV: parseInt(em[2],10) };
+        }
+        function update(){if(!heads.length){heads=headsList();} if(!verses.length){verses=versesList();}
+            var info=selectionInfo(); var elCh=bar.querySelector("[data-ch]");
+            if(info && elCh){ if(info.sCh===info.eCh){ elCh.textContent= String(info.sCh)+":"+ (info.sV===info.eV? String(info.sV): String(info.sV)+"-"+String(info.eV)); } else { elCh.textContent= String(info.sCh)+":"+String(info.sV)+"-"+String(info.eCh)+":"+String(info.eV); } }
+            var topCut=window.innerHeight*0.2;var current=null;var currentIdx=0;for(var i=0;i<heads.length;i++){var h=heads[i];var r=h.getBoundingClientRect();if(r.top<=topCut){current=h;currentIdx=i;}else{break;}}if(!current){current=heads[0]||null;currentIdx=0;} if(!info){ var ch=1;if(current){var m=current.id.match(/-ch-(\d+)$/);if(m){ch=parseInt(m[1],10)||1;}} if(elCh){ elCh.textContent=String(ch);} }
+            // controls
             var ab=document.getElementById("wpadminbar");var off=((document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0) + (bar?bar.offsetHeight:0);
             // prev
-            if(currentIdx<=0){disable(linkPrev,true);disable(linkTop,true);}else{disable(linkPrev,false);disable(linkTop,false);}
-            if(currentIdx<=0){if(linkPrev) linkPrev.href="#";}else{if(linkPrev) linkPrev.href="#"+heads[currentIdx-1].id;}
+            if(currentIdx<=0){
+                disable(linkPrev,true); disable(linkTop,true);
+                if(linkPrev) linkPrev.href="#";
+            } else {
+                disable(linkPrev,false); disable(linkTop,false);
+                if(linkPrev) linkPrev.href="#"+heads[currentIdx-1].id;
+            }
             // next
-            if(currentIdx>=heads.length-1){disable(linkNext,true);}else{disable(linkNext,false);} 
-            if(currentIdx>=heads.length-1){if(linkNext) linkNext.href="#";}else{if(linkNext) linkNext.href="#"+heads[currentIdx+1].id;}
+            if(currentIdx>=heads.length-1){
+                disable(linkNext,true);
+                if(linkNext) linkNext.href="#";
+            } else {
+                disable(linkNext,false);
+                if(linkNext) linkNext.href="#"+heads[currentIdx+1].id;
+            }
             // click handlers (once) — use href target to avoid stale indices
             if(!bar._bound){
                 bar._bound=true;
