@@ -27,7 +27,7 @@ class TheBible_Plugin {
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
 
-    private static function inject_nav_helpers($html, $highlight_ids = []) {
+    private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null) {
         if (!is_string($html) || $html === '') return $html;
 
         // Ensure a stable anchor at the very top of the book content
@@ -62,14 +62,21 @@ class TheBible_Plugin {
             $html
         );
 
-        // Add highlight styles and scrolling script if IDs were provided
+        // Add highlight styles and scrolling script
+        $append = '';
         if (is_array($highlight_ids) && !empty($highlight_ids)) {
             $style = '<style>.thebible .verse-highlight{background:#fff3cd;padding:0 .2em;border-radius:.15rem;box-shadow:inset 0 0 0 2px #ffe08a}</style>';
             $ids_json = wp_json_encode(array_values(array_unique($highlight_ids)));
-            $script = '<script>(function(){var ids=' . $ids_json . ';var first=null;ids.forEach(function(id){var el=document.getElementById(id);if(el){el.classList.add("verse-highlight");if(!first) first=el;}});if(first){first.scrollIntoView({behavior:"smooth",block:"start"});}})();</script>';
-            // Append at the end so DOM exists
-            $html .= $style . $script;
+            // Scroll with 15% viewport offset so verse isn't glued to very top
+            $script = '<script>(function(){var ids=' . $ids_json . ';var first=null;ids.forEach(function(id){var el=document.getElementById(id);if(el){el.classList.add("verse-highlight");if(!first) first=el;}});if(first){var r=first.getBoundingClientRect();var y=window.pageYOffset + r.top - (window.innerHeight*0.15);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}})();</script>';
+            $append .= $style . $script;
+        } elseif (is_string($chapter_scroll_id) && $chapter_scroll_id !== '') {
+            // Chapter-only: scroll to chapter heading without highlight and without extra offset
+            $cid = esc_js($chapter_scroll_id);
+            $script = '<script>(function(){var el=document.getElementById("' . $cid . '");if(el){el.scrollIntoView({behavior:"smooth",block:"start"});}})();</script>';
+            $append .= $script;
         }
+        if ($append !== '') { $html .= $append; }
 
         return $html;
     }
@@ -89,6 +96,8 @@ class TheBible_Plugin {
         add_rewrite_rule('^bible/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1', 'top');
         // /bible/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
         add_rewrite_rule('^bible/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1', 'top');
+        // /bible/{book}/{chapter}
+        add_rewrite_rule('^bible/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1', 'top');
     }
 
     public static function add_query_vars($vars) {
@@ -190,20 +199,24 @@ class TheBible_Plugin {
             return;
         }
         $html = file_get_contents($file);
-        // Build optional highlight targets from URL like /book/20:2-4
+        // Build optional highlight/scroll targets from URL like /book/20:2-4 or /book/20
         $targets = [];
+        $chapter_scroll_id = null;
         $ch = absint( get_query_var( self::QV_CHAPTER ) );
         $vf = absint( get_query_var( self::QV_VFROM ) );
         $vt = absint( get_query_var( self::QV_VTO ) );
+        $book_slug = self::slugify( $entry['short_name'] );
         if ( $ch && $vf ) {
             if ( ! $vt || $vt < $vf ) { $vt = $vf; }
-            // Build DOM ids like slug-ch-verse (e.g., genesis-20-2)
             for ( $i = $vf; $i <= $vt; $i++ ) {
-                $targets[] = self::slugify( $entry['short_name'] ) . '-' . $ch . '-' . $i;
+                $targets[] = $book_slug . '-' . $ch . '-' . $i;
             }
+        } elseif ( $ch && ! $vf ) {
+            // Chapter-only: scroll to chapter heading id like slug-ch-{ch}
+            $chapter_scroll_id = $book_slug . '-ch-' . $ch;
         }
-        // Inject navigation helpers and optional highlight behavior
-        $html = self::inject_nav_helpers($html, $targets);
+        // Inject navigation helpers and optional highlight/scroll behavior
+        $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id);
         status_header(200);
         nocache_headers();
         $title = $entry['short_name'];
