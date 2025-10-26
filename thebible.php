@@ -66,26 +66,68 @@ class TheBible_Plugin {
         $book_label = is_string($book_label) ? $book_label : '';
         $book_slug_js = esc_js( self::slugify( $book_label ) );
         $book_label_html = esc_html( $book_label );
-        $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"><span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> <span class="thebible-sticky__sep">—</span> <span class="thebible-sticky__chapter" data-ch>1</span></div>';
+        $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '">'
+                . '<div class="thebible-sticky__left">'
+                . '<span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> '
+                . '<span class="thebible-sticky__sep">—</span> '
+                . '<span class="thebible-sticky__chapter" data-ch>1</span>'
+                . '</div>'
+                . '<div class="thebible-sticky__controls">'
+                . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous chapter">&#8592;</a>'
+                . '<a href="#thebible-book-top" class="thebible-ctl thebible-ctl-top" data-top aria-label="Top of book">&#8593;</a>'
+                . '<a href="#" class="thebible-ctl thebible-ctl-next" data-next aria-label="Next chapter">&#8594;</a>'
+                . '</div>'
+                . '</div>';
         $html = $sticky . $html;
 
         // Add highlight styles and scrolling script
         $append = '';
         // Basic styles for sticky and highlight
-        $append .= '<style>.thebible .thebible-sticky{position:sticky;top:0;z-index:10;background:#f8f9fa;border-bottom:1px solid rgba(0,0,0,.1);font-size:.9rem;padding:.25rem .5rem}.thebible .verse-highlight{background:#fff3cd;padding:0 .2em;border-radius:.15rem;box-shadow:inset 0 0 0 2px #ffe08a}</style>';
+        $append .= '<style>.thebible .thebible-sticky{position:sticky;top:0;z-index:10;background:#f8f9fa;border-bottom:1px solid rgba(0,0,0,.1);font-size:.9rem;padding:.25rem .5rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}.thebible .thebible-sticky__controls{display:flex;gap:.5rem;align-items:center}.thebible .thebible-ctl{color:inherit;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:1.6rem;height:1.6rem;border-radius:.25rem;border:1px solid rgba(0,0,0,.15)}.thebible .thebible-ctl:is(.is-disabled){opacity:.35;pointer-events:none}.thebible .verse-highlight{background:#fff3cd;padding:0 .2em;border-radius:.15rem;box-shadow:inset 0 0 0 2px #ffe08a}</style>';
         if (is_array($highlight_ids) && !empty($highlight_ids)) {
             $ids_json = wp_json_encode(array_values(array_unique($highlight_ids)));
             // Scroll with 15% viewport offset so verse isn't glued to very top
             $script = '<script>(function(){var ids=' . $ids_json . ';var first=null;ids.forEach(function(id){var el=document.getElementById(id);if(el){el.classList.add("verse-highlight");if(!first) first=el;}});if(first){var r=first.getBoundingClientRect();var y=window.pageYOffset + r.top - (window.innerHeight*0.15);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}})();</script>';
             $append .= $script;
         } elseif (is_string($chapter_scroll_id) && $chapter_scroll_id !== '') {
-            // Chapter-only: scroll to chapter heading without highlight and without extra offset
+            // Chapter-only: scroll to chapter heading accounting for admin bar and sticky bar heights
             $cid = esc_js($chapter_scroll_id);
-            $script = '<script>(function(){var el=document.getElementById("' . $cid . '");if(el){el.scrollIntoView({behavior:"smooth",block:"start"});}})();</script>';
+            $script = '<script>(function(){var id="' . $cid . '";var el=document.getElementById(id);if(!el)return;var bar=document.querySelector(".thebible-sticky");var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab?ab.offsetHeight:0)+(bar?bar.offsetHeight:0);var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - off;window.scrollTo({top:Math.max(0,y),behavior:"smooth"});})();</script>';
             $append .= $script;
         }
         // Sticky updater script: detect current chapter and update bar on scroll; offset for admin bar
-        $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;bar.style.top=off+"px";}function update(){if(!heads.length){heads=headsList();}var topCut=window.innerHeight*0.2;var current=null;for(var i=0;i<heads.length;i++){var h=heads[i];var r=h.getBoundingClientRect();if(r.top<=topCut){current=h;}else{break;}}if(!current){current=heads[0]||null;}var ch=1;if(current){var m=current.id.match(/-ch-(\d+)$/);if(m){ch=parseInt(m[1],10)||1;}}var elCh=bar.querySelector("[data-ch]");if(elCh){elCh.textContent=String(ch);} }window.addEventListener("scroll",update,{passive:true});window.addEventListener("resize",function(){heads=headsList();setTopOffset();update();},{passive:true});document.addEventListener("DOMContentLoaded",function(){setTopOffset();update();});setTopOffset();update();})();</script>';
+        $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();var linkPrev=bar.querySelector("[data-prev]");var linkNext=bar.querySelector("[data-next]");var linkTop=bar.querySelector("[data-top]");function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;bar.style.top=off+"px";}function disable(el,yes){if(!el)return;if(yes){el.classList.add("is-disabled");el.setAttribute("aria-disabled","true");el.setAttribute("tabindex","-1");}else{el.classList.remove("is-disabled");el.removeAttribute("aria-disabled");el.removeAttribute("tabindex");}}function smoothToEl(el,offsetPx){if(!el)return;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - (offsetPx||0);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}function update(){if(!heads.length){heads=headsList();}var topCut=window.innerHeight*0.2;var current=null;var currentIdx=0;for(var i=0;i<heads.length;i++){var h=heads[i];var r=h.getBoundingClientRect();if(r.top<=topCut){current=h;currentIdx=i;}else{break;}}if(!current){current=heads[0]||null;currentIdx=0;}var ch=1;if(current){var m=current.id.match(/-ch-(\d+)$/);if(m){ch=parseInt(m[1],10)||1;}}var elCh=bar.querySelector("[data-ch]");if(elCh){elCh.textContent=String(ch);} // controls
+            var ab=document.getElementById("wpadminbar");var off=((document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0) + (bar?bar.offsetHeight:0);
+            // prev
+            if(currentIdx<=0){disable(linkPrev,true);disable(linkTop,true);}else{disable(linkPrev,false);disable(linkTop,false);}
+            if(currentIdx<=0){if(linkPrev) linkPrev.href="#";}else{if(linkPrev) linkPrev.href="#"+heads[currentIdx-1].id;}
+            // next
+            if(currentIdx>=heads.length-1){disable(linkNext,true);}else{disable(linkNext,false);} 
+            if(currentIdx>=heads.length-1){if(linkNext) linkNext.href="#";}else{if(linkNext) linkNext.href="#"+heads[currentIdx+1].id;}
+            // click handlers (once) — use href target to avoid stale indices
+            if(!bar._bound){
+                bar._bound=true;
+                if(linkPrev) linkPrev.addEventListener("click",function(e){
+                    if(this.classList.contains("is-disabled")) return;
+                    var hash=this.getAttribute("href")||""; if(!hash || hash==="#") return; e.preventDefault();
+                    var id=hash.replace(/^#/,""); var el=document.getElementById(id); smoothToEl(el, off);
+                });
+                if(linkNext) linkNext.addEventListener("click",function(e){
+                    if(this.classList.contains("is-disabled")) return;
+                    var hash=this.getAttribute("href")||""; if(!hash || hash==="#") return; e.preventDefault();
+                    var id=hash.replace(/^#/,""); var el=document.getElementById(id); smoothToEl(el, off);
+                });
+                if(linkTop) linkTop.addEventListener("click",function(e){
+                    if(this.classList.contains("is-disabled")) return; e.preventDefault();
+                    var topEl=document.getElementById("thebible-book-top"); smoothToEl(topEl, off);
+                });
+            }
+        }
+        window.addEventListener("scroll",update,{passive:true});
+        window.addEventListener("resize",function(){heads=headsList();setTopOffset();update();},{passive:true});
+        document.addEventListener("DOMContentLoaded",function(){setTopOffset();update();});
+        window.addEventListener("load",function(){setTopOffset();update();});
+        setTopOffset();update();})();</script>';
         if ($append !== '') { $html .= $append; }
 
         return $html;
