@@ -24,6 +24,36 @@ class TheBible_Plugin {
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
 
+    private static function inject_nav_helpers($html) {
+        if (!is_string($html) || $html === '') return $html;
+
+        // Ensure a stable anchor at the very top of the book content
+        if (strpos($html, 'id="thebible-book-top"') === false && strpos($html, 'id=\"thebible-book-top\"') === false) {
+            $html = '<a id="thebible-book-top"></a>' . $html;
+        }
+
+        // Prepend an up-arrow to the first chapters block linking back to /bible/
+        $bible_index = esc_url(trailingslashit(home_url('/bible/')));
+        $chap_up = '<a class="thebible-up thebible-up-index" href="' . $bible_index . '" aria-label="Back to Bible">&#8593;</a> ';
+        $html = preg_replace(
+            '~<p\s+class=(["\"])chapters\1>~',
+            '<p class="chapters">' . $chap_up,
+            $html,
+            1
+        );
+
+        // Prepend an up-arrow to every verses block linking back to top of book
+        $book_top = '#thebible-book-top';
+        $vers_up = '<a class="thebible-up thebible-up-book" href="' . $book_top . '" aria-label="Back to book">&#8593;</a> ';
+        $html = preg_replace(
+            '~<p\s+class=(["\"])verses\1>~',
+            '<p class="verses">' . $vers_up,
+            $html
+        );
+
+        return $html;
+    }
+
     public static function activate() {
         self::add_rewrite_rules();
         flush_rewrite_rules();
@@ -134,6 +164,8 @@ class TheBible_Plugin {
             return;
         }
         $html = file_get_contents($file);
+        // Inject navigation helpers: top anchor, up to /bible from chapters, up to top from each verses block
+        $html = self::inject_nav_helpers($html);
         status_header(200);
         nocache_headers();
         $title = $entry['short_name'];
