@@ -98,10 +98,29 @@ class TheBible_Plugin {
         // Sticky updater script: detect current chapter and update bar on scroll; offset for admin bar
         $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();var linkPrev=bar.querySelector("[data-prev]");var linkNext=bar.querySelector("[data-next]");var linkTop=bar.querySelector("[data-top]");function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;bar.style.top=off+"px";}function disable(el,yes){if(!el)return;if(yes){el.classList.add("is-disabled");el.setAttribute("aria-disabled","true");el.setAttribute("tabindex","-1");}else{el.classList.remove("is-disabled");el.removeAttribute("aria-disabled");el.removeAttribute("tabindex");}}function smoothToEl(el,offsetPx){if(!el)return;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - (offsetPx||0);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}
         function versesList(){var list=[]; if(!container) return list; list=Array.prototype.slice.call(container.querySelectorAll("p[id]")); return list.filter(function(p){return /-\d+-\d+$/.test(p.id);});}
-        var verses=versesList();
-        function selectionInfo(){var sel=window.getSelection && window.getSelection(); if(!sel || sel.rangeCount===0 || sel.isCollapsed) return null; var range=sel.getRangeAt(0); // find first/last verse intersecting
-            var startIdx=-1, endIdx=-1; for(var i=0;i<verses.length;i++){var v=verses[i]; var r=document.createRange(); r.selectNode(v); var intersects= !(range.compareBoundaryPoints(Range.END_TO_START, r) <= 0 || range.compareBoundaryPoints(Range.START_TO_END, r) >= 0); if(intersects){ if(startIdx===-1) startIdx=i; endIdx=i; }} if(startIdx===-1) return null; var sid=verses[startIdx].id; var eid=verses[endIdx].id; var sm=sid.match(/-(\d+)-(\d+)$/); var em=eid.match(/-(\d+)-(\d+)$/); if(!sm||!em) return null; return { sCh: parseInt(sm[1],10), sV: parseInt(sm[2],10), eCh: parseInt(em[1],10), eV: parseInt(em[2],10) };
+        function getVerseFromNode(node){
+            if(!node) return null; var el = (node.nodeType===1? node : node.parentElement);
+            while(el && el!==container){ if(el.matches && el.matches("p[id]") && /-\d+-\d+$/.test(el.id)) return el; el = el.parentElement; }
+            return null;
         }
+        var verses=versesList();
+        function selectionInfo(){var sel=window.getSelection && window.getSelection(); if(!sel || sel.rangeCount===0 || sel.isCollapsed) return null; var range=sel.getRangeAt(0);
+            // Primary: use closest verse elements from anchor/focus
+            var aVerse=getVerseFromNode(sel.anchorNode); var fVerse=getVerseFromNode(sel.focusNode);
+            var startIdx=-1, endIdx=-1;
+            if(aVerse && fVerse){
+                for(var i=0;i<verses.length;i++){ if(verses[i]===aVerse) startIdx=i; if(verses[i]===fVerse) endIdx=i; }
+                if(startIdx>-1 && endIdx>-1){ if(startIdx>endIdx){ var t=startIdx; startIdx=endIdx; endIdx=t; }
+                }
+            }
+            // Fallback: intersect ranges
+            if(startIdx===-1 || endIdx===-1){
+                startIdx=-1; endIdx=-1;
+                for(var j=0;j<verses.length;j++){var v=verses[j]; var r=document.createRange(); r.selectNode(v); var intersects= !(range.compareBoundaryPoints(Range.END_TO_START, r) <= 0 || range.compareBoundaryPoints(Range.START_TO_END, r) >= 0); if(intersects){ if(startIdx===-1) startIdx=j; endIdx=j; }}
+            }
+            if(startIdx===-1) return null; var sid=verses[startIdx].id; var eid=verses[endIdx].id; var sm=sid.match(/-(\d+)-(\d+)$/); var em=eid.match(/-(\d+)-(\d+)$/); if(!sm||!em) return null; return { sCh: parseInt(sm[1],10), sV: parseInt(sm[2],10), eCh: parseInt(em[1],10), eV: parseInt(em[2],10) };
+        }
+        var selTimer=null; function scheduleUpdate(){ if(selTimer) clearTimeout(selTimer); selTimer=setTimeout(update, 50); }
         function update(){if(!heads.length){heads=headsList();} if(!verses.length){verses=versesList();}
             var info=selectionInfo(); var elCh=bar.querySelector("[data-ch]");
             if(info && elCh){ if(info.sCh===info.eCh){ elCh.textContent= String(info.sCh)+":"+ (info.sV===info.eV? String(info.sV): String(info.sV)+"-"+String(info.eV)); } else { elCh.textContent= String(info.sCh)+":"+String(info.sV)+"-"+String(info.eCh)+":"+String(info.eV); } }
@@ -146,6 +165,9 @@ class TheBible_Plugin {
         window.addEventListener("scroll",update,{passive:true});
         window.addEventListener("resize",function(){heads=headsList();setTopOffset();update();},{passive:true});
         document.addEventListener("DOMContentLoaded",function(){setTopOffset();update();});
+        document.addEventListener("selectionchange", scheduleUpdate, {passive:true});
+        document.addEventListener("mouseup", scheduleUpdate, {passive:true});
+        document.addEventListener("keyup", scheduleUpdate, {passive:true});
         window.addEventListener("load",function(){setTopOffset();update();});
         setTopOffset();update();})();</script>';
         if ($append !== '') { $html .= $append; }
