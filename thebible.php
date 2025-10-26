@@ -65,6 +65,13 @@ class TheBible_Plugin {
             $html
         );
 
+        // Ensure each verse paragraph has a class for styling (IDs use slug-ch-verse)
+        $html = preg_replace(
+            '~<p\s+id=(["\"])([a-z0-9\-]+-\d+-\d+)\1>~i',
+            '<p id="$2" class="verse">',
+            $html
+        );
+
         // Add sticky status bar at top (book + current chapter)
         $book_label = is_string($book_label) ? $book_label : '';
         $book_slug_js = esc_js( self::slugify( $book_label ) );
@@ -454,6 +461,11 @@ class TheBible_Plugin {
                     <li><code>.thebible-book</code> around a rendered book</li>
                     <li><code>.chapters</code> list of chapter links on top of a book</li>
                     <li><code>.verses</code> blocks of verses</li>
+                    <li><code>.verse</code> each verse paragraph (added at render time)</li>
+                    <li><code>.verse-num</code> the verse number span within a verse paragraph</li>
+                    <li><code>.verse-body</code> the verse text span within a verse paragraph</li>
+                    <li><code>.verse-num</code> the verse number span within a verse paragraph</li>
+                    <li><code>.verse-body</code> the verse text span within a verse paragraph</li>
                     <li><code>.verse-highlight</code> added when a verse is highlighted from a URL fragment</li>
                     <li><code>.thebible-sticky</code> top status bar with chapter info and controls
                         <ul style="list-style:circle;margin-left:1.2em;">
