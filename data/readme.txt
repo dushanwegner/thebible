@@ -1,0 +1,1 @@
+In this folder put the data-folders bible_books and bible_books_html
