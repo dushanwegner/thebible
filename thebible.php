@@ -73,7 +73,7 @@ class TheBible_Plugin {
         );
 
         // Add sticky status bar at top (book + current chapter)
-        $book_label = is_string($book_label) ? $book_label : '';
+        $book_label = is_string($book_label) ? self::pretty_label($book_label) : '';
         $book_slug_js = esc_js( self::slugify( $book_label ) );
         $book_label_html = esc_html( $book_label );
         $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '">'
@@ -262,10 +262,20 @@ class TheBible_Plugin {
                 if (count($row) < 3) continue;
                 $order = intval($row[0]);
                 $short = $row[1];
-                $filename = $row[2];
+                $display = '';
+                $filename = '';
+                // New format: order, short_name, display_name, filename, ...
+                if (count($row) >= 4) {
+                    $display = isset($row[2]) ? $row[2] : '';
+                    $filename = isset($row[3]) ? $row[3] : (isset($row[2]) ? $row[2] : '');
+                } else {
+                    // Old format: order, short_name, filename, ...
+                    $filename = $row[2];
+                }
                 $entry = [
                     'order' => $order,
                     'short_name' => $short,
+                    'display_name' => $display,
                     'filename' => $filename,
                 ];
                 self::$books[] = $entry;
@@ -283,6 +293,21 @@ class TheBible_Plugin {
         $slug = preg_replace('/[^a-z0-9\-]+/', '', $slug);
         $slug = preg_replace('/\-+/', '-', $slug);
         return trim($slug, '-');
+    }
+
+    private static function pretty_label($short_name) {
+        if (!is_string($short_name)) return '';
+        $label = $short_name;
+        // Convert underscores to spaces by default
+        $label = str_replace('_', ' ', $label);
+        // Leading numeral becomes 'N. '
+        $label = preg_replace('/^(\d+)\s+/', '$1. ', $label);
+        // Specific compounds get a slash separator
+        $label = preg_replace('/\bKings\s+Samuel\b/', 'Kings / Samuel', $label);
+        $label = preg_replace('/\bEsdras\s+Nehemias\b/', 'Esdras / Nehemias', $label);
+        // normalize whitespace
+        $label = preg_replace('/\s+/', ' ', $label);
+        return trim($label);
     }
 
     private static function book_groups() {
@@ -348,10 +373,13 @@ class TheBible_Plugin {
             $chapter_scroll_id = $book_slug . '-ch-' . $ch;
         }
         // Inject navigation helpers and optional highlight/scroll behavior
-        $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id, $entry['short_name']);
+        $human = isset($entry['display_name']) && $entry['display_name'] !== '' ? $entry['display_name'] : $entry['short_name'];
+        $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id, $human);
         status_header(200);
         nocache_headers();
-        $title = $entry['short_name'];
+        $title = isset($entry['display_name']) && $entry['display_name'] !== ''
+            ? $entry['display_name']
+            : self::pretty_label( $entry['short_name'] );
         $content = '<div class="thebible thebible-book">' . $html . '</div>';
         self::output_with_theme($title, $content, 'book');
     }
@@ -376,14 +404,16 @@ class TheBible_Plugin {
         foreach ($ot as $b) {
             $slug = self::slugify($b['short_name']);
             $url = trailingslashit($home) . $slug . '/';
-            $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($b['short_name']) . '</a></li>';
+            $label = !empty($b['display_name']) ? $b['display_name'] : self::pretty_label($b['short_name']);
+            $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($label) . '</a></li>';
         }
         $out .= '</ul></section>';
         $out .= '<section class="thebible-group thebible-nt"><h2>New Testament</h2><ul>';
         foreach ($nt as $b) {
             $slug = self::slugify($b['short_name']);
             $url = trailingslashit($home) . $slug . '/';
-            $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($b['short_name']) . '</a></li>';
+            $label = !empty($b['display_name']) ? $b['display_name'] : self::pretty_label($b['short_name']);
+            $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($label) . '</a></li>';
         }
         $out .= '</ul></section>';
         $out .= '</div>';
