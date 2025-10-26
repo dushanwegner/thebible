@@ -145,7 +145,10 @@ class TheBible_Plugin {
         status_header(404);
         nocache_headers();
         if (function_exists('get_header')) get_header();
-        echo '<main id="primary" class="site-main"><h1>Not Found</h1><p>The requested book could not be found.</p></main>';
+        echo '<main id="primary" class="site-main container mt-2">'
+           . '<h1>Not Found</h1>'
+           . '<p>The requested book could not be found.</p>'
+           . '</main>';
         if (function_exists('get_footer')) get_footer();
     }
 
@@ -153,7 +156,6 @@ class TheBible_Plugin {
         list($ot, $nt) = self::book_groups();
         $home = home_url('/bible/');
         $out = '<div class="thebible thebible-index">';
-        $out .= '<h1>The Bible</h1>';
         $out .= '<div class="thebible-groups">';
         $out .= '<section class="thebible-group thebible-ot"><h2>Old Testament</h2><ul>';
         foreach ($ot as $b) {
@@ -176,9 +178,9 @@ class TheBible_Plugin {
 
     private static function output_with_theme($title, $content_html) {
         if (function_exists('get_header')) get_header();
-        echo '<main id="primary" class="site-main">';
+        echo '<main id="primary" class="site-main container mt-2">';
         echo '<article class="thebible-article">';
-        echo '<header class="entry-header"><h1 class="entry-title">' . esc_html($title) . '</h1></header>';
+        echo '<header class="entry-header mb-3"><h1 class="entry-title">' . esc_html($title) . '</h1></header>';
         echo '<div class="entry-content">' . $content_html . '</div>';
         echo '</article>';
         echo '</main>';
