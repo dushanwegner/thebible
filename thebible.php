@@ -249,20 +249,33 @@ class TheBible_Plugin {
         return $vars;
     }
 
-    private static function data_dir() {
+    private static function data_root_dir() {
+        // New structure: data/{slug}/ with html/ and text/ subfolders
         $slug = get_query_var(self::QV_SLUG);
         if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
-        // Map base slug to dataset directory: data/{slug}_books_html/
-        $dir = plugin_dir_path(__FILE__) . 'data/' . $slug . '_books_html/';
-        if (!is_dir($dir)) {
-            // Fallback to default English dataset
-            $dir = plugin_dir_path(__FILE__) . 'data/bible_books_html/';
+        $root = plugin_dir_path(__FILE__) . 'data/' . $slug . '/';
+        if (is_dir($root)) return $root;
+        return null;
+    }
+
+    private static function html_dir() {
+        $root = self::data_root_dir();
+        if ($root) {
+            $h = trailingslashit($root) . 'html/';
+            if (is_dir($h)) return $h;
         }
-        return $dir;
+        // Back-compat: old layout data/{slug}_books_html/
+        $slug = get_query_var(self::QV_SLUG);
+        if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+        $old = plugin_dir_path(__FILE__) . 'data/' . $slug . '_books_html/';
+        if (is_dir($old)) return $old;
+        // Fallback to default English
+        $fallback = plugin_dir_path(__FILE__) . 'data/bible_books_html/';
+        return $fallback;
     }
 
     private static function index_csv_path() {
-        return self::data_dir() . 'index.csv';
+        return self::html_dir() . 'index.csv';
     }
 
     private static function load_index() {
@@ -373,6 +386,8 @@ class TheBible_Plugin {
         if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
         $title = ($slug === 'bibel') ? 'Die Bibel' : 'The Bible';
         $content = self::build_index_html();
+        $footer = self::render_footer_html();
+        if ($footer !== '') { $content .= $footer; }
         self::output_with_theme($title, $content, 'index');
     }
 
@@ -383,7 +398,7 @@ class TheBible_Plugin {
             self::render_404();
             return;
         }
-        $file = self::data_dir() . $entry['filename'];
+        $file = self::html_dir() . $entry['filename'];
         if (!file_exists($file)) {
             self::render_404();
             return;
@@ -414,6 +429,8 @@ class TheBible_Plugin {
             ? $entry['display_name']
             : self::pretty_label( $entry['short_name'] );
         $content = '<div class="thebible thebible-book">' . $html . '</div>';
+        $footer = self::render_footer_html();
+        if ($footer !== '') { $content .= $footer; }
         self::output_with_theme($title, $content, 'book');
     }
 
@@ -459,11 +476,11 @@ class TheBible_Plugin {
     }
 
     private static function base_slugs() {
-        // In the future this could be an option. For now, support English and German.
-        $list = 'bible,bibel';
+        $list = get_option('thebible_slugs', 'bible,bibel');
+        if (!is_string($list)) $list = 'bible';
         $parts = array_filter(array_map('trim', explode(',', $list)));
         if (empty($parts)) { $parts = ['bible']; }
-        return $parts;
+        return array_values(array_unique($parts));
     }
 
     private static function output_with_theme($title, $content_html, $context = '') {
@@ -511,6 +528,25 @@ class TheBible_Plugin {
                 'default'           => '',
             ]
         );
+        register_setting(
+            'thebible_options',
+            'thebible_slugs',
+            [
+                'type'              => 'string',
+                'sanitize_callback' => function( $val ) {
+                    if ( ! is_string( $val ) ) return 'bible';
+                    // normalize comma-separated list
+                    $parts = array_filter( array_map( 'trim', explode( ',', $val ) ) );
+                    // only allow known slugs for now
+                    $known = [ 'bible', 'bibel' ];
+                    $out = [];
+                    foreach ( $parts as $p ) { if ( in_array( $p, $known, true ) ) $out[] = $p; }
+                    if ( empty( $out ) ) $out = [ 'bible' ];
+                    return implode( ',', array_unique( $out ) );
+                },
+                'default'           => 'bible,bibel',
+            ]
+        );
     }
 
     public static function admin_menu() {
@@ -528,6 +564,30 @@ class TheBible_Plugin {
     public static function render_settings_page() {
         if ( ! current_user_can( 'manage_options' ) ) return;
         $css = get_option( 'thebible_custom_css', '' );
+        $slugs_opt = get_option( 'thebible_slugs', 'bible,bibel' );
+        $active = array_filter( array_map( 'trim', explode( ',', is_string($slugs_opt)?$slugs_opt:'' ) ) );
+        $known = [ 'bible' => 'English (Douay)', 'bibel' => 'Deutsch (Menge)' ];
+
+        // Handle footer save (all-at-once)
+        if ( isset($_POST['thebible_footer_nonce_all']) && wp_verify_nonce( $_POST['thebible_footer_nonce_all'], 'thebible_footer_save_all' ) && current_user_can('manage_options') ) {
+            foreach ($known as $fs => $label) {
+                $field = 'thebible_footer_text_' . $fs;
+                $ft = isset($_POST[$field]) ? (string) wp_unslash( $_POST[$field] ) : '';
+                // New preferred location
+                $root = plugin_dir_path(__FILE__) . 'data/' . $fs . '/';
+                $ok = is_dir($root) || wp_mkdir_p($root);
+                if ( $ok ) {
+                    @file_put_contents( trailingslashit($root) . 'copyright.md', $ft );
+                } else {
+                    // Legacy fallback
+                    $dir = plugin_dir_path(__FILE__) . 'data/' . $fs . '_books_html/';
+                    if ( is_dir($dir) || wp_mkdir_p($dir) ) {
+                        @file_put_contents( trailingslashit($dir) . 'copyright.txt', $ft );
+                    }
+                }
+            }
+            echo '<div class="updated notice"><p>Footers saved.</p></div>';
+        }
         ?>
         <div class="wrap">
             <h1>The Bible</h1>
@@ -535,6 +595,20 @@ class TheBible_Plugin {
                 <?php settings_fields( 'thebible_options' ); ?>
                 <table class="form-table" role="presentation">
                     <tbody>
+                        <tr>
+                            <th scope="row"><label>Active bibles</label></th>
+                            <td>
+                                <?php foreach ( $known as $slug => $label ): $checked = in_array($slug, $active, true); ?>
+                                    <label style="display:block;margin:.2em 0;">
+                                        <input type="checkbox" name="thebible_slugs_list[]" value="<?php echo esc_attr($slug); ?>" <?php checked( $checked ); ?>>
+                                        <code>/<?php echo esc_html($slug); ?>/</code> — <?php echo esc_html($label); ?>
+                                    </label>
+                                <?php endforeach; ?>
+                                <input type="hidden" name="thebible_slugs" id="thebible_slugs" value="<?php echo esc_attr( implode(',', $active ) ); ?>">
+                                <script>(function(){function sync(){var boxes=document.querySelectorAll('input[name="thebible_slugs_list[]"]');var out=[];boxes.forEach(function(b){if(b.checked) out.push(b.value);});document.getElementById('thebible_slugs').value=out.join(',');}document.addEventListener('change',function(e){if(e.target && e.target.name==='thebible_slugs_list[]'){sync();}});document.addEventListener('DOMContentLoaded',sync);})();</script>
+                                <p class="description">Select which bibles are publicly accessible. Others remain installed but routed pages are disabled.</p>
+                            </td>
+                        </tr>
                         <tr>
                             <th scope="row"><label for="thebible_custom_css">Custom CSS (applied on Bible pages)</label></th>
                             <td>
@@ -545,6 +619,37 @@ class TheBible_Plugin {
                     </tbody>
                 </table>
                 <?php submit_button(); ?>
+            </form>
+
+            <h2>Per‑Bible footers</h2>
+            <form method="post">
+                <?php wp_nonce_field('thebible_footer_save_all', 'thebible_footer_nonce_all'); ?>
+                <p class="description">Preferred location: <code>wp-content/plugins/thebible/data/{slug}/copyright.md</code>. Legacy fallback: <code>data/{slug}_books_html/copyright.txt</code>.</p>
+                <table class="form-table" role="presentation">
+                    <tbody>
+                        <?php foreach ($known as $slug => $label): ?>
+                        <?php
+                            // Load existing footer for display
+                            $root = plugin_dir_path(__FILE__) . 'data/' . $slug . '/';
+                            $val = '';
+                            if ( file_exists( $root . 'copyright.md' ) ) {
+                                $val = (string) file_get_contents( $root . 'copyright.md' );
+                            } else {
+                                $legacy = plugin_dir_path(__FILE__) . 'data/' . $slug . '_books_html/copyright.txt';
+                                if ( file_exists( $legacy ) ) { $val = (string) file_get_contents( $legacy ); }
+                            }
+                        ?>
+                        <tr>
+                            <th scope="row"><label for="thebible_footer_text_<?php echo esc_attr($slug); ?>"><?php echo esc_html('/' . $slug . '/ — ' . $label); ?></label></th>
+                            <td>
+                                <textarea name="thebible_footer_text_<?php echo esc_attr($slug); ?>" id="thebible_footer_text_<?php echo esc_attr($slug); ?>" class="large-text code" rows="6" style="font-family:monospace;"><?php echo esc_textarea( $val ); ?></textarea>
+                                <p class="description">Markdown supported for links and headings; line breaks are preserved.</p>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php submit_button('Save Footers'); ?>
             </form>
 
             <h2>CSS reference</h2>
@@ -587,6 +692,48 @@ class TheBible_Plugin {
         $css = get_option( 'thebible_custom_css', '' );
         if ( ! is_string( $css ) || $css === '' ) return;
         echo '<style id="thebible-custom-css">' . $css . '</style>';
+    }
+
+    private static function render_footer_html() {
+        // Prefer new markdown footer at dataset root, fallback to old copyright.txt in html dir
+        $raw = '';
+        $root = self::data_root_dir();
+        if ($root) {
+            $md = trailingslashit($root) . 'copyright.md';
+            if (file_exists($md)) {
+                $raw = (string) file_get_contents($md);
+            }
+        }
+        if ($raw === '') {
+            $txt_path = self::html_dir() . 'copyright.txt';
+            if (file_exists($txt_path)) { $raw = (string) file_get_contents($txt_path); }
+        }
+        if (!is_string($raw) || $raw === '') return '';
+        // Very light Markdown to HTML: allow links and simple headings; escape everything else
+        $safe = esc_html($raw);
+        // Convert [text](url) style links
+        $safe = preg_replace('/\[(.*?)\]\((https?:\/\/[^\s)]+)\)/', '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>', $safe);
+        // Split into lines and build blocks: headings or paragraphs
+        $lines = preg_split('/\r?\n/', $safe);
+        $blocks = [];
+        $para = [];
+        $flush_para = function() use (&$para, &$blocks) {
+            if (!empty($para)) {
+                // Join paragraph lines with spaces
+                $text = trim(preg_replace('/\s+/', ' ', implode(' ', array_map('trim', $para))));
+                if ($text !== '') { $blocks[] = '<p>' . $text . '</p>'; }
+                $para = [];
+            }
+        };
+        foreach ($lines as $ln) {
+            if (preg_match('/^###\s+(.*)$/', $ln, $m)) { $flush_para(); $blocks[] = '<h3 class="thebible-footer-title">' . $m[1] . '</h3>'; continue; }
+            if (preg_match('/^##\s+(.*)$/', $ln, $m))  { $flush_para(); $blocks[] = '<h2 class="thebible-footer-title">' . $m[1] . '</h2>'; continue; }
+            if (preg_match('/^#\s+(.*)$/', $ln, $m))   { $flush_para(); $blocks[] = '<h1 class="thebible-footer-title">' . $m[1] . '</h1>'; continue; }
+            if (trim($ln) === '') { $flush_para(); continue; }
+            $para[] = $ln;
+        }
+        $flush_para();
+        return '<footer class="thebible-footer">' . implode('', $blocks) . '</footer>';
     }
 }
 
