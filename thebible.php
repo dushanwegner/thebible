@@ -27,6 +27,7 @@ class TheBible_Plugin {
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
         add_action('wp_head', [__CLASS__, 'print_custom_css']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
         add_action('customize_register', [__CLASS__, 'customize_register']);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
@@ -94,8 +95,6 @@ class TheBible_Plugin {
 
         // Add highlight styles and scrolling script
         $append = '';
-        // Basic styles for sticky and highlight
-        $append .= '<style>.thebible .thebible-sticky{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid rgba(0,0,0,.1);box-shadow:0 10px 24px rgba(255,255,255,.85);font-size:.9rem;padding:.25rem 0 5px 0;display:flex;align-items:center;justify-content:space-between;gap:.5rem}.thebible .thebible-sticky__controls{display:flex;gap:.5rem;align-items:center}.thebible .thebible-ctl{color:inherit;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:1.6rem;height:1.6rem;border-radius:.25rem;border:1px solid rgba(0,0,0,.15)}.thebible .thebible-ctl:is(.is-disabled){opacity:.35;pointer-events:none}.thebible .thebible-btn{font-size:.85rem;border:1px solid rgba(0,0,0,.15);padding:.15rem .4rem;border-radius:.25rem;text-decoration:none;color:inherit;display:inline-block}.thebible .thebible-btn:hover{background:#f1f3f5}.thebible .verse-highlight{background:#fff3cd;padding:0 .2em;border-radius:.15rem}.thebible .thebible-book p.verse, .thebible.thebible-book p.verse{transition:background-color 1.6s ease-out}.thebible .thebible-book p.verse.verse-flash, .thebible.thebible-book p.verse.verse-flash{background:#fff3cd}</style>';
         if (is_array($highlight_ids) && !empty($highlight_ids)) {
             $ids_json = wp_json_encode(array_values(array_unique($highlight_ids)));
             // Scroll with 15% viewport offset so verse isn't glued to very top
@@ -108,7 +107,7 @@ class TheBible_Plugin {
             $append .= $script;
         }
         // Sticky updater script: detect current chapter and update bar on scroll; offset for admin bar
-        $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();var controls=bar.querySelector(".thebible-sticky__controls");var origControlsHtml=controls?controls.innerHTML:"";var linkPrev=bar.querySelector("[data-prev]");var linkNext=bar.querySelector("[data-next]");var linkTop=bar.querySelector("[data-top]");function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;bar.style.top=off+"px";}function disable(el,yes){if(!el)return;if(yes){el.classList.add("is-disabled");el.setAttribute("aria-disabled","true");el.setAttribute("tabindex","-1");}else{el.classList.remove("is-disabled");el.removeAttribute("aria-disabled");el.removeAttribute("tabindex");}}function smoothToEl(el,offsetPx){if(!el)return;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - (offsetPx||0);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}
+        $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();var controls=bar.querySelector(".thebible-sticky__controls");var origControlsHtml=controls?controls.innerHTML:"";var linkPrev=bar.querySelector("[data-prev]");var linkNext=bar.querySelector("[data-next]");var linkTop=bar.querySelector("[data-top]");function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;if(off>0){bar.style.top=off+"px";}else{bar.style.top="";}}function disable(el,yes){if(!el)return;if(yes){el.classList.add("is-disabled");el.setAttribute("aria-disabled","true");el.setAttribute("tabindex","-1");}else{el.classList.remove("is-disabled");el.removeAttribute("aria-disabled");el.removeAttribute("tabindex");}}function smoothToEl(el,offsetPx){if(!el)return;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - (offsetPx||0);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}
         // Flash highlight on in-page verse link clicks
         document.addEventListener("click",function(e){var a=e.target && e.target.closest && e.target.closest("a[href*=\"#\"]");if(!a)return;var href=a.getAttribute("href")||"";var hashIndex=href.indexOf("#");if(hashIndex===-1)return;var id=href.slice(hashIndex+1);if(!id)return;var tgt=document.getElementById(id);if(!tgt)return;var verse=null;if(tgt.matches&&tgt.matches("p")){verse=tgt;}else if(tgt.closest){var p=tgt.closest("p");if(p) verse=p;}if(!verse)return;verse.classList.add("verse");setTimeout(function(){verse.classList.remove("verse-flash");void verse.offsetWidth;verse.classList.add("verse-flash");setTimeout(function(){verse.classList.remove("verse-flash");},2000);},0);},true);
         function currentOffset(){var ab=document.getElementById("wpadminbar");var abH=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;var barH=bar?bar.offsetHeight:0;return abH+barH+25;}
@@ -239,6 +238,17 @@ class TheBible_Plugin {
             add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
             // /{slug}/{book}/{chapter}
             add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
+        }
+    }
+
+    public static function enqueue_assets() {
+        // Enqueue styles only on plugin routes
+        $is_bible = ! empty( get_query_var( self::QV_FLAG ) )
+            || ! empty( get_query_var( self::QV_BOOK ) )
+            || ! empty( get_query_var( self::QV_SLUG ) );
+        if ( $is_bible ) {
+            $css_url = plugins_url( 'assets/thebible.css', __FILE__ );
+            wp_enqueue_style( 'thebible-styles', $css_url, [], '0.1.0' );
         }
     }
 
