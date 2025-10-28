@@ -15,6 +15,7 @@ class TheBible_Plugin {
     const QV_CHAPTER = 'thebible_ch';
     const QV_VFROM = 'thebible_vfrom';
     const QV_VTO = 'thebible_vto';
+    const QV_SLUG = 'thebible_slug';
 
     private static $books = null; // array of [order, short_name, filename]
     private static $slug_map = null; // slug => array entry
@@ -223,13 +224,19 @@ class TheBible_Plugin {
     }
 
     public static function add_rewrite_rules() {
-        add_rewrite_rule('^bible/?$', 'index.php?' . self::QV_FLAG . '=1', 'top');
-        // /bible/{book}
-        add_rewrite_rule('^bible/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1', 'top');
-        // /bible/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
-        add_rewrite_rule('^bible/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1', 'top');
-        // /bible/{book}/{chapter}
-        add_rewrite_rule('^bible/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1', 'top');
+        $slugs = self::base_slugs();
+        foreach ($slugs as $slug) {
+            $slug = trim($slug, "/ ");
+            if ($slug === '') continue;
+            // index
+            add_rewrite_rule('^' . preg_quote($slug, '/') . '/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
+            // /{slug}/{book}
+            add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
+            // /{slug}/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
+            add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
+            // /{slug}/{book}/{chapter}
+            add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
+        }
     }
 
     public static function add_query_vars($vars) {
@@ -238,11 +245,20 @@ class TheBible_Plugin {
         $vars[] = self::QV_CHAPTER;
         $vars[] = self::QV_VFROM;
         $vars[] = self::QV_VTO;
+        $vars[] = self::QV_SLUG;
         return $vars;
     }
 
     private static function data_dir() {
-        return plugin_dir_path(__FILE__) . 'data/bible_books_html/';
+        $slug = get_query_var(self::QV_SLUG);
+        if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+        // Map base slug to dataset directory: data/{slug}_books_html/
+        $dir = plugin_dir_path(__FILE__) . 'data/' . $slug . '_books_html/';
+        if (!is_dir($dir)) {
+            // Fallback to default English dataset
+            $dir = plugin_dir_path(__FILE__) . 'data/bible_books_html/';
+        }
+        return $dir;
     }
 
     private static function index_csv_path() {
@@ -314,8 +330,23 @@ class TheBible_Plugin {
         self::load_index();
         $ot = [];
         $nt = [];
+        // Detect NT boundary dynamically by first occurrence of Matthew across locales
+        $nt_slug_candidates = ['matthew','matthaeus'];
+        $nt_start_order = null;
         foreach (self::$books as $b) {
-            if ($b['order'] <= 46) $ot[] = $b; else $nt[] = $b;
+            $slug = self::slugify($b['short_name']);
+            if (in_array($slug, $nt_slug_candidates, true)) {
+                $nt_start_order = intval($b['order']);
+                break;
+            }
+        }
+        foreach (self::$books as $b) {
+            if ($nt_start_order !== null) {
+                if (intval($b['order']) < $nt_start_order) $ot[] = $b; else $nt[] = $b;
+            } else {
+                // Fallback to legacy threshold
+                if ($b['order'] <= 46) $ot[] = $b; else $nt[] = $b;
+            }
         }
         return [$ot, $nt];
     }
@@ -338,7 +369,9 @@ class TheBible_Plugin {
         self::load_index();
         status_header(200);
         nocache_headers();
-        $title = 'The Bible';
+        $slug = get_query_var(self::QV_SLUG);
+        if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+        $title = ($slug === 'bibel') ? 'Die Bibel' : 'The Bible';
         $content = self::build_index_html();
         self::output_with_theme($title, $content, 'index');
     }
@@ -397,10 +430,14 @@ class TheBible_Plugin {
 
     private static function build_index_html() {
         list($ot, $nt) = self::book_groups();
-        $home = home_url('/bible/');
+        $base = get_query_var(self::QV_SLUG);
+        if (!is_string($base) || $base === '') { $base = 'bible'; }
+        $home = home_url('/' . $base . '/');
         $out = '<div class="thebible thebible-index">';
         $out .= '<div class="thebible-groups">';
-        $out .= '<section class="thebible-group thebible-ot"><h2>Old Testament</h2><ul>';
+        $ot_label = ($base === 'bibel') ? 'Altes Testament' : 'Old Testament';
+        $nt_label = ($base === 'bibel') ? 'Neues Testament' : 'New Testament';
+        $out .= '<section class="thebible-group thebible-ot"><h2>' . esc_html($ot_label) . '</h2><ul>';
         foreach ($ot as $b) {
             $slug = self::slugify($b['short_name']);
             $url = trailingslashit($home) . $slug . '/';
@@ -408,7 +445,7 @@ class TheBible_Plugin {
             $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($label) . '</a></li>';
         }
         $out .= '</ul></section>';
-        $out .= '<section class="thebible-group thebible-nt"><h2>New Testament</h2><ul>';
+        $out .= '<section class="thebible-group thebible-nt"><h2>' . esc_html($nt_label) . '</h2><ul>';
         foreach ($nt as $b) {
             $slug = self::slugify($b['short_name']);
             $url = trailingslashit($home) . $slug . '/';
@@ -419,6 +456,14 @@ class TheBible_Plugin {
         $out .= '</div>';
         $out .= '</div>';
         return $out;
+    }
+
+    private static function base_slugs() {
+        // In the future this could be an option. For now, support English and German.
+        $list = 'bible,bibel';
+        $parts = array_filter(array_map('trim', explode(',', $list)));
+        if (empty($parts)) { $parts = ['bible']; }
+        return $parts;
     }
 
     private static function output_with_theme($title, $content_html, $context = '') {
