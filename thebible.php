@@ -202,13 +202,32 @@ class TheBible_Plugin {
             if(!el) return;
             e.preventDefault();
             smoothToEl(el, currentOffset());
-            if(history && history.replaceState){ history.replaceState(null, "", "#" + id); }
+            // If this is a verse id like book-CH-V, update the URL to /book/CH:V
+            var m = id.match(/-(\d+)-(\d+)$/);
+            if (history && history.replaceState && m) {
+                var ch = m[1], v = m[2];
+                var base = location.origin + location.pathname
+                    .replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, "/") // strip any trailing chapter/verse
+                    .replace(/#.*$/, "");
+                history.replaceState(null, "", base + ch + ":" + v);
+            } else if (history && history.replaceState) {
+                history.replaceState(null, "", "#" + id);
+            }
         }, {passive:false});
         // Adjust on hash navigation
         window.addEventListener("hashchange", function(){
             var id = location.hash.replace(/^#/, "");
             var el = document.getElementById(id);
-            if(el) smoothToEl(el, currentOffset());
+            if(el) {
+                smoothToEl(el, currentOffset());
+                var m = id.match(/-(\d+)-(\d+)$/);
+                if (history && history.replaceState && m) {
+                    var ch = m[1], v = m[2];
+                    var base = location.origin + location.pathname
+                        .replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, "/");
+                    history.replaceState(null, "", base + ch + ":" + v);
+                }
+            }
         });
         setTopOffset();update();})();</script>';
         if ($append !== '') { $html .= $append; }
