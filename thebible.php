@@ -16,6 +16,7 @@ class TheBible_Plugin {
     const QV_VFROM = 'thebible_vfrom';
     const QV_VTO = 'thebible_vto';
     const QV_SLUG = 'thebible_slug';
+    const QV_OG   = 'thebible_og';
 
     private static $books = null; // array of [order, short_name, filename]
     private static $slug_map = null; // slug => array entry
@@ -26,7 +27,11 @@ class TheBible_Plugin {
         add_action('template_redirect', [__CLASS__, 'handle_template_redirect']);
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
+        add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
+        add_filter('upload_mimes', [__CLASS__, 'allow_font_uploads']);
+        add_filter('wp_check_filetype_and_ext', [__CLASS__, 'allow_font_filetype'], 10, 5);
         add_action('wp_head', [__CLASS__, 'print_custom_css']);
+        add_action('wp_head', [__CLASS__, 'print_og_meta']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
         add_action('customize_register', [__CLASS__, 'customize_register']);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
@@ -278,6 +283,7 @@ class TheBible_Plugin {
         $vars[] = self::QV_VFROM;
         $vars[] = self::QV_VTO;
         $vars[] = self::QV_SLUG;
+        $vars[] = self::QV_OG;
         return $vars;
     }
 
@@ -400,6 +406,13 @@ class TheBible_Plugin {
         $flag = get_query_var(self::QV_FLAG);
         if (!$flag) return;
 
+        // Serve Open Graph image when requested
+        $og = get_query_var(self::QV_OG);
+        if ($og) {
+            self::render_og_image();
+            exit;
+        }
+
         // Prepare title and content
         $book_slug = get_query_var(self::QV_BOOK);
         if ($book_slug) {
@@ -408,6 +421,312 @@ class TheBible_Plugin {
             self::render_index();
         }
         exit; // prevent WP from continuing
+    }
+
+    private static function get_book_entry_by_slug($slug) {
+        self::load_index();
+        return self::$slug_map[$slug] ?? null;
+    }
+
+    private static function extract_verse_text($entry, $ch, $vf, $vt) {
+        if (!$entry || !is_array($entry)) return '';
+        $file = self::html_dir() . $entry['filename'];
+        if (!file_exists($file)) return '';
+        $html = (string) file_get_contents($file);
+        if ($html === '') return '';
+        $book_slug = self::slugify($entry['short_name']);
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_clear_errors();
+        $xp = new \DOMXPath($dom);
+        $parts = [];
+        for ($i = $vf; $i <= $vt; $i++) {
+            $id = $book_slug . '-' . $ch . '-' . $i;
+            $nodes = $xp->query('//*[@id="' . $id . '"]');
+            if ($nodes && $nodes->length) {
+                $p = $nodes->item(0);
+                $body = null;
+                foreach ($p->getElementsByTagName('span') as $span) {
+                    if ($span->hasAttribute('class') && strpos($span->getAttribute('class'), 'verse-body') !== false) { $body = $span; break; }
+                }
+                $txt = $body ? trim($body->textContent) : trim($p->textContent);
+                $txt = self::normalize_whitespace($txt);
+                if ($txt !== '') $parts[] = $txt;
+            }
+        }
+        return trim(implode(' ', $parts));
+    }
+
+    private static function normalize_whitespace($s) {
+        // Replace various Unicode spaces/invisibles with normal space or remove, collapse, and trim
+        $s = (string)$s;
+        // Map a set of known invisibles to spaces or empty
+        $map = [
+            "\xC2\xA0" => ' ', // NBSP U+00A0
+            "\xC2\xAD" => '',  // Soft hyphen U+00AD
+            "\xE1\x9A\x80" => ' ', // OGHAM space mark U+1680
+            "\xE2\x80\x80" => ' ', // En quad U+2000
+            "\xE2\x80\x81" => ' ', // Em quad U+2001
+            "\xE2\x80\x82" => ' ', // En space U+2002
+            "\xE2\x80\x83" => ' ', // Em space U+2003
+            "\xE2\x80\x84" => ' ', // Three-per-em space U+2004
+            "\xE2\x80\x85" => ' ', // Four-per-em space U+2005
+            "\xE2\x80\x86" => ' ', // Six-per-em space U+2006
+            "\xE2\x80\x87" => ' ', // Figure space U+2007
+            "\xE2\x80\x88" => ' ', // Punctuation space U+2008
+            "\xE2\x80\x89" => ' ', // Thin space U+2009
+            "\xE2\x80\x8A" => ' ', // Hair space U+200A
+            "\xE2\x80\x8B" => '',  // Zero width space U+200B
+            "\xE2\x80\x8C" => '',  // Zero width non-joiner U+200C
+            "\xE2\x80\x8D" => '',  // Zero width joiner U+200D
+            "\xE2\x80\x8E" => '',  // LRM U+200E
+            "\xE2\x80\x8F" => '',  // RLM U+200F
+            "\xE2\x80\xA8" => ' ', // Line separator U+2028
+            "\xE2\x80\xA9" => ' ', // Paragraph separator U+2029
+            "\xE2\x80\xAF" => ' ', // Narrow no-break space U+202F
+            "\xE2\x81\xA0" => ' ', // Word joiner U+2060
+            "\xEF\xBB\xBF" => '',  // BOM U+FEFF
+        ];
+        $s = strtr($s, $map);
+        // Collapse whitespace
+        $s = preg_replace('/\s+/u', ' ', $s);
+        // Trim and ensure no trailing space remains before closing quotes
+        $s = trim($s);
+        return $s;
+    }
+
+    private static function hex_to_color($im, $hex) {
+        $hex = trim((string)$hex);
+        if (preg_match('/^#?([0-9a-f]{6})$/i', $hex, $m)) {
+            $rgb = $m[1];
+            $r = hexdec(substr($rgb,0,2));
+            $g = hexdec(substr($rgb,2,2));
+            $b = hexdec(substr($rgb,4,2));
+            return imagecolorallocate($im, $r, $g, $b);
+        }
+        return imagecolorallocate($im, 0, 0, 0);
+    }
+
+    private static function draw_text_block($im, $text, $x, $y, $max_w, $font_file, $font_size, $color, $max_bottom=null, $align='left') {
+        $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
+        if (! $use_ttf) {
+            $font = 5;
+            $cw = imagefontwidth($font);
+            $ch = imagefontheight($font);
+            $max_chars = max(1, (int) floor($max_w / $cw));
+            $words = preg_split('/\s+/', $text);
+            $line = '';
+            $used_h = 0;
+            foreach ($words as $wrd) {
+                $try = $line === '' ? $wrd : ($line . ' ' . $wrd);
+                if (strlen($try) > $max_chars) {
+                    $draw_x = $x;
+                    if ($align === 'right') {
+                        $line_w = strlen($line) * $cw;
+                        $draw_x = $x + max(0, $max_w - $line_w);
+                    }
+                    imagestring($im, $font, $draw_x, $y + $used_h, $line, $color);
+                    $used_h += $ch + 6;
+                    if ($max_bottom !== null && ($y + $used_h + $ch) > $max_bottom) return $used_h;
+                    $line = $wrd;
+                } else {
+                    $line = $try;
+                }
+            }
+            if ($line !== '') { 
+                $draw_x = $x;
+                if ($align === 'right') {
+                    $line_w = strlen($line) * $cw;
+                    $draw_x = $x + max(0, $max_w - $line_w);
+                }
+                imagestring($im, $font, $draw_x, $y + $used_h, $line, $color); 
+                $used_h += $ch; 
+            }
+            return $used_h;
+        }
+        $line_h = (int) floor($font_size * 1.35);
+        $words = preg_split('/\s+/', $text);
+        $line = '';
+        $used_h = 0;
+        foreach ($words as $wrd) {
+            $try = $line === '' ? $wrd : ($line . ' ' . $wrd);
+            $box = imagettfbbox($font_size, 0, $font_file, $try);
+            $width = abs($box[2]-$box[0]);
+            if ($width > $max_w) {
+                $line_box = imagettfbbox($font_size, 0, $font_file, $line);
+                $line_w = abs($line_box[2]-$line_box[0]);
+                $draw_x = ($align === 'right') ? ($x + max(0, $max_w - $line_w)) : $x;
+                imagettftext($im, $font_size, 0, $draw_x, $y + $used_h + $line_h, $color, $font_file, $line);
+                $used_h += $line_h;
+                if ($max_bottom !== null && ($y + $used_h + $line_h) > $max_bottom) return $used_h;
+                $line = $wrd;
+            } else {
+                $line = $try;
+            }
+        }
+        if ($line !== '') {
+            $line_box = imagettfbbox($font_size, 0, $font_file, $line);
+            $line_w = abs($line_box[2]-$line_box[0]);
+            $draw_x = ($align === 'right') ? ($x + max(0, $max_w - $line_w)) : $x;
+            imagettftext($im, $font_size, 0, $draw_x, $y + $used_h + $line_h, $color, $font_file, $line);
+            $used_h += $line_h;
+        }
+        return $used_h;
+    }
+
+    private static function measure_text_block($text, $max_w, $font_file, $font_size) {
+        $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
+        if (! $use_ttf) {
+            $font = 5;
+            $cw = imagefontwidth($font);
+            $ch = imagefontheight($font);
+            $max_chars = max(1, (int) floor($max_w / $cw));
+            $words = preg_split('/\s+/', (string)$text);
+            $line = '';
+            $used_h = 0;
+            foreach ($words as $wrd) {
+                $try = $line === '' ? $wrd : ($line . ' ' . $wrd);
+                if (strlen($try) > $max_chars) {
+                    $used_h += $ch + 6;
+                    $line = $wrd;
+                } else {
+                    $line = $try;
+                }
+            }
+            if ($line !== '') { $used_h += $ch; }
+            return $used_h;
+        }
+        $line_h = (int) floor($font_size * 1.35);
+        $words = preg_split('/\s+/', (string)$text);
+        $line = '';
+        $used_h = 0;
+        foreach ($words as $wrd) {
+            $try = $line === '' ? $wrd : ($line . ' ' . $wrd);
+            $box = imagettfbbox($font_size, 0, $font_file, $try);
+            $width = abs($box[2]-$box[0]);
+            if ($width > $max_w) {
+                $used_h += $line_h;
+                $line = $wrd;
+            } else {
+                $line = $try;
+            }
+        }
+        if ($line !== '') { $used_h += $line_h; }
+        return $used_h;
+    }
+
+    private static function render_og_image() {
+        $enabled = get_option('thebible_og_enabled', '1');
+        if ($enabled !== '1' && $enabled !== 1) { status_header(404); exit; }
+        if (!function_exists('imagecreatetruecolor')) { status_header(500); exit; }
+
+        $book_slug = get_query_var(self::QV_BOOK);
+        $ch = absint( get_query_var( self::QV_CHAPTER ) );
+        $vf = absint( get_query_var( self::QV_VFROM ) );
+        $vt = absint( get_query_var( self::QV_VTO ) );
+        if (!$book_slug || !$ch || !$vf) { status_header(400); exit; }
+        if (!$vt || $vt < $vf) { $vt = $vf; }
+
+        $entry = self::get_book_entry_by_slug($book_slug);
+        if (!$entry) { status_header(404); exit; }
+        $book_label = isset($entry['display_name']) && $entry['display_name'] !== '' ? $entry['display_name'] : self::pretty_label($entry['short_name']);
+        $ref = $book_label . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt));
+        $text = self::extract_verse_text($entry, $ch, $vf, $vt);
+        if ($text === '') { status_header(404); exit; }
+        // Strip any trailing/leading invisible control/mark characters that may render as boxes near quotes
+        $text = preg_replace('/^[\p{Cf}\p{Cc}\p{Mn}\p{Me}]+|[\p{Cf}\p{Cc}\p{Mn}\p{Me}]+$/u', '', (string)$text);
+        $text = trim($text);
+
+        $w = max(100, intval(get_option('thebible_og_width', 1200)));
+        $h = max(100, intval(get_option('thebible_og_height', 630)));
+        $bg = (string) get_option('thebible_og_bg_color', '#111111');
+        $fg = (string) get_option('thebible_og_text_color', '#ffffff');
+        // Resolve font: prefer explicit path; otherwise try to map an uploaded URL to a local path under uploads
+        $font_file = (string) get_option('thebible_og_font_ttf', '');
+        if ($font_file === '' || !file_exists($font_file)) {
+            $font_url = (string) get_option('thebible_og_font_url', '');
+            if ($font_url !== '') {
+                $uploads = wp_get_upload_dir();
+                if (!empty($uploads['baseurl']) && !empty($uploads['basedir'])) {
+                    $baseurl = rtrim($uploads['baseurl'], '/');
+                    $basedir = rtrim($uploads['basedir'], '/');
+                    if (strpos($font_url, $baseurl.'/') === 0) {
+                        $candidate = $basedir . substr($font_url, strlen($baseurl));
+                        if (file_exists($candidate)) { $font_file = $candidate; }
+                    }
+                }
+            }
+        }
+        $font_size = max(8, intval(get_option('thebible_og_font_size', 40)));
+        $bg_url = (string) get_option('thebible_og_background_image_url', '');
+
+        $im = imagecreatetruecolor($w, $h);
+        $bgc = self::hex_to_color($im, $bg);
+        imagefilledrectangle($im, 0, 0, $w, $h, $bgc);
+
+        if ($bg_url) {
+            $resp = wp_remote_get($bg_url, ['timeout' => 5]);
+            $blob = is_wp_error($resp) ? '' : wp_remote_retrieve_body($resp);
+            if ($blob) {
+                $bg_img = imagecreatefromstring($blob);
+                if ($bg_img) {
+                    $bw = imagesx($bg_img); $bh = imagesy($bg_img);
+                    $scale = max($w/$bw, $h/$bh);
+                    $nw = (int) floor($bw*$scale); $nh = (int) floor($bh*$scale);
+                    $dst = imagecreatetruecolor($w, $h);
+                    imagecopyresampled($dst, $bg_img, 0 - (int) floor(($nw-$w)/2), 0 - (int) floor(($nh-$h)/2), 0, 0, $nw, $nh, $bw, $bh);
+                    imagedestroy($bg_img);
+                    imagedestroy($im);
+                    $im = $dst;
+                    $overlay = imagecolorallocatealpha($im, 0, 0, 0, 80);
+                    imagefilledrectangle($im, 0, 0, $w, $h, $overlay);
+                }
+            }
+        }
+
+        $fgc = self::hex_to_color($im, $fg);
+        $pad = (int) floor(min($w, $h) * 0.06);
+        $x = $pad; $y = $pad;
+
+        $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
+        // Use custom quotation marks from settings; fallback to ASCII if TTF is unavailable and marks are non-ASCII
+        $qL_opt = (string) get_option('thebible_og_quote_left','«');
+        $qR_opt = (string) get_option('thebible_og_quote_right','»');
+        $non_ascii = function($s){ return preg_match('/[^\x20-\x7E]/', (string)$s); };
+        $qL = (!$use_ttf && $non_ascii($qL_opt)) ? '"' : $qL_opt;
+        $qR = (!$use_ttf && $non_ascii($qR_opt)) ? '"' : $qR_opt;
+
+        $ref_size = $font_size;
+        $refpos = (string) get_option('thebible_og_ref_position','bottom');
+        $refalign = (string) get_option('thebible_og_ref_align','left');
+        if ($refalign !== 'right') { $refalign = 'left'; }
+        // Hard trim trailing Unicode spaces/invisibles before composing quotes
+        $text_clean = preg_replace('/[\p{Z}\x{00AD}\x{2000}-\x{200F}\x{2028}\x{2029}\x{202F}\x{2060}-\x{2064}\x{FEFF}\x{1680}]+$/u','',$text);
+        $text_clean = preg_replace('/[\p{C}\p{Z}\p{M}]+$/u','', $text_clean);
+        // Remove any remaining trailing chars that are not letters, numbers, punctuation, or symbols
+        $text_clean = preg_replace('/[^\p{L}\p{N}\p{P}\p{S}]+$/u','', $text_clean);
+        if ($refpos === 'top') {
+            // Draw reference at top, then verse below
+            $y += self::draw_text_block($im, $ref, $x, $y, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
+            $y += (int) floor($pad * 0.3);
+            self::draw_text_block($im, $qL . $text_clean . $qR, $x, $y, $w - 2*$pad, $font_file, $font_size, $fgc, $h - $pad);
+        } else {
+            // Reserve space for reference at the bottom
+            $ref_h = self::measure_text_block($ref, $w - 2*$pad, $font_file, $ref_size);
+            $bottom_for_ref = $h - $pad - $ref_h;
+            // Draw main verse text above the reference area
+            self::draw_text_block($im, $qL . $text_clean . $qR, $x, $y, $w - 2*$pad, $font_file, $font_size, $fgc, $bottom_for_ref - (int)floor($pad*0.25));
+            // Draw reference at the bottom
+            self::draw_text_block($im, $ref, $x, $bottom_for_ref, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
+        }
+
+        nocache_headers();
+        status_header(200);
+        header('Content-Type: image/png');
+        imagepng($im);
+        imagedestroy($im);
+        exit;
     }
 
     private static function render_index() {
@@ -579,6 +898,21 @@ class TheBible_Plugin {
                 'default'           => 'bible,bibel',
             ]
         );
+
+        register_setting('thebible_options', 'thebible_og_enabled', [ 'type' => 'string', 'sanitize_callback' => function($v){ return $v==='0' ? '0' : '1'; }, 'default' => '1' ]);
+        register_setting('thebible_options', 'thebible_og_width', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 1200 ]);
+        register_setting('thebible_options', 'thebible_og_height', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 630 ]);
+        register_setting('thebible_options', 'thebible_og_bg_color', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:'#111111'; }, 'default' => '#111111' ]);
+        register_setting('thebible_options', 'thebible_og_text_color', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:'#ffffff'; }, 'default' => '#ffffff' ]);
+        register_setting('thebible_options', 'thebible_og_font_ttf', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '' ]);
+        register_setting('thebible_options', 'thebible_og_font_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?esc_url_raw($v):''; }, 'default' => '' ]);
+        register_setting('thebible_options', 'thebible_og_font_size', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 40 ]);
+        register_setting('thebible_options', 'thebible_og_background_image_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '' ]);
+        // Quotation marks and reference position
+        register_setting('thebible_options', 'thebible_og_quote_left', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '«' ]);
+        register_setting('thebible_options', 'thebible_og_quote_right', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '»' ]);
+        register_setting('thebible_options', 'thebible_og_ref_position', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["top","bottom"],true)?$v:'bottom'; }, 'default' => 'bottom' ]);
+        register_setting('thebible_options', 'thebible_og_ref_align', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["left","right"],true)?$v:'left'; }, 'default' => 'left' ]);
     }
 
     public static function customize_register( $wp_customize ) {
@@ -618,12 +952,56 @@ class TheBible_Plugin {
         );
     }
 
+    public static function admin_enqueue($hook) {
+        // Only enqueue on our settings page
+        if ($hook !== 'toplevel_page_thebible') return;
+        if (function_exists('wp_enqueue_media')) {
+            wp_enqueue_media();
+        }
+    }
+
+    public static function allow_font_uploads($mimes) {
+        if (!is_array($mimes)) { $mimes = []; }
+        // Common font MIME types
+        $mimes['ttf'] = 'font/ttf';
+        $mimes['otf'] = 'font/otf';
+        $mimes['woff'] = 'font/woff';
+        $mimes['woff2'] = 'font/woff2';
+        // Some hosts map fonts as octet-stream; allow anyway to select in media library
+        if (!isset($mimes['ttf'])) { $mimes['ttf'] = 'application/octet-stream'; }
+        if (!isset($mimes['otf'])) { $mimes['otf'] = 'application/octet-stream'; }
+        return $mimes;
+    }
+
+    public static function allow_font_filetype($data, $file, $filename, $mimes, $real_mime) {
+        if (!current_user_can('manage_options')) return $data;
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        if (in_array($ext, ['ttf','otf','woff','woff2'], true)) {
+            $type = ($ext === 'otf') ? 'font/otf' : (($ext === 'ttf') ? 'font/ttf' : (($ext==='woff2')?'font/woff2':'font/woff'));
+            return [ 'ext' => $ext, 'type' => $type, 'proper_filename' => $data['proper_filename'] ];
+        }
+        return $data;
+    }
+
     public static function render_settings_page() {
         if ( ! current_user_can( 'manage_options' ) ) return;
         $css = get_option( 'thebible_custom_css', '' );
         $slugs_opt = get_option( 'thebible_slugs', 'bible,bibel' );
         $active = array_filter( array_map( 'trim', explode( ',', is_string($slugs_opt)?$slugs_opt:'' ) ) );
         $known = [ 'bible' => 'English (Douay)', 'bibel' => 'Deutsch (Menge)' ];
+        $og_enabled = get_option('thebible_og_enabled','1');
+        $og_w = intval(get_option('thebible_og_width',1200));
+        $og_h = intval(get_option('thebible_og_height',630));
+        $og_bg = (string) get_option('thebible_og_bg_color','#111111');
+        $og_fg = (string) get_option('thebible_og_text_color','#ffffff');
+        $og_font = (string) get_option('thebible_og_font_ttf','');
+        $og_font_url = (string) get_option('thebible_og_font_url','');
+        $og_size = intval(get_option('thebible_og_font_size',40));
+        $og_img = (string) get_option('thebible_og_background_image_url','');
+        $og_qL = (string) get_option('thebible_og_quote_left','«');
+        $og_qR = (string) get_option('thebible_og_quote_right','»');
+        $og_refpos = (string) get_option('thebible_og_ref_position','bottom');
+        $og_refalign = (string) get_option('thebible_og_ref_align','left');
 
         // Handle footer save (all-at-once)
         if ( isset($_POST['thebible_footer_nonce_all']) && wp_verify_nonce( $_POST['thebible_footer_nonce_all'], 'thebible_footer_save_all' ) && current_user_can('manage_options') ) {
@@ -667,10 +1045,97 @@ class TheBible_Plugin {
                             </td>
                         </tr>
                         <tr>
+                            <th scope="row"><label>Quotation marks</label></th>
+                            <td>
+                                <label>Left <input type="text" name="thebible_og_quote_left" value="<?php echo esc_attr($og_qL); ?>" style="width:4em;text-align:center;"></label>
+                                &nbsp;
+                                <label>Right <input type="text" name="thebible_og_quote_right" value="<?php echo esc_attr($og_qR); ?>" style="width:4em;text-align:center;"></label>
+                                <p class="description">Use any characters (e.g. « » or “ ”). If no TTF font is set, non-ASCII marks may fallback to straight quotes in the image.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="thebible_og_ref_position">Reference position</label></th>
+                            <td>
+                                <select name="thebible_og_ref_position" id="thebible_og_ref_position">
+                                    <option value="bottom" <?php selected($og_refpos==='bottom'); ?>>Bottom</option>
+                                    <option value="top" <?php selected($og_refpos==='top'); ?>>Top</option>
+                                </select>
+                                &nbsp;
+                                <label for="thebible_og_ref_align">Alignment</label>
+                                <select name="thebible_og_ref_align" id="thebible_og_ref_align">
+                                    <option value="left" <?php selected($og_refalign==='left'); ?>>Left</option>
+                                    <option value="right" <?php selected($og_refalign==='right'); ?>>Right</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
                             <th scope="row"><label for="thebible_custom_css">Custom CSS (applied on Bible pages)</label></th>
                             <td>
                                 <textarea name="thebible_custom_css" id="thebible_custom_css" class="large-text code" rows="14" style="font-family:monospace;"><?php echo esc_textarea( $css ); ?></textarea>
                                 <p class="description">Rendered on /bible and any /bible/{book} pages.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="thebible_og_enabled">Social image (Open Graph)</label></th>
+                            <td>
+                                <label><input type="checkbox" name="thebible_og_enabled" id="thebible_og_enabled" value="1" <?php checked($og_enabled==='1'); ?>> Enable dynamic image for verse URLs</label>
+                                <p class="description">Generates a PNG for <code>og:image</code> when a URL includes chapter and verse, e.g. <code>/bible/john/3:16</code>.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="thebible_og_width">Image size</label></th>
+                            <td>
+                                <input type="number" min="100" name="thebible_og_width" id="thebible_og_width" value="<?php echo esc_attr($og_w); ?>" style="width:7em;"> ×
+                                <input type="number" min="100" name="thebible_og_height" id="thebible_og_height" value="<?php echo esc_attr($og_h); ?>" style="width:7em;"> px
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="thebible_og_bg_color">Colors</label></th>
+                            <td>
+                                <input type="text" name="thebible_og_bg_color" id="thebible_og_bg_color" value="<?php echo esc_attr($og_bg); ?>" placeholder="#111111" style="width:8em;"> background
+                                <span style="display:inline-block;width:1.2em;height:1.2em;vertical-align:middle;border:1px solid #ccc;background:<?php echo esc_attr($og_bg); ?>"></span>
+                                &nbsp; <input type="text" name="thebible_og_text_color" id="thebible_og_text_color" value="<?php echo esc_attr($og_fg); ?>" placeholder="#ffffff" style="width:8em;"> text
+                                <span style="display:inline-block;width:1.2em;height:1.2em;vertical-align:middle;border:1px solid #ccc;background:<?php echo esc_attr($og_fg); ?>"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="thebible_og_font_ttf">Font</label></th>
+                            <td>
+                                <p style="margin:.2em 0 .6em;">
+                                    <label>Server path: <input type="text" name="thebible_og_font_ttf" id="thebible_og_font_ttf" value="<?php echo esc_attr($og_font); ?>" class="regular-text" placeholder="/path/to/font.ttf"></label>
+                                </p>
+                                <p style="margin:.2em 0 .6em;">
+                                    <label>Or uploaded URL: <input type="url" name="thebible_og_font_url" id="thebible_og_font_url" value="<?php echo esc_attr($og_font_url); ?>" class="regular-text" placeholder="https://.../yourfont.ttf"></label>
+                                    <button type="button" class="button" id="thebible_pick_font">Select/upload font</button>
+                                </p>
+                                <p class="description">TTF/OTF recommended. If path is invalid, the uploader URL will be mapped to a local file under Uploads. Without a valid font file, non‑ASCII quotes may fall back to straight quotes.</p>
+                                <label>Size <input type="number" min="8" name="thebible_og_font_size" id="thebible_og_font_size" value="<?php echo esc_attr($og_size); ?>" style="width:6em;"></label>
+                                <script>(function(){
+                                    function initPicker(){
+                                        if (!window.wp || !wp.media) return;
+                                        var frame=null;
+                                        var btn=document.getElementById('thebible_pick_font');
+                                        if(!btn) return;
+                                        btn.addEventListener('click', function(e){
+                                            e.preventDefault();
+                                            if(frame){ frame.open(); return; }
+                                            frame = wp.media({ title: 'Select a font file', library: { type: ['application/octet-stream','font/ttf','font/otf','application/x-font-ttf','application/x-font-otf'] }, button: { text: 'Use this font' }, multiple: false });
+                                            frame.on('select', function(){
+                                                var att = frame.state().get('selection').first().toJSON();
+                                                if(att && att.url){ document.getElementById('thebible_og_font_url').value = att.url; }
+                                            });
+                                            frame.open();
+                                        });
+                                    }
+                                    if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initPicker); } else { initPicker(); }
+                                })();</script>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="thebible_og_background_image_url">Background image</label></th>
+                            <td>
+                                <input type="url" name="thebible_og_background_image_url" id="thebible_og_background_image_url" value="<?php echo esc_attr($og_img); ?>" class="regular-text" placeholder="https://.../image.jpg">
+                                <p class="description">Optional. If set, the image is used as a cover background with a dark overlay for readability.</p>
                             </td>
                         </tr>
                     </tbody>
@@ -754,6 +1219,41 @@ class TheBible_Plugin {
         if ( $out !== '' ) {
             echo '<style id="thebible-custom-css">' . $out . '</style>';
         }
+    }
+
+    public static function print_og_meta() {
+        $flag = get_query_var(self::QV_FLAG);
+        if (!$flag) return;
+        $book = get_query_var(self::QV_BOOK);
+        $ch = absint(get_query_var(self::QV_CHAPTER));
+        $vf = absint(get_query_var(self::QV_VFROM));
+        $vt = absint(get_query_var(self::QV_VTO));
+        if (!$book || !$ch || !$vf) return;
+        if (!$vt || $vt < $vf) $vt = $vf;
+
+        $entry = self::get_book_entry_by_slug($book);
+        if (!$entry) return;
+        $label = isset($entry['display_name']) && $entry['display_name'] !== '' ? $entry['display_name'] : self::pretty_label($entry['short_name']);
+        $title = $label . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt));
+
+        $base_slug = get_query_var(self::QV_SLUG);
+        if (!is_string($base_slug) || $base_slug==='') $base_slug = 'bible';
+        $path = '/' . trim($base_slug,'/') . '/' . trim($book,'/') . '/' . $ch . ':' . $vf . ($vt>$vf?('-'.$vt):'');
+        $url = home_url($path);
+        $og_url = add_query_arg(self::QV_OG, '1', $url);
+        $desc = self::extract_verse_text($entry, $ch, $vf, $vt);
+        $desc = wp_strip_all_tags($desc);
+
+        echo "\n";
+        echo '<meta property="og:title" content="' . esc_attr($title) . '" />' . "\n";
+        echo '<meta property="og:type" content="article" />' . "\n";
+        echo '<meta property="og:url" content="' . esc_url($url) . '" />' . "\n";
+        echo '<meta property="og:description" content="' . esc_attr($desc) . '" />' . "\n";
+        echo '<meta property="og:image" content="' . esc_url($og_url) . '" />' . "\n";
+        echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
+        echo '<meta name="twitter:title" content="' . esc_attr($title) . '" />' . "\n";
+        echo '<meta name="twitter:description" content="' . esc_attr($desc) . '" />' . "\n";
+        echo '<meta name="twitter:image" content="' . esc_url($og_url) . '" />' . "\n";
     }
 
     private static function render_footer_html() {
