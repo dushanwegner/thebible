@@ -727,7 +727,9 @@ class TheBible_Plugin {
         $bg_url = (string) get_option('thebible_og_background_image_url', '');
 
         // Read style options needed for hashing and layout
-        $pad_opt = intval(get_option('thebible_og_padding', 0));
+        $pad_x_opt = intval(get_option('thebible_og_padding_x', 50));
+        $pad_top_opt = intval(get_option('thebible_og_padding_top', 50));
+        $pad_bottom_opt = intval(get_option('thebible_og_padding_bottom', 50));
         $min_gap_opt = (int) get_option('thebible_og_min_gap', 16);
         $bg_url_opt = (string) get_option('thebible_og_background_image_url','');
         $qL_opt_hash = (string) get_option('thebible_og_quote_left','«');
@@ -756,7 +758,9 @@ class TheBible_Plugin {
             'bg_url' => $bg_url_opt,
             'qL' => $qL_opt_hash,
             'qR' => $qR_opt_hash,
-            'pad' => $pad_opt,
+            'pad_x' => $pad_x_opt,
+            'pad_top' => $pad_top_opt,
+            'pad_bottom' => $pad_bottom_opt,
             'gap' => $min_gap_opt,
             'logo' => $logo_url_opt,
             'logo_side' => $logo_side_opt,
@@ -804,11 +808,12 @@ class TheBible_Plugin {
         }
 
         $fgc = self::hex_to_color($im, $fg);
-        // Configurable padding and min gap
-        $pad_opt = intval(get_option('thebible_og_padding', 0));
-        $pad = $pad_opt > 0 ? $pad_opt : (int) floor(min($w, $h) * 0.06);
+        // Configurable padding (separate) and min gap (defaults used at registration)
+        $pad_x = intval(get_option('thebible_og_padding_x', 50));
+        $pad_top = intval(get_option('thebible_og_padding_top', 50));
+        $pad_bottom = intval(get_option('thebible_og_padding_bottom', 50));
         $min_gap = max(0, intval(get_option('thebible_og_min_gap', 16)));
-        $x = $pad; $y = $pad;
+        $x = $pad_x; $y = $pad_top;
 
         // Icon configuration (simplified: always bottom). User chooses logo side; source uses opposite.
         $icon_url = (string) get_option('thebible_og_icon_url','');
@@ -829,7 +834,7 @@ class TheBible_Plugin {
                     $iw = imagesx($tmp); $ih = imagesy($tmp);
                     if ($iw > 0 && $ih > 0) {
                         $scale = 1.0;
-                        $maxw = max(1, min($icon_max_w > 0 ? $icon_max_w : $w, $w - 2*$pad));
+                        $maxw = max(1, min($icon_max_w > 0 ? $icon_max_w : $w, $w - 2*$pad_x));
                         if ($iw > $maxw) { $scale = $maxw / $iw; }
                         $tw = (int) floor($iw * $scale);
                         $th = (int) floor($ih * $scale);
@@ -879,23 +884,23 @@ class TheBible_Plugin {
         }
         // Always-bottom layout
         // 1) Compute reference block height at bottom padding
-        $ref_h = self::measure_text_block($ref, $w - 2*$pad, $font_file, $ref_size);
-        $bottom_for_ref = $h - $pad - $ref_h;
+        $ref_h = self::measure_text_block($ref, $w - 2*$pad_x, $font_file, $ref_size);
+        $bottom_for_ref = $h - $pad_bottom - $ref_h;
         // 2) Draw main verse text above the reference with min gap
         $avail_h = ($bottom_for_ref - $min_gap) - $y;
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-        list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR, max(1.0, $line_h_main));
-        self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $bottom_for_ref - $min_gap, 'left', max(1.0, $line_h_main));
+        list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad_x, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR, max(1.0, $line_h_main));
+        self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad_x, $font_file, $fit_size, $fgc, $bottom_for_ref - $min_gap, 'left', max(1.0, $line_h_main));
         // 3) Draw logo (if any) at bottom on chosen side with adjusted padding
         if ($icon_im) {
-            $logo_pad_x = max(0, $pad + $logo_pad_adjust_x);
-            $logo_pad_y = max(0, $pad + $logo_pad_adjust_y);
+            $logo_pad_x = max(0, $pad_x + $logo_pad_adjust_x);
+            $logo_pad_y = max(0, $pad_bottom + $logo_pad_adjust_y);
             $iy = $h - $logo_pad_y - $icon_h;
             $ix = ($logo_side === 'right') ? ($w - $logo_pad_x - $icon_w) : $logo_pad_x;
             imagecopy($im, $icon_im, $ix, $iy, 0, 0, $icon_w, $icon_h);
         }
         // 4) Draw reference at bottom, aligned opposite of logo side
-        self::draw_text_block($im, $ref, $x, $bottom_for_ref, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
+        self::draw_text_block($im, $ref, $x, $bottom_for_ref, $w - 2*$pad_x, $font_file, $ref_size, $fgc, null, $refalign);
 
         // Save to cache and stream
         @imagepng($im, $cache_file);
@@ -1092,7 +1097,10 @@ class TheBible_Plugin {
         // Minimum main size before truncation kicks in
         register_setting('thebible_options', 'thebible_og_min_font_size_main', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 18 ]);
         // Layout & spacing
-        register_setting('thebible_options', 'thebible_og_padding', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 0 ]);
+        // Specific paddings (defaults 50px). General padding deprecated.
+        register_setting('thebible_options', 'thebible_og_padding_x', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 50 ]);
+        register_setting('thebible_options', 'thebible_og_padding_top', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 50 ]);
+        register_setting('thebible_options', 'thebible_og_padding_bottom', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 50 ]);
         register_setting('thebible_options', 'thebible_og_min_gap', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 16 ]);
         // Main text line-height (as a factor, e.g., 1.35)
         register_setting('thebible_options', 'thebible_og_line_height_main', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?trim($v):''; return $v; }, 'default' => '1.35' ]);
@@ -1200,7 +1208,9 @@ class TheBible_Plugin {
         $og_min_main  = intval(get_option('thebible_og_min_font_size_main', 18));
         $og_img = (string) get_option('thebible_og_background_image_url','');
         // Layout & icon options for settings UI
-        $og_padding = intval(get_option('thebible_og_padding', 0));
+        $og_pad_x = intval(get_option('thebible_og_padding_x', 50));
+        $og_pad_top = intval(get_option('thebible_og_padding_top', 50));
+        $og_pad_bottom = intval(get_option('thebible_og_padding_bottom', 50));
         $og_min_gap = intval(get_option('thebible_og_min_gap', 16));
         $og_icon_url = (string) get_option('thebible_og_icon_url','');
         $og_logo_side = (string) get_option('thebible_og_logo_side','left');
@@ -1386,10 +1396,13 @@ class TheBible_Plugin {
                         <tr>
                             <th scope="row"><label>Layout</label></th>
                             <td>
-                                <label>General padding <input type="number" min="0" name="thebible_og_padding" id="thebible_og_padding" value="<?php echo esc_attr($og_padding); ?>" style="width:6em;"> px</label>
-                                &nbsp;
-                                <label>Min gap text↔source <input type="number" min="0" name="thebible_og_min_gap" id="thebible_og_min_gap" value="<?php echo esc_attr($og_min_gap); ?>" style="width:6em;"> px</label>
-                                <p class="description">If padding is 0, a default based on image size is used. The min gap enforces spacing between main text, reference, and icon.</p>
+                                <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+                                    <label>Side padding <input type="number" min="0" name="thebible_og_padding_x" id="thebible_og_padding_x" value="<?php echo esc_attr($og_pad_x); ?>" style="width:6em;"> px</label>
+                                    <label>Top padding <input type="number" min="0" name="thebible_og_padding_top" id="thebible_og_padding_top" value="<?php echo esc_attr($og_pad_top); ?>" style="width:6em;"> px</label>
+                                    <label>Bottom padding <input type="number" min="0" name="thebible_og_padding_bottom" id="thebible_og_padding_bottom" value="<?php echo esc_attr($og_pad_bottom); ?>" style="width:6em;"> px</label>
+                                    <label>Min gap text↔source <input type="number" min="0" name="thebible_og_min_gap" id="thebible_og_min_gap" value="<?php echo esc_attr($og_min_gap); ?>" style="width:6em;"> px</label>
+                                </div>
+                                <p class="description">Set exact paddings for sides, top, and bottom. The min gap enforces spacing between the main text and the bottom row.</p>
                             </td>
                         </tr>
                         <tr>
@@ -1413,7 +1426,7 @@ class TheBible_Plugin {
                                     &nbsp;
                                     <label>Max width <input type="number" min="1" name="thebible_og_icon_max_w" id="thebible_og_icon_max_w" value="<?php echo esc_attr($og_icon_max_w); ?>" style="width:6em;"> px</label>
                                 </p>
-                                <p class="description">Logo and source are always at the bottom. Choose which side holds the logo; the source uses the other side. Logo padding X/Y shift the logo relative to general padding (can be negative).</p>
+                                <p class="description">Logo and source are always at the bottom. Choose which side holds the logo; the source uses the other side. Logo padding X/Y shift the logo relative to side/bottom padding (can be negative).</p>
                                 <script>(function(){
                                     function initIconPicker(){
                                         if (!window.wp || !wp.media) return;
