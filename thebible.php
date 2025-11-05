@@ -546,6 +546,27 @@ class TheBible_Plugin {
         return imagecolorallocate($im, 0, 0, 0);
     }
 
+    private static function og_cache_dir() {
+        $uploads = wp_upload_dir();
+        $dir = trailingslashit($uploads['basedir']) . 'thebible-og-cache/';
+        if (!is_dir($dir)) { wp_mkdir_p($dir); }
+        return $dir;
+    }
+
+    private static function og_cache_purge() {
+        $dir = self::og_cache_dir();
+        if (!is_dir($dir)) return 0;
+        $count = 0;
+        $it = @scandir($dir);
+        if (!$it) return 0;
+        foreach ($it as $f) {
+            if ($f === '.' || $f === '..') continue;
+            $p = $dir . $f;
+            if (is_file($p)) { @unlink($p); $count++; }
+        }
+        return $count;
+    }
+
     private static function draw_text_block($im, $text, $x, $y, $max_w, $font_file, $font_size, $color, $max_bottom=null, $align='left', $line_height_factor = 1.35) {
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
         if (! $use_ttf) {
@@ -705,6 +726,59 @@ class TheBible_Plugin {
         $font_min_main = max(8, intval(get_option('thebible_og_min_font_size_main', 18)));
         $bg_url = (string) get_option('thebible_og_background_image_url', '');
 
+        // Read style options needed for hashing and layout
+        $pad_opt = intval(get_option('thebible_og_padding', 0));
+        $min_gap_opt = (int) get_option('thebible_og_min_gap', 16);
+        $bg_url_opt = (string) get_option('thebible_og_background_image_url','');
+        $qL_opt_hash = (string) get_option('thebible_og_quote_left','«');
+        $qR_opt_hash = (string) get_option('thebible_og_quote_right','»');
+        $logo_url_opt = (string) get_option('thebible_og_icon_url','');
+        $logo_side_opt = (string) get_option('thebible_og_logo_side','left');
+        $logo_max_w_opt = (int) get_option('thebible_og_icon_max_w', 160);
+        $logo_dx_opt = (int) get_option('thebible_og_logo_pad_adjust_x', (int)get_option('thebible_og_logo_pad_adjust',0));
+        $logo_dy_opt = (int) get_option('thebible_og_logo_pad_adjust_y', 0);
+        $lh_main_opt = (string) get_option('thebible_og_line_height_main','1.35');
+
+        // Build a cache key from the request and relevant style options
+        $cache_parts = [
+            'book' => $book_slug,
+            'ch' => $ch,
+            'vf' => $vf,
+            'vt' => $vt,
+            'w' => $w,
+            'h' => $h,
+            'bg' => $bg,
+            'fg' => $fg,
+            'font' => $font_file ?: $font_url,
+            'font_main' => $font_main,
+            'font_ref' => $font_ref,
+            'min_main' => $font_min_main,
+            'bg_url' => $bg_url_opt,
+            'qL' => $qL_opt_hash,
+            'qR' => $qR_opt_hash,
+            'pad' => $pad_opt,
+            'gap' => $min_gap_opt,
+            'logo' => $logo_url_opt,
+            'logo_side' => $logo_side_opt,
+            'logo_w' => $logo_max_w_opt,
+            'logo_dx' => $logo_dx_opt,
+            'logo_dy' => $logo_dy_opt,
+            'lh_main' => $lh_main_opt,
+            'text' => $text,
+            'ref' => $ref,
+        ];
+        $hash = substr(sha1(wp_json_encode($cache_parts)), 0, 16);
+        $cache_dir = self::og_cache_dir();
+        $cache_file = $cache_dir . 'og-' . $hash . '.png';
+        $nocache = isset($_GET['thebible_og_nocache']) && $_GET['thebible_og_nocache'];
+        if (!$nocache && is_file($cache_file)) {
+            nocache_headers();
+            status_header(200);
+            header('Content-Type: image/png');
+            readfile($cache_file);
+            exit;
+        }
+
         $im = imagecreatetruecolor($w, $h);
         $bgc = self::hex_to_color($im, $bg);
         imagefilledrectangle($im, 0, 0, $w, $h, $bgc);
@@ -809,10 +883,12 @@ class TheBible_Plugin {
         // 4) Draw reference at bottom, aligned opposite of logo side
         self::draw_text_block($im, $ref, $x, $bottom_for_ref, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
 
+        // Save to cache and stream
+        @imagepng($im, $cache_file);
         nocache_headers();
         status_header(200);
         header('Content-Type: image/png');
-        imagepng($im);
+        if (is_file($cache_file)) { readfile($cache_file); } else { imagepng($im); }
         imagedestroy($im);
         exit;
     }
@@ -1145,6 +1221,11 @@ class TheBible_Plugin {
             }
             echo '<div class="updated notice"><p>Footers saved.</p></div>';
         }
+        // Handle cache purge
+        if ( isset($_POST['thebible_og_purge_cache_nonce']) && wp_verify_nonce($_POST['thebible_og_purge_cache_nonce'],'thebible_og_purge_cache') && current_user_can('manage_options') ) {
+            $deleted = self::og_cache_purge();
+            echo '<div class="updated notice"><p>OG image cache cleared (' . intval($deleted) . ' files removed).</p></div>';
+        }
         ?>
         <div class="wrap">
             <h1>The Bible</h1>
@@ -1257,6 +1338,16 @@ class TheBible_Plugin {
                                     }
                                     if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initPicker); } else { initPicker(); }
                                 })();</script>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label>Cache</label></th>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    <?php wp_nonce_field('thebible_og_purge_cache','thebible_og_purge_cache_nonce'); ?>
+                                    <button type="submit" class="button">Clear cached images</button>
+                                </form>
+                                <p class="description">Cached OG images are stored under Uploads/thebible-og-cache and reused for identical requests. Clear the cache after changing design settings.</p>
                             </td>
                         </tr>
                         <tr>
