@@ -52,12 +52,12 @@ class TheBible_Plugin {
         return implode('', $slice);
     }
 
-    private static function fit_text_to_area($text, $max_w, $max_h, $font_file, $max_font_size, $min_font_size = 12, $use_ttf_hint = false, $prefix = '', $suffix = '') {
+    private static function fit_text_to_area($text, $max_w, $max_h, $font_file, $max_font_size, $min_font_size = 12, $use_ttf_hint = false, $prefix = '', $suffix = '', $line_height_factor = 1.35) {
         $font_size = max($min_font_size, (int)$max_font_size);
         // Try decreasing font size until it fits
         while ($font_size >= $min_font_size) {
             $full = $prefix . $text . $suffix;
-            $h = self::measure_text_block($full, $max_w, $font_file, $font_size);
+            $h = self::measure_text_block($full, $max_w, $font_file, $font_size, $line_height_factor);
             if ($h <= $max_h) return [ $font_size, $full ];
             $font_size -= 2;
         }
@@ -69,7 +69,7 @@ class TheBible_Plugin {
             $mid = (int) floor(($low + $high)/2);
             $cand_body = self::u_substr($text, 0, $mid) . $ellipsis;
             $cand_full = $prefix . $cand_body . $suffix;
-            $h = self::measure_text_block($cand_full, $max_w, $font_file, $min_font_size);
+            $h = self::measure_text_block($cand_full, $max_w, $font_file, $min_font_size, $line_height_factor);
             if ($h <= $max_h) { $best_body = $cand_body; $low = $mid + 1; } else { $high = $mid - 1; }
         }
         if ($best_body === '') { $best_body = $ellipsis; }
@@ -546,12 +546,13 @@ class TheBible_Plugin {
         return imagecolorallocate($im, 0, 0, 0);
     }
 
-    private static function draw_text_block($im, $text, $x, $y, $max_w, $font_file, $font_size, $color, $max_bottom=null, $align='left') {
+    private static function draw_text_block($im, $text, $x, $y, $max_w, $font_file, $font_size, $color, $max_bottom=null, $align='left', $line_height_factor = 1.35) {
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
         if (! $use_ttf) {
             $font = 5;
             $cw = imagefontwidth($font);
             $ch = imagefontheight($font);
+            $line_h = max($ch, (int) floor($ch * $line_height_factor));
             $max_chars = max(1, (int) floor($max_w / $cw));
             $words = preg_split('/\s+/', $text);
             $line = '';
@@ -565,7 +566,7 @@ class TheBible_Plugin {
                         $draw_x = $x + max(0, $max_w - $line_w);
                     }
                     imagestring($im, $font, $draw_x, $y + $used_h, $line, $color);
-                    $used_h += $ch + 6;
+                    $used_h += $line_h;
                     if ($max_bottom !== null && ($y + $used_h + $ch) > $max_bottom) return $used_h;
                     $line = $wrd;
                 } else {
@@ -579,11 +580,11 @@ class TheBible_Plugin {
                     $draw_x = $x + max(0, $max_w - $line_w);
                 }
                 imagestring($im, $font, $draw_x, $y + $used_h, $line, $color); 
-                $used_h += $ch; 
+                $used_h += $line_h; 
             }
             return $used_h;
         }
-        $line_h = (int) floor($font_size * 1.35);
+        $line_h = (int) floor($font_size * $line_height_factor);
         $words = preg_split('/\s+/', $text);
         $line = '';
         $used_h = 0;
@@ -613,30 +614,31 @@ class TheBible_Plugin {
         return $used_h;
     }
 
-    private static function measure_text_block($text, $max_w, $font_file, $font_size) {
+    private static function measure_text_block($text, $max_w, $font_file, $font_size, $line_height_factor = 1.35) {
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
         if (! $use_ttf) {
             $font = 5;
             $cw = imagefontwidth($font);
             $ch = imagefontheight($font);
+            $line_h = max($ch, (int) floor($ch * $line_height_factor));
             $max_chars = max(1, (int) floor($max_w / $cw));
-            $words = preg_split('/\s+/', (string)$text);
+            $words = preg_split('/\s+/', $text);
             $line = '';
             $used_h = 0;
             foreach ($words as $wrd) {
                 $try = $line === '' ? $wrd : ($line . ' ' . $wrd);
                 if (strlen($try) > $max_chars) {
-                    $used_h += $ch + 6;
+                    $used_h += $line_h;
                     $line = $wrd;
                 } else {
                     $line = $try;
                 }
             }
-            if ($line !== '') { $used_h += $ch; }
+            if ($line !== '') { $used_h += $line_h; }
             return $used_h;
         }
-        $line_h = (int) floor($font_size * 1.35);
-        $words = preg_split('/\s+/', (string)$text);
+        $line_h = (int) floor($font_size * $line_height_factor);
+        $words = preg_split('/\s+/', $text);
         $line = '';
         $used_h = 0;
         foreach ($words as $wrd) {
@@ -742,6 +744,7 @@ class TheBible_Plugin {
         $logo_pad_adjust_x = intval(get_option('thebible_og_logo_pad_adjust_x', $logo_pad_adjust));
         $logo_pad_adjust_y = intval(get_option('thebible_og_logo_pad_adjust_y', 0));
         $icon_max_w = max(0, intval(get_option('thebible_og_icon_max_w', 160)));
+        $line_h_main = floatval(get_option('thebible_og_line_height_main', '1.35'));
         $icon_im = null; $icon_w = 0; $icon_h = 0;
         if ($icon_url) {
             $resp = wp_remote_get($icon_url, ['timeout' => 5]);
@@ -793,8 +796,8 @@ class TheBible_Plugin {
         // 2) Draw main verse text above the reference with min gap
         $avail_h = ($bottom_for_ref - $min_gap) - $y;
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-        list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR);
-        self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $bottom_for_ref - $min_gap);
+        list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR, max(1.0, $line_h_main));
+        self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $bottom_for_ref - $min_gap, 'left', max(1.0, $line_h_main));
         // 3) Draw logo (if any) at bottom on chosen side with adjusted padding
         if ($icon_im) {
             $logo_pad_x = max(0, $pad + $logo_pad_adjust_x);
@@ -1001,6 +1004,8 @@ class TheBible_Plugin {
         // Layout & spacing
         register_setting('thebible_options', 'thebible_og_padding', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 0 ]);
         register_setting('thebible_options', 'thebible_og_min_gap', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 16 ]);
+        // Main text line-height (as a factor, e.g., 1.35)
+        register_setting('thebible_options', 'thebible_og_line_height_main', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?trim($v):''; return $v; }, 'default' => '1.35' ]);
         // Icon settings
         register_setting('thebible_options', 'thebible_og_icon_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?esc_url_raw($v):''; }, 'default' => '' ]);
         // Simplified placement: always bottom; choose which side holds the logo; source uses the opposite
@@ -1113,6 +1118,8 @@ class TheBible_Plugin {
         $og_logo_pad_adjust_x = intval(get_option('thebible_og_logo_pad_adjust_x', $og_logo_pad_adjust));
         $og_logo_pad_adjust_y = intval(get_option('thebible_og_logo_pad_adjust_y', 0));
         $og_icon_max_w = intval(get_option('thebible_og_icon_max_w', 160));
+        $og_line_main = (string) get_option('thebible_og_line_height_main','1.35');
+        $og_line_main_f = floatval($og_line_main ? $og_line_main : '1.35');
         $og_qL = (string) get_option('thebible_og_quote_left','«');
         $og_qR = (string) get_option('thebible_og_quote_right','»');
         $og_refpos = (string) get_option('thebible_og_ref_position','bottom');
@@ -1228,6 +1235,7 @@ class TheBible_Plugin {
                                     <label>Max main size <input type="number" min="8" name="thebible_og_font_size_main" id="thebible_og_font_size_main" value="<?php echo esc_attr($og_size_main); ?>" style="width:6em;"></label>
                                     <label>Min main size <input type="number" min="8" name="thebible_og_min_font_size_main" id="thebible_og_min_font_size_main" value="<?php echo esc_attr($og_min_main); ?>" style="width:6em;"></label>
                                     <label>Max source size <input type="number" min="8" name="thebible_og_font_size_ref" id="thebible_og_font_size_ref" value="<?php echo esc_attr($og_size_ref); ?>" style="width:6em;"></label>
+                                    <label>Line height (main) <input type="number" step="0.05" min="1" name="thebible_og_line_height_main" id="thebible_og_line_height_main" value="<?php echo esc_attr($og_line_main); ?>" style="width:6em;"></label>
                                 </div>
                                 <p class="description">Main text auto-shrinks between Max and Min. If still too long at Min, it is truncated with … Source uses up to its max size and wraps as needed.</p>
                                 <script>(function(){
