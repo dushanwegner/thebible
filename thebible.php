@@ -52,26 +52,28 @@ class TheBible_Plugin {
         return implode('', $slice);
     }
 
-    private static function fit_text_to_area($text, $max_w, $max_h, $font_file, $max_font_size, $min_font_size = 12, $use_ttf_hint = false) {
+    private static function fit_text_to_area($text, $max_w, $max_h, $font_file, $max_font_size, $min_font_size = 12, $use_ttf_hint = false, $prefix = '', $suffix = '') {
         $font_size = max($min_font_size, (int)$max_font_size);
         // Try decreasing font size until it fits
         while ($font_size >= $min_font_size) {
-            $h = self::measure_text_block($text, $max_w, $font_file, $font_size);
-            if ($h <= $max_h) return [ $font_size, $text ];
+            $full = $prefix . $text . $suffix;
+            $h = self::measure_text_block($full, $max_w, $font_file, $font_size);
+            if ($h <= $max_h) return [ $font_size, $full ];
             $font_size -= 2;
         }
-        // Still too tall: truncate text with ellipsis at min size
+        // Still too tall: truncate text with ellipsis at min size, preserving suffix (closing quote)
         $ellipsis = ($use_ttf_hint ? '…' : '...');
         $low = 0; $high = self::u_strlen($text);
-        $best = '';
+        $best_body = '';
         while ($low <= $high) {
             $mid = (int) floor(($low + $high)/2);
-            $cand = self::u_substr($text, 0, $mid) . $ellipsis;
-            $h = self::measure_text_block($cand, $max_w, $font_file, $min_font_size);
-            if ($h <= $max_h) { $best = $cand; $low = $mid + 1; } else { $high = $mid - 1; }
+            $cand_body = self::u_substr($text, 0, $mid) . $ellipsis;
+            $cand_full = $prefix . $cand_body . $suffix;
+            $h = self::measure_text_block($cand_full, $max_w, $font_file, $min_font_size);
+            if ($h <= $max_h) { $best_body = $cand_body; $low = $mid + 1; } else { $high = $mid - 1; }
         }
-        if ($best === '') { $best = $ellipsis; }
-        return [ $min_font_size, $best ];
+        if ($best_body === '') { $best_body = $ellipsis; }
+        return [ $min_font_size, $prefix . $best_body . $suffix ];
     }
 
     private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null, $book_label = '') {
@@ -726,8 +728,44 @@ class TheBible_Plugin {
         }
 
         $fgc = self::hex_to_color($im, $fg);
-        $pad = (int) floor(min($w, $h) * 0.06);
+        // Configurable padding and min gap
+        $pad_opt = intval(get_option('thebible_og_padding', 0));
+        $pad = $pad_opt > 0 ? $pad_opt : (int) floor(min($w, $h) * 0.06);
+        $min_gap = max(0, intval(get_option('thebible_og_min_gap', 16)));
         $x = $pad; $y = $pad;
+
+        // Icon configuration
+        $icon_url = (string) get_option('thebible_og_icon_url','');
+        $icon_pos = (string) get_option('thebible_og_icon_position','bottom');
+        $icon_align = (string) get_option('thebible_og_icon_align','left');
+        if ($icon_align !== 'right') { $icon_align = 'left'; }
+        $icon_max_w = max(0, intval(get_option('thebible_og_icon_max_w', 160)));
+        $icon_im = null; $icon_w = 0; $icon_h = 0;
+        if ($icon_url) {
+            $resp = wp_remote_get($icon_url, ['timeout' => 5]);
+            $blob = is_wp_error($resp) ? '' : wp_remote_retrieve_body($resp);
+            if ($blob) {
+                $tmp = @imagecreatefromstring($blob);
+                if ($tmp) {
+                    $iw = imagesx($tmp); $ih = imagesy($tmp);
+                    if ($iw > 0 && $ih > 0) {
+                        $scale = 1.0;
+                        $maxw = max(1, min($icon_max_w > 0 ? $icon_max_w : $w, $w - 2*$pad));
+                        if ($iw > $maxw) { $scale = $maxw / $iw; }
+                        $tw = (int) floor($iw * $scale);
+                        $th = (int) floor($ih * $scale);
+                        $icon_w = $tw; $icon_h = $th;
+                        $icon_im = imagecreatetruecolor($tw, $th);
+                        imagealphablending($icon_im, false);
+                        imagesavealpha($icon_im, true);
+                        imagecopyresampled($icon_im, $tmp, 0,0,0,0, $tw,$th, $iw,$ih);
+                        imagedestroy($tmp);
+                    } else {
+                        imagedestroy($tmp);
+                    }
+                }
+            }
+        }
 
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
         // Use custom quotation marks from settings; fallback to ASCII if TTF is unavailable and marks are non-ASCII
@@ -747,27 +785,44 @@ class TheBible_Plugin {
         // Remove any remaining trailing chars that are not letters, numbers, punctuation, or symbols
         $text_clean = preg_replace('/[^\p{L}\p{N}\p{P}\p{S}]+$/u','', $text_clean);
         if ($refpos === 'top') {
+            // If icon at top, draw it first
+            if ($icon_im && $icon_pos === 'top') {
+                $ix = ($icon_align === 'right') ? ($w - $pad - $icon_w) : $x;
+                imagecopy($im, $icon_im, $ix, $y, 0, 0, $icon_w, $icon_h);
+                $y += $icon_h + $min_gap;
+            }
             // Draw reference at top, then verse below
             $y += self::draw_text_block($im, $ref, $x, $y, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
-            $y += (int) floor($pad * 0.3);
+            $y += $min_gap;
             // Auto-fit main text to remaining area
             $avail_h = ($h - $pad) - $y;
-            $quoted = $qL . $text_clean . $qR;
             $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-            list($fit_size, $fit_text) = self::fit_text_to_area($quoted, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf);
+            list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR);
             self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $h - $pad);
+            // If icon at bottom, draw it now at bottom area (no need to reserve above)
+            if ($icon_im && $icon_pos === 'bottom') {
+                $iy = $h - $pad - $icon_h;
+                $ix = ($icon_align === 'right') ? ($w - $pad - $icon_w) : $x;
+                imagecopy($im, $icon_im, $ix, $iy, 0, 0, $icon_w, $icon_h);
+            }
         } else {
             // Reserve space for reference at the bottom
             $ref_h = self::measure_text_block($ref, $w - 2*$pad, $font_file, $ref_size);
-            $bottom_for_ref = $h - $pad - $ref_h;
+            $reserve_icon_h = ($icon_im && $icon_pos === 'bottom') ? ($icon_h + $min_gap) : 0;
+            $bottom_for_ref = $h - $pad - $reserve_icon_h - $ref_h;
             // Draw main verse text above the reference area (auto-fit)
-            $avail_h = ($bottom_for_ref - (int)floor($pad*0.25)) - $y;
-            $quoted = $qL . $text_clean . $qR;
+            $avail_h = ($bottom_for_ref - $min_gap) - $y;
             $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-            list($fit_size, $fit_text) = self::fit_text_to_area($quoted, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf);
-            self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $bottom_for_ref - (int)floor($pad*0.25));
+            list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR);
+            self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $bottom_for_ref - $min_gap);
             // Draw reference at the bottom
             self::draw_text_block($im, $ref, $x, $bottom_for_ref, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
+            // Draw bottom icon beneath reference if configured
+            if ($icon_im && $icon_pos === 'bottom') {
+                $iy = $h - $pad - $icon_h;
+                $ix = ($icon_align === 'right') ? ($w - $pad - $icon_w) : $x;
+                imagecopy($im, $icon_im, $ix, $iy, 0, 0, $icon_w, $icon_h);
+            }
         }
 
         nocache_headers();
@@ -962,6 +1017,14 @@ class TheBible_Plugin {
         register_setting('thebible_options', 'thebible_og_font_size_ref', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 40 ]);
         // Minimum main size before truncation kicks in
         register_setting('thebible_options', 'thebible_og_min_font_size_main', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 18 ]);
+        // Layout & spacing
+        register_setting('thebible_options', 'thebible_og_padding', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 0 ]);
+        register_setting('thebible_options', 'thebible_og_min_gap', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 16 ]);
+        // Icon settings
+        register_setting('thebible_options', 'thebible_og_icon_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?esc_url_raw($v):''; }, 'default' => '' ]);
+        register_setting('thebible_options', 'thebible_og_icon_position', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["top","bottom"],true)?$v:'bottom'; }, 'default' => 'bottom' ]);
+        register_setting('thebible_options', 'thebible_og_icon_align', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["left","right"],true)?$v:'left'; }, 'default' => 'left' ]);
+        register_setting('thebible_options', 'thebible_og_icon_max_w', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 160 ]);
         register_setting('thebible_options', 'thebible_og_background_image_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '' ]);
         // Quotation marks and reference position
         register_setting('thebible_options', 'thebible_og_quote_left', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '«' ]);
@@ -1056,6 +1119,13 @@ class TheBible_Plugin {
         $og_size_ref  = intval(get_option('thebible_og_font_size_ref',  $og_size_legacy?:40));
         $og_min_main  = intval(get_option('thebible_og_min_font_size_main', 18));
         $og_img = (string) get_option('thebible_og_background_image_url','');
+        // Layout & icon options for settings UI
+        $og_padding = intval(get_option('thebible_og_padding', 0));
+        $og_min_gap = intval(get_option('thebible_og_min_gap', 16));
+        $og_icon_url = (string) get_option('thebible_og_icon_url','');
+        $og_icon_pos = (string) get_option('thebible_og_icon_position','bottom');
+        $og_icon_align = (string) get_option('thebible_og_icon_align','left');
+        $og_icon_max_w = intval(get_option('thebible_og_icon_max_w', 160));
         $og_qL = (string) get_option('thebible_og_quote_left','«');
         $og_qR = (string) get_option('thebible_og_quote_right','»');
         $og_refpos = (string) get_option('thebible_og_ref_position','bottom');
@@ -1197,8 +1267,65 @@ class TheBible_Plugin {
                         <tr>
                             <th scope="row"><label for="thebible_og_background_image_url">Background image</label></th>
                             <td>
-                                <input type="url" name="thebible_og_background_image_url" id="thebible_og_background_image_url" value="<?php echo esc_attr($og_img); ?>" class="regular-text" placeholder="https://.../image.jpg">
+                                <p style="margin:.2em 0 .6em;">
+                                    <input type="url" name="thebible_og_background_image_url" id="thebible_og_background_image_url" value="<?php echo esc_attr($og_img); ?>" class="regular-text" placeholder="https://.../image.jpg">
+                                    <button type="button" class="button" id="thebible_pick_bg">Select/upload image</button>
+                                </p>
                                 <p class="description">Optional. If set, the image is used as a cover background with a dark overlay for readability.</p>
+                                <script>(function(){
+                                    function initBgPicker(){
+                                        if (!window.wp || !wp.media) return;
+                                        var btn=document.getElementById('thebible_pick_bg');
+                                        if(!btn) return; var frame=null;
+                                        btn.addEventListener('click', function(e){ e.preventDefault(); if(frame){frame.open();return;} frame=wp.media({title:'Select background image', library:{ type:['image'] }, button:{ text:'Use this image' }, multiple:false}); frame.on('select', function(){ var att=frame.state().get('selection').first().toJSON(); if(att && att.url){ document.getElementById('thebible_og_background_image_url').value = att.url; } }); frame.open(); });
+                                    }
+                                    if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initBgPicker); } else { initBgPicker(); }
+                                })();</script>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label>Layout</label></th>
+                            <td>
+                                <label>General padding <input type="number" min="0" name="thebible_og_padding" id="thebible_og_padding" value="<?php echo esc_attr($og_padding); ?>" style="width:6em;"> px</label>
+                                &nbsp;
+                                <label>Min gap text↔source <input type="number" min="0" name="thebible_og_min_gap" id="thebible_og_min_gap" value="<?php echo esc_attr($og_min_gap); ?>" style="width:6em;"> px</label>
+                                <p class="description">If padding is 0, a default based on image size is used. The min gap enforces spacing between main text, reference, and icon.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="thebible_og_icon_url">Icon</label></th>
+                            <td>
+                                <p style="margin:.2em 0 .6em;">
+                                    <label>Icon URL: <input type="url" name="thebible_og_icon_url" id="thebible_og_icon_url" value="<?php echo esc_attr($og_icon_url); ?>" class="regular-text" placeholder="https://.../icon.png"></label>
+                                    <button type="button" class="button" id="thebible_pick_icon">Select/upload image</button>
+                                </p>
+                                <p style="margin:.2em 0 .6em;">
+                                    <label>Position 
+                                        <select name="thebible_og_icon_position" id="thebible_og_icon_position">
+                                            <option value="top" <?php selected($og_icon_pos==='top'); ?>>Top</option>
+                                            <option value="bottom" <?php selected($og_icon_pos==='bottom'); ?>>Bottom</option>
+                                        </select>
+                                    </label>
+                                    &nbsp;
+                                    <label>Align 
+                                        <select name="thebible_og_icon_align" id="thebible_og_icon_align">
+                                            <option value="left" <?php selected($og_icon_align==='left'); ?>>Left</option>
+                                            <option value="right" <?php selected($og_icon_align==='right'); ?>>Right</option>
+                                        </select>
+                                    </label>
+                                    &nbsp;
+                                    <label>Max width <input type="number" min="1" name="thebible_og_icon_max_w" id="thebible_og_icon_max_w" value="<?php echo esc_attr($og_icon_max_w); ?>" style="width:6em;"> px</label>
+                                </p>
+                                <p class="description">Icon is drawn at the selected edge and alignment, scaled to the max width while preserving aspect ratio.</p>
+                                <script>(function(){
+                                    function initIconPicker(){
+                                        if (!window.wp || !wp.media) return;
+                                        var btn=document.getElementById('thebible_pick_icon');
+                                        if(!btn) return; var frame=null;
+                                        btn.addEventListener('click', function(e){ e.preventDefault(); if(frame){frame.open();return;} frame=wp.media({title:'Select icon', library:{ type:['image'] }, button:{ text:'Use this image' }, multiple:false}); frame.on('select', function(){ var att=frame.state().get('selection').first().toJSON(); if(att && att.url){ document.getElementById('thebible_og_icon_url').value = att.url; } }); frame.open(); });
+                                    }
+                                    if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initIconPicker); } else { initIconPicker(); }
+                                })();</script>
                             </td>
                         </tr>
                     </tbody>
