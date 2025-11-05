@@ -734,11 +734,13 @@ class TheBible_Plugin {
         $min_gap = max(0, intval(get_option('thebible_og_min_gap', 16)));
         $x = $pad; $y = $pad;
 
-        // Icon configuration
+        // Icon configuration (simplified: always bottom). User chooses logo side; source uses opposite.
         $icon_url = (string) get_option('thebible_og_icon_url','');
-        $icon_pos = (string) get_option('thebible_og_icon_position','bottom');
-        $icon_align = (string) get_option('thebible_og_icon_align','left');
-        if ($icon_align !== 'right') { $icon_align = 'left'; }
+        $logo_side = (string) get_option('thebible_og_logo_side','left');
+        if ($logo_side !== 'right') { $logo_side = 'left'; }
+        $logo_pad_adjust = intval(get_option('thebible_og_logo_pad_adjust', 0));
+        $logo_pad_adjust_x = intval(get_option('thebible_og_logo_pad_adjust_x', $logo_pad_adjust));
+        $logo_pad_adjust_y = intval(get_option('thebible_og_logo_pad_adjust_y', 0));
         $icon_max_w = max(0, intval(get_option('thebible_og_icon_max_w', 160)));
         $icon_im = null; $icon_w = 0; $icon_h = 0;
         if ($icon_url) {
@@ -776,54 +778,33 @@ class TheBible_Plugin {
         $qR = (!$use_ttf && $non_ascii($qR_opt)) ? '"' : $qR_opt;
 
         $ref_size = $font_ref;
-        $refpos = (string) get_option('thebible_og_ref_position','bottom');
-        $refalign = (string) get_option('thebible_og_ref_align','left');
-        if ($refalign !== 'right') { $refalign = 'left'; }
+        // Force bottom placement; align opposite of logo side
+        $refpos = 'bottom';
+        $refalign = ($logo_side === 'left') ? 'right' : 'left';
         // Hard trim trailing Unicode spaces/invisibles before composing quotes
         $text_clean = preg_replace('/[\p{Z}\x{00AD}\x{2000}-\x{200F}\x{2028}\x{2029}\x{202F}\x{2060}-\x{2064}\x{FEFF}\x{1680}]+$/u','',$text);
         $text_clean = preg_replace('/[\p{C}\p{Z}\p{M}]+$/u','', $text_clean);
         // Remove any remaining trailing chars that are not letters, numbers, punctuation, or symbols
         $text_clean = preg_replace('/[^\p{L}\p{N}\p{P}\p{S}]+$/u','', $text_clean);
-        if ($refpos === 'top') {
-            // If icon at top, draw it first
-            if ($icon_im && $icon_pos === 'top') {
-                $ix = ($icon_align === 'right') ? ($w - $pad - $icon_w) : $x;
-                imagecopy($im, $icon_im, $ix, $y, 0, 0, $icon_w, $icon_h);
-                $y += $icon_h + $min_gap;
-            }
-            // Draw reference at top, then verse below
-            $y += self::draw_text_block($im, $ref, $x, $y, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
-            $y += $min_gap;
-            // Auto-fit main text to remaining area
-            $avail_h = ($h - $pad) - $y;
-            $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-            list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR);
-            self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $h - $pad);
-            // If icon at bottom, draw it now at bottom area (no need to reserve above)
-            if ($icon_im && $icon_pos === 'bottom') {
-                $iy = $h - $pad - $icon_h;
-                $ix = ($icon_align === 'right') ? ($w - $pad - $icon_w) : $x;
-                imagecopy($im, $icon_im, $ix, $iy, 0, 0, $icon_w, $icon_h);
-            }
-        } else {
-            // Reserve space for reference at the bottom
-            $ref_h = self::measure_text_block($ref, $w - 2*$pad, $font_file, $ref_size);
-            $reserve_icon_h = ($icon_im && $icon_pos === 'bottom') ? ($icon_h + $min_gap) : 0;
-            $bottom_for_ref = $h - $pad - $reserve_icon_h - $ref_h;
-            // Draw main verse text above the reference area (auto-fit)
-            $avail_h = ($bottom_for_ref - $min_gap) - $y;
-            $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-            list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR);
-            self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $bottom_for_ref - $min_gap);
-            // Draw reference at the bottom
-            self::draw_text_block($im, $ref, $x, $bottom_for_ref, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
-            // Draw bottom icon beneath reference if configured
-            if ($icon_im && $icon_pos === 'bottom') {
-                $iy = $h - $pad - $icon_h;
-                $ix = ($icon_align === 'right') ? ($w - $pad - $icon_w) : $x;
-                imagecopy($im, $icon_im, $ix, $iy, 0, 0, $icon_w, $icon_h);
-            }
+        // Always-bottom layout
+        // 1) Compute reference block height at bottom padding
+        $ref_h = self::measure_text_block($ref, $w - 2*$pad, $font_file, $ref_size);
+        $bottom_for_ref = $h - $pad - $ref_h;
+        // 2) Draw main verse text above the reference with min gap
+        $avail_h = ($bottom_for_ref - $min_gap) - $y;
+        $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
+        list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR);
+        self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad, $font_file, $fit_size, $fgc, $bottom_for_ref - $min_gap);
+        // 3) Draw logo (if any) at bottom on chosen side with adjusted padding
+        if ($icon_im) {
+            $logo_pad_x = max(0, $pad + $logo_pad_adjust_x);
+            $logo_pad_y = max(0, $pad + $logo_pad_adjust_y);
+            $iy = $h - $logo_pad_y - $icon_h;
+            $ix = ($logo_side === 'right') ? ($w - $logo_pad_x - $icon_w) : $logo_pad_x;
+            imagecopy($im, $icon_im, $ix, $iy, 0, 0, $icon_w, $icon_h);
         }
+        // 4) Draw reference at bottom, aligned opposite of logo side
+        self::draw_text_block($im, $ref, $x, $bottom_for_ref, $w - 2*$pad, $font_file, $ref_size, $fgc, null, $refalign);
 
         nocache_headers();
         status_header(200);
@@ -1022,8 +1003,12 @@ class TheBible_Plugin {
         register_setting('thebible_options', 'thebible_og_min_gap', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 16 ]);
         // Icon settings
         register_setting('thebible_options', 'thebible_og_icon_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?esc_url_raw($v):''; }, 'default' => '' ]);
-        register_setting('thebible_options', 'thebible_og_icon_position', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["top","bottom"],true)?$v:'bottom'; }, 'default' => 'bottom' ]);
-        register_setting('thebible_options', 'thebible_og_icon_align', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["left","right"],true)?$v:'left'; }, 'default' => 'left' ]);
+        // Simplified placement: always bottom; choose which side holds the logo; source uses the opposite
+        register_setting('thebible_options', 'thebible_og_logo_side', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["left","right"],true)?$v:'left'; }, 'default' => 'left' ]);
+        // Padding adjust for logo relative to general padding (can be negative)
+        register_setting('thebible_options', 'thebible_og_logo_pad_adjust', [ 'type' => 'integer', 'sanitize_callback' => 'intval', 'default' => 0 ]); // legacy single-axis
+        register_setting('thebible_options', 'thebible_og_logo_pad_adjust_x', [ 'type' => 'integer', 'sanitize_callback' => 'intval', 'default' => 0 ]);
+        register_setting('thebible_options', 'thebible_og_logo_pad_adjust_y', [ 'type' => 'integer', 'sanitize_callback' => 'intval', 'default' => 0 ]);
         register_setting('thebible_options', 'thebible_og_icon_max_w', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 160 ]);
         register_setting('thebible_options', 'thebible_og_background_image_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '' ]);
         // Quotation marks and reference position
@@ -1123,8 +1108,10 @@ class TheBible_Plugin {
         $og_padding = intval(get_option('thebible_og_padding', 0));
         $og_min_gap = intval(get_option('thebible_og_min_gap', 16));
         $og_icon_url = (string) get_option('thebible_og_icon_url','');
-        $og_icon_pos = (string) get_option('thebible_og_icon_position','bottom');
-        $og_icon_align = (string) get_option('thebible_og_icon_align','left');
+        $og_logo_side = (string) get_option('thebible_og_logo_side','left');
+        $og_logo_pad_adjust = intval(get_option('thebible_og_logo_pad_adjust', 0));
+        $og_logo_pad_adjust_x = intval(get_option('thebible_og_logo_pad_adjust_x', $og_logo_pad_adjust));
+        $og_logo_pad_adjust_y = intval(get_option('thebible_og_logo_pad_adjust_y', 0));
         $og_icon_max_w = intval(get_option('thebible_og_icon_max_w', 160));
         $og_qL = (string) get_option('thebible_og_quote_left','«');
         $og_qR = (string) get_option('thebible_og_quote_right','»');
@@ -1300,23 +1287,20 @@ class TheBible_Plugin {
                                     <button type="button" class="button" id="thebible_pick_icon">Select/upload image</button>
                                 </p>
                                 <p style="margin:.2em 0 .6em;">
-                                    <label>Position 
-                                        <select name="thebible_og_icon_position" id="thebible_og_icon_position">
-                                            <option value="top" <?php selected($og_icon_pos==='top'); ?>>Top</option>
-                                            <option value="bottom" <?php selected($og_icon_pos==='bottom'); ?>>Bottom</option>
+                                    <label>Logo side 
+                                        <select name="thebible_og_logo_side" id="thebible_og_logo_side">
+                                            <option value="left" <?php selected($og_logo_side==='left'); ?>>Left</option>
+                                            <option value="right" <?php selected($og_logo_side==='right'); ?>>Right</option>
                                         </select>
                                     </label>
                                     &nbsp;
-                                    <label>Align 
-                                        <select name="thebible_og_icon_align" id="thebible_og_icon_align">
-                                            <option value="left" <?php selected($og_icon_align==='left'); ?>>Left</option>
-                                            <option value="right" <?php selected($og_icon_align==='right'); ?>>Right</option>
-                                        </select>
-                                    </label>
+                                    <label>Logo padding X <input type="number" name="thebible_og_logo_pad_adjust_x" id="thebible_og_logo_pad_adjust_x" value="<?php echo esc_attr($og_logo_pad_adjust_x); ?>" style="width:6em;"> px</label>
+                                    &nbsp;
+                                    <label>Logo padding Y <input type="number" name="thebible_og_logo_pad_adjust_y" id="thebible_og_logo_pad_adjust_y" value="<?php echo esc_attr($og_logo_pad_adjust_y); ?>" style="width:6em;"> px</label>
                                     &nbsp;
                                     <label>Max width <input type="number" min="1" name="thebible_og_icon_max_w" id="thebible_og_icon_max_w" value="<?php echo esc_attr($og_icon_max_w); ?>" style="width:6em;"> px</label>
                                 </p>
-                                <p class="description">Icon is drawn at the selected edge and alignment, scaled to the max width while preserving aspect ratio.</p>
+                                <p class="description">Logo and source are always at the bottom. Choose which side holds the logo; the source uses the other side. Logo padding X/Y shift the logo relative to general padding (can be negative).</p>
                                 <script>(function(){
                                     function initIconPicker(){
                                         if (!window.wp || !wp.media) return;
