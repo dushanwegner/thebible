@@ -863,6 +863,20 @@ class TheBible_Plugin {
         $text_clean = preg_replace('/[\p{C}\p{Z}\p{M}]+$/u','', $text_clean);
         // Remove any remaining trailing chars that are not letters, numbers, punctuation, or symbols
         $text_clean = preg_replace('/[^\p{L}\p{N}\p{P}\p{S}]+$/u','', $text_clean);
+        // Special handling of guillemets inside verse text
+        $has_inner_left = (strpos($text_clean, '«') !== false);
+        $has_inner_right = (strpos($text_clean, '»') !== false);
+        if ($has_inner_left && $has_inner_right) {
+            // If both present inside verse, normalize to single guillemets
+            $text_clean = str_replace(['«','»'], ['‹','›'], $text_clean);
+        } else {
+            // If verse ends with the configured closing quote, strip it to avoid doubled closer at the end
+            $qr_len = self::u_strlen($qR);
+            if ($qr_len > 0 && self::u_substr($text_clean, -$qr_len) === $qR) {
+                $text_clean = self::u_substr($text_clean, 0, self::u_strlen($text_clean) - $qr_len);
+                $text_clean = rtrim($text_clean);
+            }
+        }
         // Always-bottom layout
         // 1) Compute reference block height at bottom padding
         $ref_h = self::measure_text_block($ref, $w - 2*$pad, $font_file, $ref_size);
