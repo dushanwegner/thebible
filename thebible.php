@@ -617,9 +617,9 @@ class TheBible_Plugin {
 
         // Book token (group 1): optional leading number ("1.", "2"), then one or more words of letters (incl. umlauts) and dots.
         // Then space(s), chapter, colon, verse, optional dash and verse.
-        $pattern = '/\b('
+        $pattern = '/('
                  . '(?:[0-9]{1,2}\.?)?\s*'                 // optional leading number like "1." or "2"
-                 . '[A-Za-zÄÖÜäöüß]+'                         // first word letters
+                 . '[A-ZÄÖÜ][A-Za-zÄÖÜäöüß]*'                // first word: starts uppercase (book name)
                  . '[A-Za-zÄÖÜäöüß\.] *'                     // allow abbreviation with dot and trailing spaces
                  . '(?:\s+[A-Za-zÄÖÜäöüß\.0-9]+)*'          // optional extra words
                  . ')\s+(\d+):(\d+)(?:-(\d+))?/u';
