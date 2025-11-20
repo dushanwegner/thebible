@@ -20,6 +20,7 @@ class TheBible_Plugin {
 
     private static $books = null; // array of [order, short_name, filename]
     private static $slug_map = null; // slug => array entry
+    private static $abbr_maps = [];
 
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
@@ -28,12 +29,19 @@ class TheBible_Plugin {
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
+        add_action('add_meta_boxes', [__CLASS__, 'add_bible_meta_box']);
+        add_action('save_post', [__CLASS__, 'save_bible_meta'], 10, 2);
+        add_filter('manage_posts_columns', [__CLASS__, 'add_bible_column']);
+        add_filter('manage_pages_columns', [__CLASS__, 'add_bible_column']);
+        add_action('manage_posts_custom_column', [__CLASS__, 'render_bible_column'], 10, 2);
+        add_action('manage_pages_custom_column', [__CLASS__, 'render_bible_column'], 10, 2);
         add_filter('upload_mimes', [__CLASS__, 'allow_font_uploads']);
         add_filter('wp_check_filetype_and_ext', [__CLASS__, 'allow_font_filetype'], 10, 5);
         add_action('wp_head', [__CLASS__, 'print_custom_css']);
         add_action('wp_head', [__CLASS__, 'print_og_meta']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
         add_action('customize_register', [__CLASS__, 'customize_register']);
+        add_filter('the_content', [__CLASS__, 'filter_content_auto_link_bible_refs'], 20);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
@@ -408,6 +416,34 @@ class TheBible_Plugin {
         return trim($slug, '-');
     }
 
+    private static function get_abbreviation_map($slug) {
+        if (isset(self::$abbr_maps[$slug])) {
+            return self::$abbr_maps[$slug];
+        }
+        $map = [];
+        $lang = ($slug === 'bibel') ? 'de' : 'en';
+        $file = plugin_dir_path(__FILE__) . 'data/' . $slug . '/abbreviations.' . $lang . '.json';
+        if (file_exists($file)) {
+            $raw = file_get_contents($file);
+            $data = json_decode($raw, true);
+            if (is_array($data) && !empty($data['books']) && is_array($data['books'])) {
+                foreach ($data['books'] as $short => $variants) {
+                    if (!is_array($variants)) continue;
+                    foreach ($variants as $v) {
+                        $key = trim(mb_strtolower((string)$v, 'UTF-8'));
+                        if ($key === '') continue;
+                        // First writer wins; avoid clobbering in case of collisions.
+                        if (!isset($map[$key])) {
+                            $map[$key] = (string)$short;
+                        }
+                    }
+                }
+            }
+        }
+        self::$abbr_maps[$slug] = $map;
+        return $map;
+    }
+
     private static function pretty_label($short_name) {
         if (!is_string($short_name)) return '';
         $label = $short_name;
@@ -421,6 +457,135 @@ class TheBible_Plugin {
         // normalize whitespace
         $label = preg_replace('/\s+/', ' ', $label);
         return trim($label);
+    }
+
+    public static function add_bible_meta_box() {
+        $screens = get_post_types(['public' => true], 'names');
+        foreach ($screens as $post_type) {
+            add_meta_box(
+                'thebible_meta',
+                __('Bible for references', 'thebible'),
+                [__CLASS__, 'render_bible_meta_box'],
+                $post_type,
+                'side',
+                'default'
+            );
+        }
+    }
+
+    public static function render_bible_meta_box($post) {
+        wp_nonce_field('thebible_meta_save', 'thebible_meta_nonce');
+        $current = get_post_meta($post->ID, 'thebible_slug', true);
+        if (!is_string($current) || $current === '') {
+            $current = 'bible';
+        }
+        $options = [
+            'bible' => __('English (Douay-Rheims)', 'thebible'),
+            'bibel' => __('Deutsch (Menge)', 'thebible'),
+        ];
+        echo '<p><label for="thebible_slug_field">' . esc_html__('Use this Bible when auto-linking references in this content.', 'thebible') . '</label></p>';
+        echo '<select name="thebible_slug_field" id="thebible_slug_field" class="widefat">';
+        foreach ($options as $slug => $label) {
+            echo '<option value="' . esc_attr($slug) . '"' . selected($current, $slug, false) . '>' . esc_html($label) . '</option>';
+        }
+        echo '</select>';
+    }
+
+    public static function save_bible_meta($post_id, $post) {
+        if (!isset($_POST['thebible_meta_nonce']) || !wp_verify_nonce($_POST['thebible_meta_nonce'], 'thebible_meta_save')) {
+            return;
+        }
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+        if (!current_user_can('edit_post', $post_id)) return;
+        if (!isset($_POST['thebible_slug_field'])) return;
+        $val = sanitize_text_field(wp_unslash($_POST['thebible_slug_field']));
+        if ($val !== 'bible' && $val !== 'bibel') {
+            delete_post_meta($post_id, 'thebible_slug');
+            return;
+        }
+        update_post_meta($post_id, 'thebible_slug', $val);
+    }
+
+    public static function add_bible_column($columns) {
+        if (!is_array($columns)) return $columns;
+        $columns['thebible_slug'] = __('Bible', 'thebible');
+        return $columns;
+    }
+
+    public static function render_bible_column($column, $post_id) {
+        if ($column !== 'thebible_slug') return;
+        $slug = get_post_meta($post_id, 'thebible_slug', true);
+        if ($slug === 'bibel') {
+            echo esc_html__('Deutsch (Menge)', 'thebible');
+        } elseif ($slug === 'bible') {
+            echo esc_html__('English (Douay-Rheims)', 'thebible');
+        } else {
+            echo '&#8212;';
+        }
+    }
+
+    public static function filter_content_auto_link_bible_refs($content) {
+        if (!is_string($content) || $content === '') return $content;
+        if (is_feed() || is_admin()) return $content;
+
+        $post_id = get_the_ID();
+        if (!$post_id) return $content;
+
+        $slug = get_post_meta($post_id, 'thebible_slug', true);
+        if (!is_string($slug) || $slug === '') {
+            $slug = 'bible';
+        }
+        if ($slug !== 'bible' && $slug !== 'bibel') {
+            $slug = 'bible';
+        }
+
+        $abbr = self::get_abbreviation_map($slug);
+        if (empty($abbr)) return $content;
+
+        // Book token (group 1): optional leading number ("1.", "2"), then one or more words of letters (incl. umlauts) and dots.
+        // Then space(s), chapter, colon, verse, optional dash and verse.
+        $pattern = '/\b('
+                 . '(?:[0-9]{1,2}\.?)?\s*'                 // optional leading number like "1." or "2"
+                 . '[A-Za-zÄÖÜäöüß]+'                         // first word letters
+                 . '[A-Za-zÄÖÜäöüß\.] *'                     // allow abbreviation with dot and trailing spaces
+                 . '(?:\s+[A-Za-zÄÖÜäöüß\.0-9]+)*'          // optional extra words
+                 . ')\s+(\d+):(\d+)(?:-(\d+))?/u';
+
+        $content = preg_replace_callback(
+            $pattern,
+            function ($m) use ($slug, $abbr) {
+                if (!isset($m[1], $m[2], $m[3])) return $m[0];
+                $book_raw = $m[1];
+                $ch = (int)$m[2];
+                $vf = (int)$m[3];
+                $vt = isset($m[4]) && $m[4] !== '' ? (int)$m[4] : 0;
+                if ($ch <= 0 || $vf <= 0) return $m[0];
+
+                // Normalize book token: strip trailing dot, collapse spaces, lowercase
+                $norm = preg_replace('/\.\s*$/u', '', $book_raw);
+                $norm = preg_replace('/\s+/u', ' ', trim((string)$norm));
+                $key = mb_strtolower($norm, 'UTF-8');
+                if ($key === '' || !isset($abbr[$key])) {
+                    return $m[0];
+                }
+                $short = $abbr[$key];
+                $book_slug = self::slugify($short);
+                if ($book_slug === '') return $m[0];
+
+                $base = home_url('/' . trim($slug, '/') . '/' . $book_slug . '/');
+                if ($vt && $vt >= $vf) {
+                    $url = $base . $ch . ':' . $vf . '-' . $vt;
+                } else {
+                    $url = $base . $ch . ':' . $vf;
+                }
+
+                $ref_text = $m[0];
+                return '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer">' . esc_html($ref_text) . '</a>';
+            },
+            $content
+        );
+
+        return $content;
     }
 
     private static function book_groups() {
