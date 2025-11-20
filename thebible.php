@@ -561,14 +561,29 @@ class TheBible_Plugin {
                 $vt = isset($m[4]) && $m[4] !== '' ? (int)$m[4] : 0;
                 if ($ch <= 0 || $vf <= 0) return $m[0];
 
-                // Normalize book token: strip trailing dot, collapse spaces, lowercase
+                // Normalize book token: strip trailing dot, collapse spaces
                 $norm = preg_replace('/\.\s*$/u', '', $book_raw);
                 $norm = preg_replace('/\s+/u', ' ', trim((string)$norm));
                 $key = mb_strtolower($norm, 'UTF-8');
-                if ($key === '' || !isset($abbr[$key])) {
+
+                // Try exact key
+                $short = null;
+                if ($key !== '' && isset($abbr[$key])) {
+                    $short = $abbr[$key];
+                } else {
+                    // Fallback: strip a dot directly after a leading number (e.g. "1. Mose" -> "1 Mose")
+                    $alt = preg_replace('/^(\d+)\.\s*/u', '$1 ', $norm);
+                    $alt = preg_replace('/\s+/u', ' ', trim((string)$alt));
+                    $alt_key = mb_strtolower($alt, 'UTF-8');
+                    if ($alt_key !== '' && isset($abbr[$alt_key])) {
+                        $short = $abbr[$alt_key];
+                    }
+                }
+
+                if ($short === null) {
                     return $m[0];
                 }
-                $short = $abbr[$key];
+
                 $book_slug = self::slugify($short);
                 if ($book_slug === '') return $m[0];
 
