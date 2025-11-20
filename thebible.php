@@ -448,6 +448,38 @@ class TheBible_Plugin {
         return $map;
     }
 
+    private static function canonical_book_slug_from_url($raw_book, $slug) {
+        if (!is_string($raw_book) || $raw_book === '') return null;
+        if ($slug !== 'bible' && $slug !== 'bibel') {
+            $slug = 'bible';
+        }
+        $abbr = self::get_abbreviation_map($slug);
+        if (empty($abbr)) return null;
+
+        $book = str_replace('-', ' ', $raw_book);
+        $book = urldecode($book);
+        $norm = preg_replace('/\.
+\s*$/u', '', $book);
+        $norm = preg_replace('/\s+/u', ' ', trim((string)$norm));
+        $key = mb_strtolower($norm, 'UTF-8');
+
+        $short = null;
+        if ($key !== '' && isset($abbr[$key])) {
+            $short = $abbr[$key];
+        } else {
+            $alt = preg_replace('/^(\d+)\.\s*/u', '$1 ', $norm);
+            $alt = preg_replace('/\s+/u', ' ', trim((string)$alt));
+            $alt_key = mb_strtolower($alt, 'UTF-8');
+            if ($alt_key !== '' && isset($abbr[$alt_key])) {
+                $short = $abbr[$alt_key];
+            }
+        }
+
+        if ($short === null) return null;
+        $book_slug = self::slugify($short);
+        return $book_slug !== '' ? $book_slug : null;
+    }
+
     private static function pretty_label($short_name) {
         if (!is_string($short_name)) return '';
         $label = $short_name;
@@ -715,6 +747,36 @@ class TheBible_Plugin {
         // Prepare title and content
         $book_slug = get_query_var(self::QV_BOOK);
         if ($book_slug) {
+            $slug = get_query_var(self::QV_SLUG);
+            if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+
+            $canonical = self::canonical_book_slug_from_url($book_slug, $slug);
+            if ($canonical !== null) {
+                $ch = get_query_var(self::QV_CHAPTER);
+                $vf = get_query_var(self::QV_VFROM);
+                $vt = get_query_var(self::QV_VTO);
+
+                $path = '/' . trim($slug, '/') . '/' . $canonical . '/';
+                if ($ch) {
+                    $path .= $ch;
+                    if ($vf) {
+                        $path .= ':' . $vf;
+                        if ($vt && $vt > $vf) {
+                            $path .= '-' . $vt;
+                        }
+                    }
+                }
+
+                $canonical_url = home_url($path);
+                $current = home_url(add_query_arg([]));
+                if (trailingslashit($canonical_url) !== trailingslashit($current)) {
+                    wp_redirect($canonical_url, 301);
+                    exit;
+                }
+                $book_slug = $canonical;
+                set_query_var(self::QV_BOOK, $book_slug);
+            }
+
             self::render_book($book_slug);
         } else {
             self::render_index();
