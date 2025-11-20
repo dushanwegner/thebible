@@ -724,7 +724,10 @@ class TheBible_Plugin {
 
     private static function get_book_entry_by_slug($slug) {
         self::load_index();
-        return self::$slug_map[$slug] ?? null;
+        // Normalize incoming URL segment to the same canonical slug format used in the index
+        $norm = self::slugify($slug);
+        if ($norm === '') return null;
+        return self::$slug_map[$norm] ?? null;
     }
 
     private static function extract_verse_text($entry, $ch, $vf, $vt) {
@@ -1188,7 +1191,9 @@ class TheBible_Plugin {
 
     private static function render_book($slug) {
         self::load_index();
-        $entry = self::$slug_map[$slug] ?? null;
+        // Normalize incoming slug to match index keys (case-insensitive URLs)
+        $norm = self::slugify($slug);
+        $entry = ($norm !== '' && isset(self::$slug_map[$norm])) ? self::$slug_map[$norm] : null;
         if (!$entry) {
             self::render_404();
             return;
