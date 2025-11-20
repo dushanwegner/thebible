@@ -29,6 +29,7 @@ class TheBible_Plugin {
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
+        add_action('admin_post_thebible_export_bible', [__CLASS__, 'handle_export_bible_txt']);
         add_action('add_meta_boxes', [__CLASS__, 'add_bible_meta_box']);
         add_action('save_post', [__CLASS__, 'save_bible_meta'], 10, 2);
         add_filter('manage_posts_columns', [__CLASS__, 'add_bible_column']);
@@ -1703,6 +1704,23 @@ class TheBible_Plugin {
                             </td>
                         </tr>
                         <tr>
+                            <th scope="row"><label>Export Bible as .txt</label></th>
+                            <td>
+                                <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
+                                    <?php wp_nonce_field('thebible_export_bible','thebible_export_bible_nonce'); ?>
+                                    <input type="hidden" name="action" value="thebible_export_bible">
+                                    <label for="thebible_export_bible_slug">Bible:</label>
+                                    <select name="thebible_export_bible_slug" id="thebible_export_bible_slug">
+                                        <?php foreach ($known as $slug => $label): ?>
+                                            <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($label); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="submit" class="button">Download .txt</button>
+                                    <p class="description">Downloads a plain-text file with one verse per line in a machine-friendly format.</p>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
                             <th scope="row"><label for="thebible_og_background_image_url">Background image</label></th>
                             <td>
                                 <p style="margin:.2em 0 .6em;">
@@ -1834,6 +1852,101 @@ class TheBible_Plugin {
             </div>
         </div>
         <?php
+    }
+
+    public static function handle_export_bible_txt() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Insufficient permissions');
+        }
+        if (!isset($_POST['thebible_export_bible_nonce']) || !wp_verify_nonce($_POST['thebible_export_bible_nonce'], 'thebible_export_bible')) {
+            wp_die('Invalid request');
+        }
+        $slug = isset($_POST['thebible_export_bible_slug']) ? sanitize_text_field(wp_unslash($_POST['thebible_export_bible_slug'])) : '';
+        if ($slug !== 'bible' && $slug !== 'bibel') {
+            wp_die('Unknown bible');
+        }
+        $root = plugin_dir_path(__FILE__) . 'data/' . $slug . '/';
+        $text_dir = trailingslashit($root) . 'text/';
+        $html_dir = trailingslashit($root) . 'html/';
+        $index = '';
+        if (file_exists($text_dir . 'index.csv')) {
+            $index = $text_dir . 'index.csv';
+        } elseif (file_exists($html_dir . 'index.csv')) {
+            $index = $html_dir . 'index.csv';
+        }
+        if ($index === '') {
+            wp_die('Text data not available for export');
+        }
+        $fh = fopen($index, 'r');
+        if (!$fh) {
+            wp_die('Could not open text index');
+        }
+        $rows = [];
+        $header = fgetcsv($fh);
+        while (($row = fgetcsv($fh)) !== false) {
+            if (!is_array($row) || count($row) < 4) {
+                continue;
+            }
+            $rows[] = $row;
+        }
+        fclose($fh);
+        if (empty($rows)) {
+            wp_die('No books found for export');
+        }
+        nocache_headers();
+        status_header(200);
+        header('Content-Type: text/plain; charset=UTF-8');
+        $filename = 'thebible-' . $slug . '.txt';
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        $out = fopen('php://output', 'wb');
+        if (!$out) {
+            wp_die('Could not open output stream');
+        }
+        $bible_name = ($slug === 'bibel') ? 'Deutsch (Menge)' : 'English (Douay-Rheims)';
+        fwrite($out, $bible_name . "\n");
+        fwrite($out, "schema|slug|book|chapter|verse|text\n");
+        foreach ($rows as $row) {
+            $short = isset($row[1]) ? (string) $row[1] : '';
+            $file = isset($row[3]) ? (string) $row[3] : '';
+            if ($file === '') {
+                continue;
+            }
+            $book_key = self::slugify($short);
+            // Prefer text/ source, falling back to same file under html/ if needed.
+            $path_text = $text_dir . preg_replace('/\.html$/i', '.txt', $file);
+            $path = file_exists($path_text) ? $path_text : trailingslashit(dirname($index)) . $file;
+            if (!file_exists($path)) {
+                continue;
+            }
+            $tfh = fopen($path, 'r');
+            if (!$tfh) {
+                continue;
+            }
+            $chapter = 0;
+            while (($line = fgets($tfh)) !== false) {
+                $trim = trim($line);
+                if ($trim === '' || $trim[0] === '#') {
+                    if (strpos($trim, '## Chapter') === 0) {
+                        if (preg_match('/^##\s+Chapter\s+(\d+)/i', $trim, $m)) {
+                            $chapter = (int) $m[1];
+                        }
+                    }
+                    continue;
+                }
+                if (!preg_match('/^(\d+):(\d+)\s+(.*)$/u', $trim, $m)) {
+                    continue;
+                }
+                $v_ch = (int) $m[1];
+                $v_vs = (int) $m[2];
+                $text = trim($m[3]);
+                $ch_out = $chapter > 0 ? $chapter : $v_ch;
+                $line_out = $slug . '|' . $book_key . '|' . $ch_out . '|' . $v_vs . '|' . $text . "\n";
+                fwrite($out, $line_out);
+            }
+            fclose($tfh);
+        }
+        fclose($out);
+        exit;
     }
 
     public static function print_custom_css() {
