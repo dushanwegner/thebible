@@ -22,6 +22,7 @@ class TheBible_Plugin {
     private static $books = null; // array of [order, short_name, filename]
     private static $slug_map = null; // slug => array entry
     private static $abbr_maps = [];
+    private static $current_page_title = '';
 
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
@@ -49,6 +50,8 @@ class TheBible_Plugin {
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
         add_action('customize_register', [__CLASS__, 'customize_register']);
         add_filter('the_content', [__CLASS__, 'filter_content_auto_link_bible_refs'], 20);
+        add_filter('pre_get_document_title', [__CLASS__, 'filter_document_title'], 100);
+        add_filter('document_title_parts', [__CLASS__, 'filter_document_title_parts'], 100);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
@@ -1457,9 +1460,52 @@ class TheBible_Plugin {
         return array_values(array_unique($parts));
     }
 
+    private static function is_bible_request() {
+        $slug = get_query_var(self::QV_SLUG);
+        $book = get_query_var(self::QV_BOOK);
+        $flag = get_query_var(self::QV_FLAG);
+        if (!empty($flag)) {
+            return true;
+        }
+        if (is_string($slug) && $slug !== '') {
+            $slug = trim($slug, "/ ");
+            if ($slug === 'bible' || $slug === 'bibel') {
+                return true;
+            }
+        }
+        if (is_string($book) && $book !== '') {
+            return true;
+        }
+        return false;
+    }
+
+    public static function filter_document_title($title) {
+        if (!self::is_bible_request()) {
+            return $title;
+        }
+        if (is_string(self::$current_page_title) && self::$current_page_title !== '') {
+            return self::$current_page_title;
+        }
+        return $title;
+    }
+
+    public static function filter_document_title_parts($parts) {
+        if (!self::is_bible_request()) {
+            return $parts;
+        }
+        if (!is_array($parts)) {
+            $parts = [];
+        }
+        if (is_string(self::$current_page_title) && self::$current_page_title !== '') {
+            $parts['title'] = self::$current_page_title;
+        }
+        return $parts;
+    }
+
     private static function output_with_theme($title, $content_html, $context = '') {
         // Allow theme override templates (e.g., dwtheme/thebible/...).
         // If a template is found, it is responsible for calling get_header/get_footer and echoing content.
+        self::$current_page_title = is_string($title) ? $title : '';
         $context = is_string($context) ? $context : '';
         if ( function_exists('locate_template') ) {
             $thebible_title   = $title;        // available to template
