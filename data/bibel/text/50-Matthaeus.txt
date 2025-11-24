@@ -1,6 +1,6 @@
 # DIE HEILSBOTSCHAFT NACH MATTHÄUS
 
-## Chapter 1
+## Kapitel 1
 
 1:1 Stammbaum Jesu Christi, des Sohnes Davids, des Sohnes Abrahams:
 
@@ -12,7 +12,7 @@
 
 1:5 Salmon der Vater des Boas, dessen Mutter Rahab war; Boas der Vater Obeds, dessen Mutter Ruth war; Obed war der Vater Isais;
 
-1:6 Isai war der Vater des Königs David.
+1:6 Isai war der Vater des Königs David. David war der Vater Salomos, dessen Mutter (Bathseba) die Frau Urias gewesen war;
 
 1:7 Salomo war der Vater Rehabeams; Rehabeam der Vater Abias; Abia der Vater Asas;
 
@@ -52,7 +52,7 @@
 
 1:25 verkehrte aber nicht ehelich mit ihr, bis sie einen Sohn geboren hatte; dem gab er den Namen Jesus.
 
-## Chapter 2
+## Kapitel 2
 
 2:1 Als nun Jesus zu Bethlehem in Judäa in den Tagen des Königs Herodes geboren war, da kamen Weise aus dem Osten nach Jerusalem
 
@@ -100,7 +100,7 @@
 
 2:23 und ließ sich dort in einer Stadt namens Nazareth nieder. So ging das Prophetenwort in Erfüllung, daß er den Namen ›Nazarener‹ führen werde.
 
-## Chapter 3
+## Kapitel 3
 
 3:1 In jenen Tagen trat aber Johannes der Täufer öffentlich auf und predigte in der Wüste von Judäa:
 
@@ -136,7 +136,7 @@
 
 3:17 Und siehe, eine Stimme erscholl aus den Himmeln: »Dieser ist mein geliebter Sohn, an dem ich Wohlgefallen gefunden habe!«
 
-## Chapter 4
+## Kapitel 4
 
 4:1 Hierauf wurde Jesus vom Geist in die Wüste hinaufgeführt, um vom Teufel versucht zu werden;
 
@@ -188,7 +188,7 @@
 
 4:25 So begleiteten ihn denn große Volksscharen aus Galiläa und aus dem Gebiet der Zehn-Städte sowie aus Jerusalem und Judäa und aus dem Ostjordanland.
 
-## Chapter 5
+## Kapitel 5
 
 5:1 Als Jesus nun die Volksscharen sah, ging er ins Gebirge hinauf, und nachdem er sich dort gesetzt hatte, traten seine Jünger zu ihm.
 
@@ -286,7 +286,7 @@
 
 5:48 Darum sollt ihr vollkommen sein, wie euer himmlischer Vater vollkommen ist.«
 
-## Chapter 6
+## Kapitel 6
 
 6:1 »Gebt acht darauf, daß ihr eure Gerechtigkeit nicht vor den Leuten ausübt, um von ihnen gesehen zu werden: sonst habt ihr keinen Lohn (zu erwarten) bei eurem Vater im Himmel!
 
@@ -304,7 +304,7 @@
 
 6:8 Darum macht es nicht wie sie; euer Vater weiß ja, was ihr bedürft, ehe ihr ihn bittet.
 
-6:9 Darum sollt ihr so beten:
+6:9 Darum sollt ihr so beten: ›Unser Vater, der du bist im Himmel: Geheiligt werde dein Name!
 
 6:10 Dein Reich komme! Dein Wille geschehe wie im Himmel, so auch auf der Erde!
 
@@ -356,7 +356,7 @@
 
 6:34 Macht euch also keine Sorgen um den morgenden Tag! Denn der morgende Tag wird seine eigenen Sorgen haben; jeder Tag hat an seiner eigenen Mühsal genug.«
 
-## Chapter 7
+## Kapitel 7
 
 7:1 »Richtet nicht, damit ihr nicht gerichtet werdet!
 
@@ -416,7 +416,7 @@
 
 7:29 denn er lehrte sie wie einer, der (göttliche) Vollmacht hat, ganz anders als ihre Schriftgelehrten.
 
-## Chapter 8
+## Kapitel 8
 
 8:1 Als er dann vom Berge herabgestiegen war, folgten ihm große Volksscharen nach.
 
@@ -486,7 +486,7 @@
 
 8:34 Da zog die Einwohnerschaft der ganzen Stadt hinaus, Jesus entgegen, und als sie bei ihm eingetroffen waren, baten sie ihn, er möchte ihr Gebiet verlassen.
 
-## Chapter 9
+## Kapitel 9
 
 9:1 Er stieg nun in ein Boot, fuhr über den See zurück und kam wieder in seine Stadt (Kapernaum).
 
@@ -564,7 +564,7 @@
 
 9:38 bittet daher den Herrn der Ernte, daß er Arbeiter auf sein Erntefeld sende!«
 
-## Chapter 10
+## Kapitel 10
 
 10:1 Er rief dann seine zwölf Jünger herbei und verlieh ihnen Macht über die unreinen Geister, so daß sie diese auszutreiben und alle Krankheiten und jedes Gebrechen zu heilen vermochten.
 
@@ -650,7 +650,7 @@
 
 10:42 und wer einem von diesen geringen Leuten seines Namens wegen, weil er ein Jünger heißt, auch nur einen Becher frischen Wassers zu trinken gibt – wahrlich ich sage euch: Es soll ihm nicht unbelohnt bleiben!«
 
-## Chapter 11
+## Kapitel 11
 
 11:1 Als Jesus nun mit der Unterweisung seiner zwölf Jünger zu Ende gekommen war, zog er von dort weiter, um in ihren Städten zu lehren und zu predigen.
 
@@ -712,7 +712,7 @@
 
 11:30 denn mein Joch ist sanft, und meine Last ist leicht.«
 
-## Chapter 12
+## Kapitel 12
 
 12:1 Zu jener Zeit wanderte Jesus an einem Sabbat durch die Kornfelder; seine Jünger aber hatten Hunger und begannen daher, Ähren abzupflücken und (die Körner) zu essen.
 
@@ -814,7 +814,7 @@
 
 12:50 denn wer den Willen meines himmlischen Vaters tut, der ist mein Bruder und Schwester und Mutter!«
 
-## Chapter 13
+## Kapitel 13
 
 13:1 An jenem Tage ging Jesus von Hause weg und setzte sich am See nieder;
 
@@ -932,7 +932,7 @@
 
 13:58 So tat er denn dort infolge ihres Unglaubens nicht viele Wunder.
 
-## Chapter 14
+## Kapitel 14
 
 14:1 Zu jener Zeit erhielt der Vierfürst Herodes Kunde von Jesus
 
@@ -1006,7 +1006,7 @@
 
 14:36 und (diese) baten ihn, nur die Quaste seines Rockes anfassen zu dürfen, und alle, die sie anfaßten, wurden völlig geheilt.
 
-## Chapter 15
+## Kapitel 15
 
 15:1 Damals kamen Pharisäer und Schriftgelehrte aus Jerusalem zu Jesus und fragten ihn:
 
@@ -1086,7 +1086,7 @@
 
 15:39 Er ließ dann die Volksmenge gehen, stieg ins Boot und kam in die Gegend von Magadan.
 
-## Chapter 16
+## Kapitel 16
 
 16:1 Da traten die Pharisäer und Sadduzäer zu ihm heran, um ihn auf die Probe zu stellen, und sprachen den Wunsch gegen ihn aus, er möchte sie ein Wunderzeichen vom Himmel her sehen lassen.
 
@@ -1144,7 +1144,7 @@
 
 16:28 Wahrlich ich sage euch: Einige von denen, die hier stehen, werden den Tod nicht schmecken, bis sie den Menschensohn in seiner Königsherrschaft haben kommen sehen.«
 
-## Chapter 17
+## Kapitel 17
 
 17:1 Sechs Tage später nahm Jesus den Petrus, Jakobus und dessen Bruder Johannes mit sich und führte sie abseits auf einen hohen Berg.
 
@@ -1200,7 +1200,7 @@
 
 17:27 Damit wir aber keinen Anstoß bei ihnen erregen, so geh an den See, wirf die Angel aus, und den ersten Fisch, den du heraufziehst, den nimm und öffne ihm das Maul; dann wirst du ein Silberstück finden; das nimm und gib es ihnen (als Abgabe) für mich und dich.«
 
-## Chapter 18
+## Kapitel 18
 
 18:1 In jener Stunde traten die Jünger zu Jesus mit der Frage: »Wer ist denn der Größte im Himmelreich?«
 
@@ -1272,7 +1272,7 @@
 
 18:35 Ebenso wird auch mein himmlischer Vater mit euch verfahren, wenn ihr nicht ein jeder seinem Bruder von Herzen vergebt.«
 
-## Chapter 19
+## Kapitel 19
 
 19:1 Als Jesus nun diese Reden beendet hatte, brach er aus Galiläa auf und kam in das Gebiet von Judäa auf der anderen Seite des Jordans;
 
@@ -1334,7 +1334,7 @@
 
 19:30 Viele Erste aber werden Letzte sein und viele Letzte die Ersten.«
 
-## Chapter 20
+## Kapitel 20
 
 20:1 »Denn das Himmelreich ist einem menschlichen Hausherrn gleich, der frühmorgens ausging, um Arbeiter für seinen Weinberg einzustellen.
 
@@ -1404,7 +1404,7 @@
 
 20:34 Da fühlte Jesus Mitleid mit ihnen; er berührte ihre Augen, und sogleich konnten sie sehen und schlossen sich ihm an.
 
-## Chapter 21
+## Kapitel 21
 
 21:1 Als sie sich dann Jerusalem näherten und nach Bethphage an den Ölberg gekommen waren, da sandte Jesus zwei von seinen Jüngern ab
 
@@ -1498,7 +1498,7 @@
 
 21:46 darum hätten sie ihn am liebsten festgenommen, fürchteten sich aber vor der Volksmenge, weil die ihn für einen Propheten hielt.
 
-## Chapter 22
+## Kapitel 22
 
 22:1 Und Jesus hob an und redete noch einmal in Gleichnissen zu ihnen folgendermaßen:
 
@@ -1592,7 +1592,7 @@
 
 22:46 Und niemand konnte ihm hierauf eine Antwort geben; auch wagte von diesem Tage an niemand mehr, ihm eine Frage vorzulegen.
 
-## Chapter 23
+## Kapitel 23
 
 23:1 Damals richtete Jesus an das Volk und an seine Jünger folgende Worte:
 
@@ -1672,7 +1672,7 @@
 
 23:39 denn ich sage euch: Ihr werdet mich von jetzt an nicht (mehr) sehen, bis ihr (einst bei meiner Wiederkunft) ausruft: ›Gepriesen sei, der da kommt im Namen des Herrn!‹«
 
-## Chapter 24
+## Kapitel 24
 
 24:1 Jesus verließ dann den Tempel und wollte weitergehen; da traten seine Jünger zu ihm heran, um ihn auf den Prachtbau des Tempels aufmerksam zu machen.
 
@@ -1776,7 +1776,7 @@
 
 24:51 und er wird ihn zerhauen lassen und ihm seinen Platz bei den Heuchlern anweisen: dort wird lautes Weinen und Zähneknirschen sein.«
 
-## Chapter 25
+## Kapitel 25
 
 25:1 »Alsdann wird das Himmelreich zehn Jungfrauen gleichen, die sich mit ihren Lampen in der Hand zur Einholung des Bräutigams aufmachten.
 
@@ -1870,7 +1870,7 @@
 
 25:46 Und diese werden in die ewige Strafe gehen, die Gerechten aber in das ewige Leben.«
 
-## Chapter 26
+## Kapitel 26
 
 26:1 Als nun Jesus alle diese Reden beendet hatte, sagte er zu seinen Jüngern:
 
@@ -2022,7 +2022,7 @@
 
 26:75 Da dachte Petrus an das Wort Jesu, der ihm gesagt hatte: »Noch ehe der Hahn kräht, wirst du mich dreimal verleugnen.« Und er ging hinaus und weinte bitterlich.
 
-## Chapter 27
+## Kapitel 27
 
 27:1 Als es hierauf Tag geworden war, faßten alle Hohenpriester und die Ältesten des Volkes einen Beschluß gegen Jesus, um seine Hinrichtung zu erreichen.
 
@@ -2156,7 +2156,7 @@
 
 27:66 Da gingen sie hin und sicherten das Grab unter Hinzuziehung der Wachmannschaft, nachdem sie den Stein versiegelt hatten.
 
-## Chapter 28
+## Kapitel 28
 
 28:1 Nach Ablauf des Sabbats aber, als der erste Tag nach dem Sabbat anbrechen wollte, gingen Maria von Magdala und die andere Maria hin, um nach dem Grabe zu sehen.
 

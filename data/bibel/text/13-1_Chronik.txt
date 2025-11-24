@@ -1,6 +1,6 @@
 # ERSTES BUCH DER CHRONIK
 
-## Chapter 1
+## Kapitel 1
 
 1:1 Adam, Seth, Enos,
 
@@ -110,7 +110,7 @@
 
 1:54 der Häuptling Magdiel, der Häuptling Iram. Dies sind die Häuptlinge der Edomiter.
 
-## Chapter 2
+## Kapitel 2
 
 2:1 Dies sind die Söhne Israels: Ruben, Simeon, Levi und Juda, Issaschar und Sebulon,
 
@@ -210,7 +210,7 @@
 
 2:49 sie gebar auch Saaph, den Vater Madmannas, und Sewa, den Vater Machbenas und den Vater Gibeas; und die Tochter Kalebs war Achsa.
 
-2:50 Dies waren die Söhne Kalebs.
+2:50 Dies waren die Söhne Kalebs. Die Söhne Hurs, des Erstgeborenen von der Ephratha, waren: Sobal, der Stammvater von Kirjath-Jearim,
 
 2:51 Salma, der Stammvater von Bethlehem, Hareph, der Stammvater von Beth-Gader.
 
@@ -222,7 +222,7 @@
 
 2:55 und die Geschlechter der Schriftgelehrten, die in Jabez wohnten: die Thireathiter, die Simeathiter und die Suchathiter. Das sind die Kiniter, die von Hammath, dem Stammvater des Hauses Rechab, abstammen.
 
-## Chapter 3
+## Kapitel 3
 
 3:1 Dies waren die Söhne Davids, die ihm in Hebron geboren wurden: Der Erstgeborene war Amnon, von der Jesreelitin Ahinoam; der zweite Daniel, von der Karmelitin Abigail;
 
@@ -272,7 +272,7 @@
 
 3:24 Die Söhne Eljoenais aber waren: Hodawja, Eljasib, Pelaja, Akkub, Johanan, Delaja und Anani, zusammen sieben.
 
-## Chapter 4
+## Kapitel 4
 
 4:1 Die Söhne Judas waren: Perez, Hezron, Karmi, Hur und Sobal.
 
@@ -360,7 +360,7 @@
 
 4:43 sie erschlugen dann die letzten Überreste der Amalekiter und sind daselbst wohnen geblieben bis auf den heutigen Tag.
 
-## Chapter 5
+## Kapitel 5
 
 5:1 Die Söhne Rubens, des Erstgeborenen Israels – er war nämlich der Erstgeborene; weil er aber seines Vaters Lager entweiht hatte, wurde sein Erstgeburtsrecht den Söhnen Josephs, des Sohnes Israels, verliehen, nur daß dieser im Geschlechtsverzeichnis nicht als Erstgeborener verzeichnet wurde;
 
@@ -376,7 +376,7 @@
 
 5:7 Seine Brüder aber nach ihren Familien, so wie sie nach ihrer Abstammung in ihr Geschlechtsverzeichnis eingetragen wurden, waren: der erste Jehiel, dann Sacharja,
 
-5:8 dann Bela, der Sohn Asas, des Sohnes Semas, des Sohnes Joels.
+5:8 dann Bela, der Sohn Asas, des Sohnes Semas, des Sohnes Joels. Dieser wohnte in Aroer und bis Nebo und Baal-Meon;
 
 5:9 und nach Osten zu wohnte er bis an die Steppe hin, die sich vom Euphratstrom her erstreckt; denn ihre Herden waren zahlreich in der Landschaft Gilead.
 
@@ -444,7 +444,7 @@
 
 5:41 Jozadak aber zog mit, als der HERR die Bewohner von Juda und Jerusalem durch Nebukadnezar in die Gefangenschaft führen ließ.
 
-## Chapter 6
+## Kapitel 6
 
 6:1 Die Söhne Levis waren: Gersom, Kehath und Merari.
 
@@ -578,7 +578,7 @@
 
 6:66 Hesbon samt den zugehörigen Weidetriften und Jaser samt den zugehörigen Weidetriften.
 
-## Chapter 7
+## Kapitel 7
 
 7:1 Die Söhne Issaschars waren: Thola und Pua, Jasub und Simron, zusammen vier.
 
@@ -660,7 +660,7 @@
 
 7:40 Diese alle waren Nachkommen Assers, Familienhäupter, auserlesene, kriegstüchtige Männer, Häupter unter den Fürsten; und die Zahl der aus ihnen für den Kriegsdienst Aufgezeichneten betrug 26000 Mann.
 
-## Chapter 8
+## Kapitel 8
 
 8:1 Benjamin zeugte Bela als seinen Erstgeborenen, Asbel als den zweiten, Ahiram als den dritten,
 
@@ -742,7 +742,7 @@
 
 8:40 Die Söhne Ulams waren kriegstüchtige Männer, die den Bogen zu spannen wußten, und sie hatten zahlreiche Söhne und Enkel, hundertundfünfzig an der Zahl. Diese alle gehören zu den Nachkommen Benjamins.
 
-## Chapter 9
+## Kapitel 9
 
 9:1 Alle Israeliten wurden nach den Geschlechtern in ein Verzeichnis eingetragen; sie finden sich bekanntlich im Buche der Könige von Israel aufgezeichnet. Die Judäer aber wurden wegen ihres treulosen Abfalls nach Babylon (in die Gefangenschaft) geführt.
 
@@ -794,7 +794,7 @@
 
 9:25 Ihre Geschlechtsgenossen aber in ihren Dörfern hatten sich von sieben zu sieben Tagen, von einem Zeitpunkte zum andern, zugleich mit jenen zum Dienst einzustellen;
 
-9:26 denn sie, die vier Vorsteher der Torhüter, standen dauernd in Ausübung ihres Amtes.
+9:26 denn sie, die vier Vorsteher der Torhüter, standen dauernd in Ausübung ihres Amtes. Das sind die Leviten. Sie waren aber auch über die Zellen und Schatzkammern im Tempel Gottes gesetzt
 
 9:27 und blieben auch über Nacht rings um das Gotteshaus her, weil ihnen die Bewachung oblag und sie das Aufschließen zu besorgen hatten, und zwar Morgen für Morgen.
 
@@ -832,7 +832,7 @@
 
 9:44 Azel aber hatte sechs Söhne, die hießen: Asrikam, Bochru, Ismael, Searja, Obadja und Hanan. Dies waren die Söhne Azels.
 
-## Chapter 10
+## Kapitel 10
 
 10:1 Als es aber zwischen den Philistern und Israeliten zur Schlacht kam, wurde die Mannschaft der Israeliten von den Philistern in die Flucht geschlagen, und (viele) Erschlagene lagen auf dem Gebirge Gilboa umher.
 
@@ -862,7 +862,7 @@
 
 10:14 statt sich an den HERRN um eine Offenbarung zu wenden. Darum ließ dieser ihn ums Leben kommen und wandte das Königtum David, dem Sohne Isais, zu.
 
-## Chapter 11
+## Kapitel 11
 
 11:1 Nun fanden sich alle Israeliten bei David in Hebron ein und sagten: »Wir sind ja doch von deinem Fleisch und Bein!
 
@@ -958,11 +958,11 @@
 
 11:47 Eliel und Obed und Jaasiel aus Zoba.
 
-## Chapter 12
+## Kapitel 12
 
 12:1 Und dies sind die Männer, die zu David nach Ziklag kamen, als er noch von Saul, dem Sohne des Kis, verbannt war; auch sie gehörten zu den Helden, die ihm im Kampf halfen,
 
-12:2 ausgerüstet mit Bogen und geübt, mit der Rechten und mit der Linken Steine zu schleudern und Pfeile mit dem Bogen zu schießen.
+12:2 ausgerüstet mit Bogen und geübt, mit der Rechten und mit der Linken Steine zu schleudern und Pfeile mit dem Bogen zu schießen. Von den Stammesgenossen Sauls aus (dem Stamme) Benjamin waren da:
 
 12:3 der Oberste Ahieser und Joas, der Sohn Semaas aus Gibea; ferner Jesiel und Pelet, die Söhne Asmaweths, Beracha und Jehu aus Anathoth,
 
@@ -1042,7 +1042,7 @@
 
 12:41 außerdem brachten die in ihrer Nähe bis nach Issaschar, Sebulon und Naphthali hin Wohnenden Lebensmittel auf Eseln, Kamelen, Maultieren und Rindern herbei: Mundvorrat von Mehl, Feigenkuchen und Rosinenkuchen, Wein und Öl, auch Rinder und Kleinvieh in Menge; denn es herrschte eine freudige Stimmung in Israel.
 
-## Chapter 13
+## Kapitel 13
 
 13:1 Als David sich dann mit den Anführern der Tausendschaften und der Hundertschaften, mit allen Fürsten beraten hatte,
 
@@ -1072,7 +1072,7 @@
 
 13:14 So blieb denn die Lade Gottes ein Vierteljahr lang bei der Familie Obed-Edoms, in dessen Hause, stehen; der HERR aber segnete das Haus Obed-Edoms und seinen gesamten Besitz.
 
-## Chapter 14
+## Kapitel 14
 
 14:1 Nun schickte Hiram, der König von Tyrus, Gesandte an David mit Zedernstämmen, dazu Steinmetzen und Zimmerleute, damit sie ihm einen Palast bauten;
 
@@ -1108,7 +1108,7 @@
 
 14:17 Hierauf verbreitete sich der Ruhm Davids in alle Lande, und der HERR flößte allen Völkern Furcht vor ihm ein.
 
-## Chapter 15
+## Kapitel 15
 
 15:1 Hierauf baute er sich Häuser in der Davidsstadt und richtete für die Lade Gottes eine Stätte her, indem er ein Zelt für sie aufschlug.
 
@@ -1168,7 +1168,7 @@
 
 15:29 Da begab es sich, als die Lade mit dem Bundesgesetz des HERRN in die Davidsstadt einzog, daß Sauls Tochter Michal zum Fenster hinausschaute; als sie nun den König David so springen und tanzen sah, empfand sie Verachtung für ihn in ihrem Herzen.
 
-## Chapter 16
+## Kapitel 16
 
 16:1 Nachdem man dann die Lade Gottes hineingebracht und sie im Innern des Zeltes, das David für sie hatte aufschlagen lassen, niedergesetzt hatte, brachte man Brandopfer und Heilsopfer vor Gott dar;
 
@@ -1184,63 +1184,63 @@
 
 16:7 Damals, an jenem Tage, beauftragte David zum erstenmal Asaph und seine Amtsgenossen, das Danklied auf den HERRN zu singen:
 
-16:8 Preiset den HERRN, ruft seinen Namen an,
+16:8 Preiset den HERRN, ruft seinen Namen an, macht seine Taten unter den Völkern bekannt!
 
-16:9 Singet ihm, spielet ihm,
+16:9 Singet ihm, spielet ihm, redet von all seinen Wundern!
 
-16:10 Rühmt euch seines heiligen Namens!
+16:10 Rühmt euch seines heiligen Namens! Es mögen sich herzlich freuen, die da suchen den HERRN!
 
-16:11 Fragt nach dem HERRN und seiner Stärke,
+16:11 Fragt nach dem HERRN und seiner Stärke, suchet sein Angesicht allezeit!
 
-16:12 Gedenkt seiner Wunder, die er getan,
+16:12 Gedenkt seiner Wunder, die er getan, seiner Zeichen und der Urteilssprüche seines Mundes,
 
-16:13 ihr Kinder Israels, seine Knechte,
+16:13 ihr Kinder Israels, seine Knechte, ihr Söhne Jakobs, seine Erwählten!
 
-16:14 Er, der HERR, ist unser Gott,
+16:14 Er, der HERR, ist unser Gott, über die ganze Erde ergehen seine Gerichte.
 
-16:15 Er gedenkt seines Bundes auf ewig,
+16:15 Er gedenkt seines Bundes auf ewig, des Wortes, das er geboten auf tausend Geschlechter,
 
-16:16 (des Bundes) den er mit Abraham geschlossen,
+16:16 (des Bundes) den er mit Abraham geschlossen, und des Eides, den er Isaak geschworen,
 
-16:17 den für Jakob er als Satzung bestätigt
+16:17 den für Jakob er als Satzung bestätigt und für Israel als ewigen Bund,
 
-16:18 da er sprach: »Dir will ich Kanaan geben,
+16:18 da er sprach: »Dir will ich Kanaan geben, das Land, das ich euch als Erbbesitztum zugeteilt!«
 
-16:19 Damals wart ihr noch ein kleines Häuflein,
+16:19 Damals wart ihr noch ein kleines Häuflein, gar wenige und nur Gäste im Land;
 
-16:20 sie mußten wandern von Volk zu Volk
+16:20 sie mußten wandern von Volk zu Volk und von einem Reich zur anderen Völkerschaft;
 
-16:21 doch keinem gestattete er, sie zu bedrücken,
+16:21 doch keinem gestattete er, sie zu bedrücken, ja, Könige strafte er um ihretwillen:
 
-16:22 »Tastet meine Gesalbten nicht an
+16:22 »Tastet meine Gesalbten nicht an und tut meinen Propheten nichts zuleide!«
 
-16:23 Singet dem HERRN, alle Lande,
+16:23 Singet dem HERRN, alle Lande, verkündet Tag für Tag sein Heil!
 
-16:24 Erzählt von seiner Herrlichkeit unter den Heiden,
+16:24 Erzählt von seiner Herrlichkeit unter den Heiden, unter allen Völkern von seinen Wundertaten!
 
-16:25 Denn groß ist der HERR und hoch zu preisen,
+16:25 Denn groß ist der HERR und hoch zu preisen, und mehr zu fürchten als alle anderen Götter;
 
-16:26 denn alle Götter der Heiden sind nichtige Götzen,
+16:26 denn alle Götter der Heiden sind nichtige Götzen, doch der HERR hat den Himmel geschaffen.
 
-16:27 Hoheit und Pracht gehn vor ihm her,
+16:27 Hoheit und Pracht gehn vor ihm her, Macht und Wonne füllen seine Wohnstatt.
 
-16:28 Bringt dar dem HERRN, ihr Geschlechter der Völker,
+16:28 Bringt dar dem HERRN, ihr Geschlechter der Völker, bringt dar dem HERRN Ehre und Preis!
 
-16:29 Bringt dar dem HERRN die Ehre seines Namens!
+16:29 Bringt dar dem HERRN die Ehre seines Namens! Bringt Opfergaben und kommt vor sein Angesicht! Werft vor dem HERRN euch nieder in heiligem Schmuck!
 
-16:30 Erzittert vor ihm, alle Lande!
+16:30 Erzittert vor ihm, alle Lande! Auch den Erdkreis hat er gefestigt, daß er nicht wankt.
 
-16:31 Des freue sich der Himmel, die Erde jauchze,
+16:31 Des freue sich der Himmel, die Erde jauchze, und man sage unter den Heiden: »Der HERR ist König!«
 
-16:32 Es brause das Meer und was darin wimmelt!
+16:32 Es brause das Meer und was darin wimmelt! Es jauchze die Flur und was auf ihr wächst!
 
-16:33 Dann werden auch jubeln die Bäume des Waldes
+16:33 Dann werden auch jubeln die Bäume des Waldes vor dem HERRN, wenn er kommt, zu richten die Erde.
 
-16:34 Preiset den HERRN, denn er ist freundlich,
+16:34 Preiset den HERRN, denn er ist freundlich, ja, ewiglich währt seine Güte.
 
-16:35 Und betet: »Hilf uns, du Gott unsrer Hilfe!
+16:35 Und betet: »Hilf uns, du Gott unsrer Hilfe! Bringe uns wieder zusammen und rette uns aus den Heiden, damit wir danken deinem heiligen Namen, uns deines Lobpreises rühmen!«
 
-16:36 Gepriesen sei der HERR, der Gott Israels,
+16:36 Gepriesen sei der HERR, der Gott Israels, von Ewigkeit zu Ewigkeit! Da rief alles Volk »Amen!« und »Preis sei dem HERRN!«
 
 16:37 (David) ließ dann Asaph und seine Geschlechtsgenossen dort vor der Bundeslade des HERRN verbleiben, damit sie den Dienst vor der Lade ständig so verrichteten, wie ein jeder Tag es erforderte;
 
@@ -1256,7 +1256,7 @@
 
 16:43 Darauf kehrte jedermann im Volk nach Hause zurück; David aber wandte sich dazu, seine Familie zu begrüßen.
 
-## Chapter 17
+## Kapitel 17
 
 17:1 Als nun David in seinem Hause wohnte, sagte er (eines Tages) zu dem Propheten Nathan: »Bedenke doch: ich wohne hier in einem Zedernpalast, während die Lade mit dem Bundesgesetz des HERRN unter Zelttüchern steht.«
 
@@ -1312,7 +1312,7 @@
 
 17:27 nun denn, so möge es dir auch gefallen, das Haus deines Knechtes zu segnen, damit es für immer vor dir bestehe! Denn was du, HERR, gesegnet hast, das ist gesegnet ewiglich!«
 
-## Chapter 18
+## Kapitel 18
 
 18:1 Nachmals besiegte David die Philister und unterwarf sie und entriß der Gewalt der Philister Gath und die zugehörigen Ortschaften. –
 
@@ -1348,7 +1348,7 @@
 
 18:17 Benaja, der Sohn Jojadas, Befehlshaber (der Leibwache) der Krethi und Plethi; und die Söhne Davids waren die Ersten zur Seite des Königs.
 
-## Chapter 19
+## Kapitel 19
 
 19:1 Danach begab es sich, daß der Ammoniterkönig Nahas starb und sein Sohn (Hanun) ihm in der Regierung nachfolgte.
 
@@ -1388,7 +1388,7 @@
 
 19:19 Als sich nun die Leute Hadaresers von den Israeliten besiegt sahen, schlossen sie Frieden mit David und unterwarfen sich ihm. Infolgedessen hatten auch die Syrer keine Lust mehr, den Ammonitern noch Hilfe zu leisten.
 
-## Chapter 20
+## Kapitel 20
 
 20:1 Im folgenden Jahre aber führte Joab zu der Zeit, wo die Könige ins Feld zu ziehen pflegen, das Heer ins Feld und verwüstete das Land der Ammoniter; dann zog er hin und belagerte Rabba, während David in Jerusalem geblieben war. Als Joab dann Rabba erobert und zerstört hatte,
 
@@ -1406,7 +1406,7 @@
 
 20:8 Diese drei stammten aus dem Riesengeschlecht in Gath und fielen durch die Hand Davids und seiner Krieger.
 
-## Chapter 21
+## Kapitel 21
 
 21:1 Es trat aber (der) Satan gegen Israel auf und verführte David dazu, eine Zählung der Israeliten vorzunehmen.
 
@@ -1468,7 +1468,7 @@
 
 21:30 Doch David gewann es nicht über sich, dort vor Gott zu treten, um ihn zu verehren, weil er durch das Schwert des Engels des HERRN in Schrecken versetzt worden war.
 
-## Chapter 22
+## Kapitel 22
 
 22:1 Und David erklärte: »Dies hier muß das Haus Gottes, des HERRN, werden und dies der Brandopferaltar für Israel!«
 
@@ -1508,7 +1508,7 @@
 
 22:19 So richtet denn euer Herz und euren Sinn darauf, den HERRN, euren Gott, zu suchen, und macht euch daran, das Heiligtum Gottes, des HERRN, zu erbauen, damit ihr die Bundeslade des HERRN und die heiligen Geräte Gottes in den Tempel bringen könnt, der dem Namen des HERRN erbaut werden soll!«
 
-## Chapter 23
+## Kapitel 23
 
 23:1 Als nun David alt und lebenssatt war, machte er seinen Sohn Salomo zum König über Israel.
 
@@ -1574,7 +1574,7 @@
 
 23:32 So haben sie also die Geschäfte am Offenbarungszelt und die Geschäfte am Heiligtum, überhaupt die Geschäfte zur Unterstützung der Nachkommen Aarons, ihrer Stammesgenossen, beim Dienst am Tempel des HERRN zu besorgen.
 
-## Chapter 24
+## Kapitel 24
 
 24:1 Was sodann die Nachkommen Aarons betrifft, so waren ihre Abteilungen folgende: Die Söhne Aarons waren: Nadab und Abihu, Eleasar und Ithamar.
 
@@ -1638,7 +1638,7 @@
 
 24:31 Auch sie wurden ausgelost ganz wie ihre Stammesgenossen, die Nachkommen Aarons, in Gegenwart des Königs David und Zadoks und Ahimelechs sowie der Familienhäupter der Priester und der Leviten, und zwar die Familienhäupter ganz ebenso wie ihre jüngsten Stammesgenossen.
 
-## Chapter 25
+## Kapitel 25
 
 25:1 Weiter sonderte David mit den Heeresobersten von den Söhnen Asaphs, Hemans und Jeduthuns diejenigen aus, die auf Zithern, Harfen und mit Zimbeln als Leiter der geistlichen Kunstmusik für den heiligen Dienst tätig waren. Die Zahl der zu diesem Dienst bestellten Männer war folgende:
 
@@ -1702,7 +1702,7 @@
 
 25:31 das vierundzwanzigste auf Romamthi-Eser nebst seinen Söhnen und Brüdern, zusammen zwölf.
 
-## Chapter 26
+## Kapitel 26
 
 26:1 Was die Abteilungen der Torhüter betrifft, so gehörte von den Korahiten Meselemja, der Sohn Kores, zu den Nachkommen Ebjasaphs;
 
@@ -1768,7 +1768,7 @@
 
 26:32 dazu seine Stammesgenossen, tüchtige Männer, zusammen 2700; denen übertrug der König David die Verwaltung der Stämme Ruben, Gad und halb Manasse für alle Angelegenheiten Gottes und für die Angelegenheiten des Königs.
 
-## Chapter 27
+## Kapitel 27
 
 27:1 Und dies waren die Israeliten nach ihrer Zahl, die Familienhäupter und die Befehlshaber der Tausendschaften und der Hundertschaften sowie ihre Amtleute, die im Dienst des Königs standen, in allen Angelegenheiten der Abteilungen, welche Monat für Monat, alle Monate des Jahres hindurch, antraten und abtraten; eine jede Abteilung war 24000 Mann stark.
 
@@ -1838,7 +1838,7 @@
 
 27:34 Nach Ahithophel war es Jojada, der Sohn Benajas, und Abjathar; Joab aber war der Feldhauptmann des Königs.
 
-## Chapter 28
+## Kapitel 28
 
 28:1 David berief zu einer Versammlung nach Jerusalem alle höchststehenden Männer der Israeliten, nämlich die Stammesfürsten, die Obersten der Abteilungen, die im Dienst des Königs standen, die Befehlshaber der Tausendschaften und der Hundertschaften, die Verwalter der liegenden und beweglichen Güter des Königs und seiner Söhne, samt den Kämmerern und den Rittern und allen übrigen hervorragenden Männern.
 
@@ -1882,7 +1882,7 @@
 
 28:21 Schon sind hier die Abteilungen der Priester und der Leviten für den gesamten Dienst am Hause Gottes bereit, und zur Verfügung stehen dir für die Ausführung des ganzen Werkes Männer, die zu allen Verrichtungen willig und geschickt sind, dazu auch die Fürsten und das ganze Volk für alle deine Anordnungen.«
 
-## Chapter 29
+## Kapitel 29
 
 29:1 Hierauf redete der König David die ganze Versammlung folgendermaßen an: »Mein Sohn Salomo, [der einzige,] den Gott erwählt hat, ist noch jung und zart, das Werk aber gewaltig; denn nicht für einen Menschen ist dieser Prachtbau bestimmt, sondern für Gott den HERRN.
 

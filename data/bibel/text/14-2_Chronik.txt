@@ -1,6 +1,6 @@
 # ZWEITES BUCH DER CHRONIK
 
-## Chapter 1
+## Kapitel 1
 
 1:1 Als nun Salomo, der Sohn Davids, sich in seiner Herrschaft befestigt hatte – der HERR, sein Gott, war nämlich mit ihm und ließ ihn überaus mächtig werden –,
 
@@ -38,7 +38,7 @@
 
 1:18 Darauf beschloß Salomo, dem Namen des HERRN einen Tempel und für sich selbst einen Königspalast zu bauen.
 
-## Chapter 2
+## Kapitel 2
 
 2:1 So ließ er denn 70000 Lastträger und 80000 Steinhauer im Gebirge (Juda) und 3600 Aufseher über sie abzählen.
 
@@ -74,7 +74,7 @@
 
 2:17 Von diesen machte er 70000 zu Lastträgern, 80000 zu Steinhauern im Gebirge (Juda) und 3600 zu Aufsehern, welche die Leute zur Arbeit anzuhalten hatten.
 
-## Chapter 3
+## Kapitel 3
 
 3:1 Hierauf begann Salomo den Tempel des HERRN in Jerusalem zu bauen auf dem Berge Morija, wo der HERR seinem Vater David erschienen war, auf dem Platze, den David dazu bestimmt hatte, nämlich auf der Tenne des Jebusiters Ornan;
 
@@ -110,7 +110,7 @@
 
 3:17 Die Säulen ließ er dann auf der Vorderseite des Tempels aufstellen, die eine rechts, die andere links; und die rechtsstehende nannte er Jachin, die linksstehende Boas.
 
-## Chapter 4
+## Kapitel 4
 
 4:1 Weiter ließ er einen kupfernen Altar von 20 Ellen Länge, 20 Ellen Breite und 10 Ellen Höhe herstellen. –
 
@@ -156,7 +156,7 @@
 
 4:22 weiter die Messer, Sprengschalen, Schüsseln und Räucherpfannen aus gediegenem Gold. Was schließlich die Türen des Tempels betrifft, so waren die inneren Türflügel am Eingang zum Allerheiligsten sowie die Flügeltüren des Tempelhauses, die in den großen Raum führten, von Gold.
 
-## Chapter 5
+## Kapitel 5
 
 5:1 Als nun alle Arbeiten, die Salomo für den Tempel des HERRN hatte herstellen lassen, fertig waren, ließ Salomo die Weihgeschenke seines Vaters David hineinbringen und legte das Silber, das Gold und sämtliche Geräte in den Schatzkammern des Gotteshauses nieder.
 
@@ -186,7 +186,7 @@
 
 5:14 so daß die Priester wegen der Wolke nicht hintreten konnten, um ihren Dienst zu versehen; denn die Herrlichkeit des HERRN erfüllte das Gotteshaus.
 
-## Chapter 6
+## Kapitel 6
 
 6:1 Damals sprach Salomo: »Der HERR hat erklärt, er wolle im Dunkel wohnen.
 
@@ -272,7 +272,7 @@
 
 6:42 O HERR, mein Gott, weise deinen Gesalbten nicht ab! Gedenke der Gnadenerweise, die du deinem Knechte David verheißen hast!«
 
-## Chapter 7
+## Kapitel 7
 
 7:1 Als dann Salomo mit seinem Gebet zu Ende war, fuhr Feuer vom Himmel herab und verzehrte das Brandopfer und die Schlachtopfer, und die Herrlichkeit des HERRN erfüllte das Tempelhaus,
 
@@ -318,7 +318,7 @@
 
 7:22 so wird man antworten: ›Zur Strafe dafür, daß sie den HERRN, den Gott ihrer Väter, der sie aus dem Lande Ägypten hinausgeführt hatte, verlassen und sich anderen Göttern zugewandt und sie angebetet und ihnen gedient haben: darum hat er all dieses Unglück über sie kommen lassen!‹«
 
-## Chapter 8
+## Kapitel 8
 
 8:1 Nach Ablauf der zwanzig Jahre aber, während deren Salomo den Tempel des HERRN und seinen Palast erbaut hatte,
 
@@ -356,7 +356,7 @@
 
 8:18 Huram aber sandte ihm durch seine Leute Schiffe und seekundige Leute, die zusammen mit Salomos Leuten nach Ophir fuhren und von dort 450 Talente Gold holten und es dem König Salomo überbrachten.
 
-## Chapter 9
+## Kapitel 9
 
 9:1 Als aber die Königin von Saba den Ruhm Salomos vernahm, kam sie, um Salomo mit Rätselfragen auf die Probe zu stellen, nach Jerusalem mit einem sehr großen Gefolge und mit Kamelen, die Spezereien und Gold in Menge und Edelsteine trugen. Als sie nun bei Salomo angekommen war, trug sie ihm alles vor, was sie sich vorgenommen hatte;
 
@@ -420,7 +420,7 @@
 
 9:31 Dann legte Salomo sich zu seinen Vätern, und man begrub ihn in der Stadt seines Vaters David. Sein Sohn Rehabeam folgte ihm in der Regierung nach.
 
-## Chapter 10
+## Kapitel 10
 
 10:1 Rehabeam begab sich nun nach Sichem; denn in Sichem hatten sich alle Israeliten eingefunden, um ihn zum König zu machen.
 
@@ -430,7 +430,7 @@
 
 10:4 »Dein Vater hat uns ein hartes Joch auferlegt; so erleichtere du uns jetzt deines Vaters harten Dienst und das schwere Joch, das er uns auferlegt hat, so wollen wir dir untertan sein!«
 
-10:5 Er antwortete ihnen: »Geduldet euch noch drei Tage, dann kommt wieder zu mir!«
+10:5 Er antwortete ihnen: »Geduldet euch noch drei Tage, dann kommt wieder zu mir!« Nachdem sich nun das Volk entfernt hatte,
 
 10:6 beriet sich der König Rehabeam mit den alten Räten, die seinem Vater Salomo bei dessen Lebzeiten gedient hatten, und fragte sie: »Welche Antwort ratet ihr mir diesen Leuten zu erteilen?«
 
@@ -460,7 +460,7 @@
 
 10:19 So fiel Israel vom Hause Davids ab bis auf den heutigen Tag.
 
-## Chapter 11
+## Kapitel 11
 
 11:1 Als aber Rehabeam in Jerusalem angekommen war, bot er den Stamm Juda und Benjamin, 180000 auserlesene Krieger, zum Kampf gegen Israel auf, um das Königtum für Rehabeam wiederzugewinnen.
 
@@ -508,7 +508,7 @@
 
 11:23 Dabei ging er klug zu Werke, indem er alle seine Söhne auf die einzelnen Landesteile von Juda und Benjamin und auf alle festen Plätze verteilte und ihnen ein reichliches Auskommen zuwies und Frauen in Menge für sie warb.
 
-## Chapter 12
+## Kapitel 12
 
 12:1 Als Rehabeam sich aber auf dem Throne befestigt und seine Herrschaft gesichert hatte, fiel er und ganz Israel mit ihm vom Gesetz des HERRN ab.
 
@@ -542,7 +542,7 @@
 
 12:16 Als Rehabeam sich dann zu seinen Vätern gelegt hatte, wurde er in der Davidsstadt begraben, und sein Sohn Abia folgte ihm in der Regierung nach.
 
-## Chapter 13
+## Kapitel 13
 
 13:1 Im achtzehnten Jahre (der Regierung) des Königs Jerobeam wurde Abia König über Juda.
 
@@ -590,7 +590,7 @@
 
 13:23 Als Abia sich aber zu seinen Vätern gelegt und man ihn in der Davidsstadt begraben hatte, folgte ihm sein Sohn Asa auf dem Throne nach; unter dessen Regierung erfreute das Land sich zehn Jahre lang der Ruhe.
 
-## Chapter 14
+## Kapitel 14
 
 14:1 Asa tat, was in den Augen des HERRN, seines Gottes, gut und recht war;
 
@@ -620,7 +620,7 @@
 
 14:14 Auch der Zeltlager mit den Herden bemächtigten sie sich, trieben Kleinvieh in Menge und Kamele als Beute weg und kehrten dann nach Jerusalem zurück.
 
-## Chapter 15
+## Kapitel 15
 
 15:1 Da kam der Geist Gottes über Asarja, den Sohn Odeds,
 
@@ -660,7 +660,7 @@
 
 15:19 Bis zum fünfunddreißigsten Regierungsjahre Asas fand kein Krieg statt;
 
-## Chapter 16
+## Kapitel 16
 
 16:1 aber im sechsunddreißigsten Regierungsjahre Asas zog Baesa, der König von Israel, gegen Juda heran und befestigte Rama, damit niemand mehr bei Asa, dem Könige von Juda, ungehindert aus- und eingehen könne.
 
@@ -690,7 +690,7 @@
 
 16:14 begrub man ihn in seiner Grabstätte, die er sich in der Davidsstadt hatte aushauen lassen. Man legte ihn auf ein Lager, das man mit Spezereien aller Art und mit Wohlgerüchen von kunstgerecht hergestellten Salben angefüllt hatte, und veranstaltete ihm zu Ehren einen überaus großartigen Leichenbrand.
 
-## Chapter 17
+## Kapitel 17
 
 17:1 Sein Nachfolger auf dem Throne wurde sein Sohn Josaphat, der mit Nachdruck gegen Israel auftrat.
 
@@ -730,7 +730,7 @@
 
 17:19 Diese waren es, die im Dienst des Königs standen, abgesehen von jenen, welche der König in die festen Plätze von ganz Juda gelegt hatte.
 
-## Chapter 18
+## Kapitel 18
 
 18:1 Als Josaphat aber Reichtum und Ehre in Fülle erlangt hatte, verschwägerte er sich mit Ahab
 
@@ -800,7 +800,7 @@
 
 18:34 Da aber der Kampf an jenem Tage immer heftiger entbrannte, blieb der König von Israel dann doch den Syrern gegenüber aufrecht im Wagen stehen bis zum Abend; um die Zeit des Sonnenuntergangs aber starb er.
 
-## Chapter 19
+## Kapitel 19
 
 19:1 Als dann Josaphat, der König von Juda, wohlbehalten nach Hause, nach Jerusalem, zurückgekehrt war,
 
@@ -824,7 +824,7 @@
 
 19:11 Dabei soll der Oberpriester Amarja für alle Angelegenheiten des HERRN und Sebadja, der Sohn Ismaels, der Fürst des Hauses Juda, für alle königlichen Angelegenheiten euer Vorgesetzter sein; und als Beisitzer stehen euch die Leviten zur Verfügung. Geht mit Vertrauen ans Werk! Der HERR wird mit den Rechtschaffenen sein.«
 
-## Chapter 20
+## Kapitel 20
 
 20:1 Später begab es sich, daß die Moabiter und Ammoniter und mit ihnen ein Teil der Mehuniter heranzogen, um Josaphat zu bekriegen.
 
@@ -900,7 +900,7 @@
 
 20:37 Aber Elieser, der Sohn Dodawas, aus Maresa, sprach gegen Josaphat die Weissagung aus: »Weil du dich in ein Bündnis mit Ahasja eingelassen hast, wird der HERR dein Machwerk zerstören!« So scheiterten denn die Schiffe und kamen nicht dazu, nach Tharsis zu fahren.
 
-## Chapter 21
+## Kapitel 21
 
 21:1 Als Josaphat sich dann zu seinen Vätern gelegt und man ihn bei seinen Vätern in der Davidsstadt begraben hatte, folgte ihm sein Sohn Joram in der Regierung nach.
 
@@ -942,7 +942,7 @@
 
 21:20 Im Alter von zweiunddreißig Jahren war er König geworden, und acht Jahre hatte er in Jerusalem regiert; er ging dahin, von niemand zurückersehnt, und man begrub ihn in der Davidsstadt, aber nicht in den Gräbern der Könige.
 
-## Chapter 22
+## Kapitel 22
 
 22:1 Darauf machten die Bewohner Jerusalems seinen jüngsten Sohn Ahasja an seiner Statt zum König; denn alle älteren Söhne hatte die Streifschar ermordet, die mit den Arabern in das Lager eingedrungen war, und so wurde Ahasja König, der Sohn des Königs Joram von Juda.
 
@@ -968,7 +968,7 @@
 
 22:12 Er blieb dann sechs Jahre lang bei ihnen im Hause Gottes versteckt, während Athalja das Land regierte.
 
-## Chapter 23
+## Kapitel 23
 
 23:1 Im siebten Jahre aber faßte Jojada einen kühnen Entschluß und setzte sich mit den Befehlshabern der Hundertschaften, nämlich mit Asarja, dem Sohne Jerohams, Ismael, dem Sohne Johanans, Asarja, dem Sohne Obeds, Maaseja, dem Sohne Adajas, und Elisaphat, dem Sohne Sichris, ins Einvernehmen.
 
@@ -1012,7 +1012,7 @@
 
 23:21 Da war alles Volk im Lande voller Freude, und die Stadt blieb ruhig; Athalja aber hatte man mit dem Schwert getötet.
 
-## Chapter 24
+## Kapitel 24
 
 24:1 Joas war beim Regierungsantritt sieben Jahre alt und regierte vierzig Jahre in Jerusalem; seine Mutter hieß Zibja und stammte aus Beerseba.
 
@@ -1068,7 +1068,7 @@
 
 24:27 Was aber seine Söhne betrifft und die vielen Prophetensprüche gegen ihn und den Neubau des Hauses Gottes: das alles findet sich bereits aufgezeichnet in der erbaulichen Auslegung des Buches der Könige. Sein Sohn Amazja folgte ihm dann in der Regierung nach.
 
-## Chapter 25
+## Kapitel 25
 
 25:1 Im Alter von fünfundzwanzig Jahren kam Amazja auf den Thron, und neunundzwanzig Jahre regierte er in Jerusalem; seine Mutter hieß Joaddan und stammte aus Jerusalem.
 
@@ -1126,7 +1126,7 @@
 
 25:28 Dann lud man ihn auf Rosse und begrub ihn bei seinen Vätern in der Davidsstadt.
 
-## Chapter 26
+## Kapitel 26
 
 26:1 Hierauf nahm das ganze Volk von Juda den Ussia, obgleich er erst sechzehn Jahre alt war, und machte ihn zum König als Nachfolger seines Vaters Amazja.
 
@@ -1174,7 +1174,7 @@
 
 26:23 Als Ussia sich dann zu seinen Vätern gelegt hatte, begrub man ihn [bei seinen Vätern] auf dem (freien) Felde bei der Begräbnisstätte der Könige; denn man sagte: »Er ist aussätzig!« Sein Sohn Jotham folgte ihm in der Regierung nach.
 
-## Chapter 27
+## Kapitel 27
 
 27:1 Im Alter von fündundzwanzig Jahren wurde Jotham König und regierte sechzehn Jahre in Jerusalem; seine Mutter hieß Jerusa und war eine Tochter Zadoks.
 
@@ -1194,7 +1194,7 @@
 
 27:9 Als Jotham sich dann zu seinen Vätern gelegt und man ihn in der Davidsstadt begraben hatte, folgte ihm sein Sohn Ahas in der Regierung nach.
 
-## Chapter 28
+## Kapitel 28
 
 28:1 Im Alter von zwanzig Jahren wurde Ahas König und regierte sechzehn Jahre in Jerusalem. Er tat nicht, was dem HERRN, seinem Gott, wohlgefiel, wie sein Ahnherr David getan hatte,
 
@@ -1250,7 +1250,7 @@
 
 28:27 Als Ahas sich dann zu seinen Vätern gelegt hatte, begrub man ihn in der Stadt, in Jerusalem; denn man setzte ihn nicht in den Gräbern der israelitischen Könige bei. Sein Sohn Hiskia aber folgte ihm in der Regierung nach.
 
-## Chapter 29
+## Kapitel 29
 
 29:1 Hiskia wurde im Alter von fünfundzwanzig Jahren König und regierte neunundzwanzig Jahre in Jerusalem; seine Mutter hieß Abija und war eine Tochter Sacharjas.
 
@@ -1320,11 +1320,11 @@
 
 29:34 Weil nun die Priester zu wenige waren, so daß sie nicht allen Brandopfern die Haut abzuziehen vermochten, halfen ihnen ihre Stammesgenossen, die Leviten, bis die Arbeit zu Ende gebracht war und bis die Priester sich geheiligt hatten; die Leviten waren nämlich mit größerem Eifer darauf bedacht gewesen, sich zu heiligen, als die Priester.
 
-29:35 Auch Brandopfer waren in Menge zu besorgen nebst den Fettstücken der Heilsopfer und nebst den zu den Brandopfern gehörenden Trankopfern.
+29:35 Auch Brandopfer waren in Menge zu besorgen nebst den Fettstücken der Heilsopfer und nebst den zu den Brandopfern gehörenden Trankopfern. So war denn der Dienst am Tempel des HERRN wiederhergestellt;
 
 29:36 Hiskia aber und das ganze Volk freuten sich über das Glück, das der HERR dem Volke hatte zuteil werden lassen; denn die Sache war außerordentlich schnell vor sich gegangen.
 
-## Chapter 30
+## Kapitel 30
 
 30:1 Hierauf sandte Hiskia Boten an ganz Israel und Juda und schrieb auch Briefe an Ephraim und Manasse, sie möchten zum Hause des HERRN in Jerusalem kommen, um dem HERRN, dem Gott Israels, eine Passahfeier zu veranstalten.
 
@@ -1380,7 +1380,7 @@
 
 30:27 Die levitischen Priester aber erhoben sich und segneten das Volk, und ihre laute Bitte fand Erhörung: ihr Gebet drang zu seiner heiligen Wohnung, in den Himmel.
 
-## Chapter 31
+## Kapitel 31
 
 31:1 Als nun alle diese (Festlichkeiten) zu Ende waren, zogen sämtliche Israeliten, die sich dazu eingefunden hatten, in die Ortschaften Judas hinaus, zertrümmerten die Malsteine, zerschlugen die Standbilder der Aschera und zerstörten die Opferhöhen und die Altäre in ganz Juda und Benjamin sowie in Ephraim und Manasse, bis sie sie gänzlich vernichtet hatten; darauf kehrten alle Israeliten in ihre Ortschaften zurück, ein jeder zu seinem Besitztum.
 
@@ -1424,7 +1424,7 @@
 
 31:21 und bei allem, was er in betreff des Dienstes am Hause Gottes und auf Grund des Gesetzes und des Gebotes, um seinen Gott zu suchen, vornahm, handelte er mit voller Aufrichtigkeit und hatte daher auch glücklichen Erfolg.
 
-## Chapter 32
+## Kapitel 32
 
 32:1 Nach diesen Begebenheiten und dieser von Hiskia bewiesenen Treue zog Sanherib, der König von Assyrien, heran, drang in Juda ein und belagerte die festen Plätze in der Absicht, sie für sich zu erobern.
 
@@ -1492,7 +1492,7 @@
 
 32:33 Als Hiskia sich dann zu seinen Vätern gelegt hatte, begrub man ihn am Aufstieg zu den Gräbern der Nachkommen Davids; und ganz Juda und die Bevölkerung Jerusalems erzeigten ihm Ehre bei seinem Tode. Sein Sohn Manasse folgte ihm dann in der Regierung nach.
 
-## Chapter 33
+## Kapitel 33
 
 33:1 Im Alter von zwölf Jahren wurde Manasse König und regierte fünfundfünfzig Jahre in Jerusalem.
 
@@ -1544,7 +1544,7 @@
 
 33:25 Die Landbevölkerung aber erschlug alle, die an der Verschwörung gegen den König Amon teilgenommen hatten, und erhob dann seinen Sohn Josia zu seinem Nachfolger auf dem Throne.
 
-## Chapter 34
+## Kapitel 34
 
 34:1 Im Alter von acht Jahren wurde Josia König, und einunddreißig Jahre regierte er in Jerusalem.
 
@@ -1600,7 +1600,7 @@
 
 34:27 weil dein Herz weich geworden ist und du dich vor Gott gedemütigt hast, als du seine Drohungen gegen diesen Ort und gegen seine Bewohner vernahmst, und du dich vor mir gedemütigt und deine Kleider zerrissen und vor mir geweint hast, so habe auch ich dir Gehör geschenkt‹ – so lautet der Ausspruch des HERRN.
 
-34:28 ›Darum wisse wohl: wenn ich dich zu deinen Vätern versammle, sollst du in Frieden in deine Grabstätte eingebracht werden, und deine Augen sollen all das Unglück, das ich über diesen Ort und seine Bewohner bringen werde, nicht zu sehen bekommen!‹«
+34:28 ›Darum wisse wohl: wenn ich dich zu deinen Vätern versammle, sollst du in Frieden in deine Grabstätte eingebracht werden, und deine Augen sollen all das Unglück, das ich über diesen Ort und seine Bewohner bringen werde, nicht zu sehen bekommen!‹« Als sie nun dem Könige Bericht erstattet hatten,
 
 34:29 sandte der König Boten aus und ließ alle Ältesten von Juda und Jerusalem zusammenkommen.
 
@@ -1612,7 +1612,7 @@
 
 34:33 So schaffte denn Josia alle Götzengreuel aus sämtlichen Landschaften der Israeliten weg und verpflichtete alle, die sich in Israel befanden, zur Verehrung des HERRN, ihres Gottes. Solange Josia lebte, wichen sie nicht von der Nachfolge des HERRN, des Gottes ihrer Väter, ab.
 
-## Chapter 35
+## Kapitel 35
 
 35:1 Hierauf feierte Josia dem HERRN ein Passah in Jerusalem; und zwar schlachtete man das Passah am vierzehnten Tage des ersten Monats.
 
@@ -1668,7 +1668,7 @@
 
 35:27 überhaupt seine Geschichte von Anfang bis zu Ende, das findet sich bekanntlich schon aufgezeichnet im Buch der Könige von Israel und Juda.
 
-## Chapter 36
+## Kapitel 36
 
 36:1 Die Landbevölkerung nahm dann Joahas, den Sohn Josias, und machte ihn zum König in Jerusalem als Nachfolger seines Vaters.
 

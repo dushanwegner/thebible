@@ -1,8 +1,8 @@
 # DAS BUCH NEHEMIA
 
-## Chapter 1
+## Kapitel 1
 
-1:1 Die Worte Nehemias, des Sohnes Hachaljas.
+1:1 Die Worte Nehemias, des Sohnes Hachaljas. Es begab sich im Monat Kislew im zwanzigsten Regierungsjahre des Königs Arthasastha, als ich mich in der Königsstadt Susa befand,
 
 1:2 daß Hanani, einer von meinen Brüdern, mit einigen Männern aus Juda (zu mir) kam. Als ich mich nun bei ihnen nach den Juden, die in der Heimat zurückgeblieben und der Wegführung entgangen waren, und nach (den Verhältnissen in) Jerusalem erkundigte,
 
@@ -24,7 +24,7 @@
 
 1:11 Ach, HERR, laß doch dein Ohr aufmerken auf das Gebet deines Knechtes und auf das Gebet deiner Knechte, die gewillt sind (ihre Freude daran haben), deinen Namen zu fürchten! Laß es doch heute deinem Knecht gelingen und laß ihn Erbarmen finden bei dem Manne hier!« Ich war nämlich Mundschenk beim König.
 
-## Chapter 2
+## Kapitel 2
 
 2:1 Nun begab es sich im Monat Nisan im zwanzigsten Regierungsjahre des Königs Arthasastha, als der Wein vor mir stand, da trug ich den Wein auf und reichte ihn dem Könige; ich hatte aber früher nie betrübt vor ihm ausgesehen,
 
@@ -66,7 +66,7 @@
 
 2:20 Da gab ich ihnen folgende Antwort: »Der Gott des Himmels, der wird es uns gelingen lassen; und wir wollen uns als seine Knechte an den Bau machen! Ihr aber sollt weder Anteil, noch Anrecht, noch ein Gedächtnis in Jerusalem haben!«
 
-## Chapter 3
+## Kapitel 3
 
 3:1 Hierauf machte sich der Hohepriester Eljasib mit seinen Amtsgenossen, den Priestern, daran, das Schaftor neu zu bauen; das weihten sie und setzten seine Torflügel ein und führten dann den Bau weiter bis zum Turm Hammea, den sie weihten, und bis zum Turm Hananeel.
 
@@ -144,7 +144,7 @@
 
 3:38 Wir aber bauten an der Mauer weiter; und als die ganze Mauer bis zur halben Höhe fertig war, gewann das Volk neuen Mut zur Arbeit.
 
-## Chapter 4
+## Kapitel 4
 
 4:1 Als aber Sanballat und Tobija sowie die Araber und Ammoniter und Asdoditer erfuhren, daß die Wiederherstellung der Mauern Jerusalems Fortschritte machte, und daß die Lücken sich zu schließen begannen, da gerieten sie in heftigen Zorn
 
@@ -180,7 +180,7 @@
 
 4:17 Und weder ich, noch meine Brüder, noch meine Leute, noch die Wachmannschaften, die zu meinem Gefolge gehörten, keiner von uns kam jemals aus den Kleidern heraus: ein jeder hatte stets seine Waffe zur Hand.
 
-## Chapter 5
+## Kapitel 5
 
 5:1 Es erhob sich aber ein großes Klagegeschrei der Leute aus dem Volk und ihrer Frauen gegen ihre jüdischen Volksgenossen.
 
@@ -220,7 +220,7 @@
 
 5:19 Gedenke, mein Gott, mir zum Guten alles dessen, was ich für dieses Volk getan habe!
 
-## Chapter 6
+## Kapitel 6
 
 6:1 Als es nun dem Sanballat, dem Tobija und dem Araber Gesem sowie unseren übrigen Feinden bekannt wurde, daß ich die Mauer wieder aufgebaut hätte und daß keine Lücke mehr in ihr geblieben wäre – nur hatte ich bis dahin noch keine Türflügel in die Tore eingesetzt –,
 
@@ -260,7 +260,7 @@
 
 6:19 Sie redeten sogar in meiner Gegenwart von seinen guten Eigenschaften und hinterbrachten ihm meine Äußerungen; auch sandte Tobija Briefe, um mich einzuschüchtern.
 
-## Chapter 7
+## Kapitel 7
 
 7:1 Als nun die Mauer aufgebaut war und ich die Türflügel hatte einsetzen lassen, wurden die Torwächter angestellt.
 
@@ -274,7 +274,7 @@
 
 7:6 Folgendes sind die Bewohner des Bezirks, die aus der Gefangenschaft der in der Verbannung Lebenden, die Nebukadnezar, der König von Babylon, einst (nach Babylon) weggeführt hatte, hinaufgezogen und nach Jerusalem und Juda zurückgekehrt sind, ein jeder in seine Ortschaft,
 
-7:7 und zwar sind sie dorthin gekommen zusammen mit Serubbabel, Jesua, Nehemia, Asarja, Raamja, Nahamani, Mordechai, Bilsan, Mispereth, Bigwai, Nehum und Baana.
+7:7 und zwar sind sie dorthin gekommen zusammen mit Serubbabel, Jesua, Nehemia, Asarja, Raamja, Nahamani, Mordechai, Bilsan, Mispereth, Bigwai, Nehum und Baana. Die Zahl der Männer des Volkes Israel betrug:
 
 7:8 die Familie Parhos 2172;
 
@@ -404,9 +404,9 @@
 
 7:71 und was das übrige Volk gab, betrug an Gold 20000 Dariken und an Silber 2000 Minen und 67 Priestergewänder.
 
-7:72 So siedelten sich denn die Priester und die Leviten sowie die Torhüter, die Sänger und die Tempelhörigen in Jerusalem und dessen Gebiet an, alle übrigen Israeliten dagegen in ihren Ortschaften.
+7:72 So siedelten sich denn die Priester und die Leviten sowie die Torhüter, die Sänger und die Tempelhörigen in Jerusalem und dessen Gebiet an, alle übrigen Israeliten dagegen in ihren Ortschaften. Als nun der siebte Monat herankam, während die Israeliten sich in ihren Ortschaften befanden,
 
-## Chapter 8
+## Kapitel 8
 
 8:1 da versammelte sich das ganze Volk bis auf den letzten Mann auf dem Platze vor dem Wassertor und richtete an Esra, den Schriftgelehrten, die Bitte, er möchte das Buch des mosaischen Gesetzes herbringen, das der HERR den Israeliten geboten hatte.
 
@@ -444,7 +444,7 @@
 
 8:18 Man las dann aber aus dem Gesetzbuche Gottes Tag für Tag vor, vom ersten bis zum letzten Tage; und sie feierten das Fest sieben Tage lang, und am achten Tage fand vorschriftgemäß eine Festversammlung statt.
 
-## Chapter 9
+## Kapitel 9
 
 9:1 Am vierundzwanzigsten Tage desselben Monats aber versammelten sich die Israeliten unter Fasten, und zwar in Trauergewändern und mit Erde auf dem Haupte.
 
@@ -454,7 +454,7 @@
 
 9:4 Darauf traten Jesua und Bani, Kadmiel, Sebanja, Bunni, Serabja, Bani und Kenani auf den erhöhten Platz der Leviten hinauf und riefen den HERRN, ihren Gott, mit lauter Stimme an.
 
-9:5 Alsdann hielten die Leviten Jesua und Kadmiel, Bani, Hasabneja, Serebja, Hodija, Sebanja und Pethahja folgende Ansprache:
+9:5 Alsdann hielten die Leviten Jesua und Kadmiel, Bani, Hasabneja, Serebja, Hodija, Sebanja und Pethahja folgende Ansprache: »Ach! Preiset den HERRN, euren Gott, von Ewigkeit zu Ewigkeit! Und man preise deinen herrlichen Namen, der über allen Lobpreis und Ruhm erhaben ist!
 
 9:6 Du bist es, der da ist, HERR, du allein! Du bist es, der den Himmel und den obersten Himmel samt ihrem ganzen Heer geschaffen hat, die Erde mit allem, was auf ihr ist, die Meere mit allem, was in ihnen ist; und du bist es, der dies alles am Leben erhält und den das himmlische Heer anbetet.
 
@@ -520,7 +520,7 @@
 
 9:37 Seinen reichen Ertrag liefert es den Königen, die du um unserer Sünden willen über uns gesetzt hast, und sie herrschen über unsere Leiber und über unser Vieh nach ihrem Gutdünken, so daß wir uns in großer Not befinden.«
 
-## Chapter 10
+## Kapitel 10
 
 10:1 Auf Grund aller dieser Umstände schließen wir einen festen Vertrag und fertigen ihn schriftlich aus; und auf der untersiegelten Urkunde stehen die Namen unserer Obersten, unserer Leviten und unserer Priester;
 
@@ -602,7 +602,7 @@
 
 10:40 Denn in die Zellen sollen sowohl die Israeliten als auch die Leviten die Abgaben vom Getreide, vom Most und vom Öl liefern; denn dort befinden sich auch die heiligen Geräte sowie die diensttuenden Priester, die Torhüter und die Sänger. Und so wollen wir es dem Hause unsers Gottes an nichts fehlen lassen.
 
-## Chapter 11
+## Kapitel 11
 
 11:1 Hierauf nahmen die Obersten des Volkes ihren Wohnsitz in Jerusalem; das übrige Volk aber bestimmte durch das Los je den zehnten Mann dazu, sich in der heiligen Stadt Jerusalem anzusiedeln, während die übrigen neun Zehntel in den Ortschaften (des Landes) wohnen bleiben sollten.
 
@@ -652,7 +652,7 @@
 
 11:24 Pethahja aber, der Sohn Mesesabeels, aus der Zahl der Nachkommen Serahs, des Sohnes Judas, war der königliche Beamte für alle Angelegenheiten, die das Volk betrafen,
 
-11:25 und für die Dörfer auf ihren Feldmarken.
+11:25 und für die Dörfer auf ihren Feldmarken. Von den Judäern wohnte ein Teil in Kirjath-Arba nebst den zugehörigen Ortschaften sowie in Dibon nebst den zugehörigen Ortschaften und in Jekabzeel nebst den zugehörigen Gehöften;
 
 11:26 ferner in Jesua, Molada, Beth-Pelet,
 
@@ -676,7 +676,7 @@
 
 11:36 Von den Leviten aber gehörten einige judäische Abteilungen zu Benjamin.
 
-## Chapter 12
+## Kapitel 12
 
 12:1 Folgende sind die Priester und die Leviten, die mit Serubbabel, dem Sohne Sealthiels, und mit Jesua (nach Jerusalem) hinaufgezogen waren: Seraja, Jeremia, Esra,
 
@@ -772,7 +772,7 @@
 
 12:47 Ganz Israel aber entrichtete zur Zeit Serubbabels und zur Zeit Nehemias die Abgaben für die Sänger und die Torhüter, die diesen tagtäglich gebührten; sie lieferten aber die (vorgeschriebenen) heiligen Gaben an die Leviten ab, und die Leviten ließen die Weihegaben den Nachkommen Aarons zukommen.
 
-## Chapter 13
+## Kapitel 13
 
 13:1 Als an jenem Tage dem Volke aus dem Buch des mosaischen Gesetzes laut vorgelesen wurde, fand sich darin geschrieben, daß kein Ammoniter und kein Moabiter jemals Aufnahme in die Gemeinde Gottes finden dürfe,
 

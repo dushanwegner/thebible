@@ -1,6 +1,6 @@
 # DAS ERSTE BUCH MOSE
 
-## Chapter 1
+## Kapitel 1
 
 1:1 Im Anfang schuf Gott den Himmel und die Erde;
 
@@ -64,7 +64,7 @@
 
 1:31 Und Gott sah alles an, was er geschaffen hatte, und siehe: es war sehr gut. Und es wurde Abend und wurde Morgen: der sechste Tag.
 
-## Chapter 2
+## Kapitel 2
 
 2:1 So waren der Himmel und die Erde mit ihrem ganzen Heer vollendet.
 
@@ -72,7 +72,7 @@
 
 2:3 Und Gott segnete den siebten Tag und heiligte ihn; denn an ihm hat Gott von seinem ganzen Schöpfungswerk und seiner Arbeit geruht.
 
-2:4 a Dies ist die Entstehungsgeschichte des Himmels und der Erde, als sie geschaffen wurden.
+2:4 a Dies ist die Entstehungsgeschichte des Himmels und der Erde, als sie geschaffen wurden. b Zur Zeit, als Gott der HERR Erde und Himmel schuf,
 
 2:5 als es auf der Erde noch keine Sträucher auf dem Felde gab und noch keine Pflanzen auf den Fluren gewachsen waren, weil Gott der HERR noch keinen Regen auf die Erde hatte fallen lassen und auch noch keine Menschen da waren, um den Ackerboden zu bestellen –
 
@@ -116,7 +116,7 @@
 
 2:25 Und sie waren beide nackt, der Mensch und sein Weib, und doch schämten sie sich nicht (voreinander).
 
-## Chapter 3
+## Kapitel 3
 
 3:1 Nun war die Schlange listiger als alle Tiere des Feldes, die Gott der HERR geschaffen hatte; die sagte zum Weibe: »Sollte Gott wirklich gesagt haben: ›Ihr dürft von allen Bäumen des Gartens nicht essen!‹«
 
@@ -166,7 +166,7 @@
 
 3:24 und als er den Menschen hinausgetrieben hatte, ließ er östlich vom Garten Eden die Cherube sich lagern und die Flamme des kreisenden Schwertes, damit sie den Zugang zum Baume des Lebens bewachten.
 
-## Chapter 4
+## Kapitel 4
 
 4:1 Eva gebar dann dem Adam, ihrem Gatten, einen Sohn Kain. Da sagte sie: »Einen Mann habe ich ins Dasein gerufen mit Hilfe des HERRN!«
 
@@ -220,7 +220,7 @@
 
 4:26 Auch dem Seth wurde ein Sohn geboren, den er Enos nannte. Damals fing man an, den Namen des HERRN anzurufen.
 
-## Chapter 5
+## Kapitel 5
 
 5:1 Dies ist die Geschlechtstafel Adams: Am Tage, als Gott den Adam schuf, gestaltete er ihn nach Gottes Ebenbild;
 
@@ -286,7 +286,7 @@
 
 5:32 Als Noah 500 Jahre alt war, wurden ihm seine Söhne Sem, Ham und Japheth geboren.
 
-## Chapter 6
+## Kapitel 6
 
 6:1 Als nun die Menschen sich auf der Oberfläche des Erdbodens zu vermehren begannen und ihnen auch Töchter geboren wurden
 
@@ -332,7 +332,7 @@
 
 6:22 Und Noah tat es; er machte alles genau so, wie Gott es ihm geboten hatte.
 
-## Chapter 7
+## Kapitel 7
 
 7:1 Dann sagte der HERR zu Noah: »Gehe du mit deiner ganzen Familie in die Arche, denn dich habe ich als gerecht vor mir erfunden unter diesem Geschlecht.
 
@@ -382,7 +382,7 @@
 
 7:24 Das Wasser aber stieg unaufhörlich über der Erde hundertundfünfzig Tage lang.
 
-## Chapter 8
+## Kapitel 8
 
 8:1 Da dachte Gott an Noah und an alle wilden Tiere und an all das Vieh, das bei ihm in der Arche war; und Gott ließ einen Wind über die Erde wehen, so daß die Wasser sanken;
 
@@ -428,7 +428,7 @@
 
 8:22 Hinfort, solange die Erde steht, sollen Säen und Ernten, Frost und Hitze, Sommer und Winter, Tag und Nacht nicht mehr aufhören!«
 
-## Chapter 9
+## Kapitel 9
 
 9:1 Dann segnete Gott Noah und seine Söhne mit folgenden Worten: »Seid fruchtbar und mehret euch und füllet die Erde.
 
@@ -488,7 +488,7 @@
 
 9:29 demnach betrug die ganze Lebenszeit Noahs neunhundertundfünfzig Jahre; dann starb er.
 
-## Chapter 10
+## Kapitel 10
 
 10:1 Dies ist der Stammbaum der Noahsöhne, Sem, Ham und Japheth; Söhne wurden ihnen erst nach der Sintflut geboren.
 
@@ -554,7 +554,7 @@
 
 10:32 Dies sind die Geschlechter der Söhne Noahs nach ihrer Abstammung, nach ihren Völkerschaften; und von ihnen aus haben sich die Völker auf der Erde nach der Sintflut abgezweigt.
 
-## Chapter 11
+## Kapitel 11
 
 11:1 Es hatte aber die ganze Erdbevölkerung eine einzige Sprache und einerlei Worte.
 
@@ -620,7 +620,7 @@
 
 11:32 Tharah brachte hierauf sein Leben auf zweihundertfünf Jahre; dann starb er in Haran.
 
-## Chapter 12
+## Kapitel 12
 
 12:1 Der HERR sprach zu Abram: »Verlaß dein Land und deine Verwandtschaft und deines Vaters Haus (und ziehe) in das Land, das ich dir zeigen werde;
 
@@ -662,7 +662,7 @@
 
 12:20 Hierauf entbot der Pharao seinethalben Leute, die ihn samt seiner Frau und seiner ganzen Habe (aus dem Lande) geleiten mußten.
 
-## Chapter 13
+## Kapitel 13
 
 13:1 So zog denn Abram mit seiner Frau und mit all seinem Hab und Gut aus Ägypten wieder hinauf nach dem Südgau; auch Lot war bei ihm.
 
@@ -700,7 +700,7 @@
 
 13:18 Da zog Abram mit seinen Zelten weiter und nahm (endlich) seinen Wohnsitz unter den Terebinthen Mamres, die bei Hebron stehen; dort baute er dem HERRN einen Altar.
 
-## Chapter 14
+## Kapitel 14
 
 14:1 Es begab sich dann zur Zeit Amraphels, des Königs von Sinear, Ariochs, des Königs von Ellasar, Kedorlaomers, des Königs von Elam, und Thideals, des Königs von Gojim:
 
@@ -750,7 +750,7 @@
 
 14:24 Ich will nichts davon! Nur was die Knechte verzehrt haben und den Beuteanteil, der den mit mir verbündeten Männern Aner, Eskol und Mamre zukommt: die sollen ihren Anteil nehmen!«
 
-## Chapter 15
+## Kapitel 15
 
 15:1 Nach diesen Begebenheiten erging das Wort des HERRN an Abram in einem Gesicht also: »Fürchte dich nicht, Abram! Ich bin ja dein Schild; dein Lohn soll sehr groß sein.«
 
@@ -794,7 +794,7 @@
 
 15:21 Amoriter, Kanaaniter, Girgasiter und Jebusiter.«
 
-## Chapter 16
+## Kapitel 16
 
 16:1 Sarai, Abrams Frau, hatte ihm keine Kinder geboren; sie hatte aber eine ägyptische Leibmagd namens Hagar.
 
@@ -828,7 +828,7 @@
 
 16:16 Abram war aber sechsundachtzig Jahre alt, als Hagar ihm den Ismael gebar.
 
-## Chapter 17
+## Kapitel 17
 
 17:1 Als nun Abram neunundneunzig Jahre alt war, erschien ihm der HERR und sagte zu ihm: »Ich bin der allmächtige Gott: wandle vor mir und sei fromm!
 
@@ -884,7 +884,7 @@
 
 17:27 und mit ihm wurden alle männlichen Personen in seinem hause beschnitten, sowohl die im Hause geborenen als auch die für Geld von Fremden gekauften Knechte.
 
-## Chapter 18
+## Kapitel 18
 
 18:1 Dann erschien ihm der HERR bei den Terebinthen Mamres, während er gerade um die Zeit der Mittagshitze am Eingang seines Zeltes saß.
 
@@ -952,7 +952,7 @@
 
 18:33 Hierauf ging der HERR weg, nachdem er das Gespräch mit Abraham beendet hatte; Abraham aber kehrte nach Hause zurück.
 
-## Chapter 19
+## Kapitel 19
 
 19:1 Als nun die beiden Engel am Abend nach Sodom kamen, saß Lot gerade am Tor von Sodom. Sobald Lot sie erblickte, erhob er sich vor ihnen, verneigte sich mit dem Angesicht bis zur Erde
 
@@ -1030,7 +1030,7 @@
 
 19:38 Die jüngere gebar auch einen Sohn und gab ihm den Namen »Ben-Ammi«; der ist der Stammvater der heutigen Ammoniter.
 
-## Chapter 20
+## Kapitel 20
 
 20:1 Abraham brach dann von dort auf (und zog) in den Südgau, wo er seinen Wohnsitz zwischen Kades und Sur nahm. Er hielt sich aber zeitweise als Fremdling auch in Gerar auf
 
@@ -1068,7 +1068,7 @@
 
 20:18 denn der HERR hatte den Mutterschoß aller Frauen im Hause Abimelechs verschlossen um Saras, der Frau Abrahams, willen.
 
-## Chapter 21
+## Kapitel 21
 
 21:1 Der HERR suchte dann Sara gnädig heim, wie er verheißen hatte, und tat an ihr, wie er zugesagt hatte:
 
@@ -1138,7 +1138,7 @@
 
 21:34 Abraham hielt sich dann noch geraume Zeit als Fremdling im Philisterlande auf.
 
-## Chapter 22
+## Kapitel 22
 
 22:1 Nach diesen Begebenheiten wollte Gott den Abraham auf die Probe stellen und sagte zu ihm: »Abraham!« Dieser antwortete: »Hier bin ich!«
 
@@ -1188,7 +1188,7 @@
 
 22:24 Auch sein Nebenweib namens Rehuma hatte Söhne geboren, nämlich Tebah und Gaham, Thahas und Maacha.
 
-## Chapter 23
+## Kapitel 23
 
 23:1 Als Sara nun ihr Leben auf hundertundsiebenundzwanzig Jahre gebracht hatte,
 
@@ -1230,7 +1230,7 @@
 
 23:20 So wurde das Grundstück samt der Höhle darauf dem Abraham als Erbbegräbnis von den Hethitern rechtskräftig überlassen.
 
-## Chapter 24
+## Kapitel 24
 
 24:1 Als nun Abraham alt und hochbetagt geworden war und der HERR ihn in allem gesegnet hatte,
 
@@ -1366,7 +1366,7 @@
 
 24:67 Isaak aber führte Rebekka in das Zelt seiner (verstorbenen) Mutter Sara und nahm sie auf; sie wurde seine Frau, und er gewann sie lieb. So tröstete sich Isaak nach dem Hingang seiner Mutter.
 
-## Chapter 25
+## Kapitel 25
 
 25:1 Abraham aber nahm nochmals eine Frau namens Ketura;
 
@@ -1436,7 +1436,7 @@
 
 25:34 Hierauf gab Jakob dem Esau Brot und von dem Linsengericht. Als er dann gegessen und getrunken hatte, stand er auf und ging seines Weges. So gab Esau sein Erstgeburtsrecht geringschätzig preis.
 
-## Chapter 26
+## Kapitel 26
 
 26:1 Es kam aber eine Hungersnot über das Land, wie schon früher einmal eine zur Zeit Abrahams geherrscht hatte; darum begab sich Isaak nach Gerar zu dem Philisterkönig Abimelech.
 
@@ -1508,7 +1508,7 @@
 
 26:35 die waren ein Herzenskummer für Isaak und Rebekka.
 
-## Chapter 27
+## Kapitel 27
 
 27:1 Als aber Isaak alt geworden und sein Augenlicht erloschen war, so daß er nicht mehr sehen konnte, berief er seinen älteren Sohn Esau und sagte zu ihm: »Mein Sohn!« Er antwortete ihm: »Hier bin ich!«
 
@@ -1602,7 +1602,7 @@
 
 27:46 Hierauf sagte Rebekka zu Isaak: »Das Leben wird mir verleidet durch diese Hethiterinnen! Wenn auch Jakob sich solch eine Hethiterin zur Frau nähme, eine von den Töchtern des Landes, was hätte ich da noch vom Leben?«
 
-## Chapter 28
+## Kapitel 28
 
 28:1 Da ließ Isaak den Jakob rufen, segnete ihn und gebot ihm: »Du darfst dir keine Frau aus den Töchtern der Kanaanäer nehmen.
 
@@ -1648,7 +1648,7 @@
 
 28:22 und dieser Stein, den ich als Denkstein aufgerichtet habe, soll zu einem Gotteshause werden, und von allem, was du mir geben wirst, will ich dir getreulich den Zehnten entrichten!«
 
-## Chapter 29
+## Kapitel 29
 
 29:1 Hierauf setzte Jakob seine Wanderung fort und gelangte in das Land, das gegen Osten lag.
 
@@ -1676,7 +1676,7 @@
 
 29:13 Als nun Laban die Nachricht über Jakob, den Sohn seiner Schwester, vernahm, lief er ihm entgegen, umarmte und küßte ihn und führte ihn in sein Haus; da erzählte er dem Laban seine ganze Lebensgeschichte.
 
-29:14 Laban aber sagte zu ihm: »Fürwahr, du bist von meinem Fleisch und Bein.«
+29:14 Laban aber sagte zu ihm: »Fürwahr, du bist von meinem Fleisch und Bein.« Als Jakob nun einen Monat lang bei Laban geblieben war,
 
 29:15 sagte dieser zu ihm: »Du bist doch mein Verwandter: solltest du da umsonst für mich arbeiten? Laß mich wissen, was dein Lohn sein soll!«
 
@@ -1720,7 +1720,7 @@
 
 29:35 Hierauf wurde sie nochmals guter Hoffnung und gebar einen Sohn; da sagte sie: »Diesmal will ich den HERRN preisen!« Darum nannte sie ihn Juda. Danach bekam sie kein Kind mehr.
 
-## Chapter 30
+## Kapitel 30
 
 30:1 Als nun Rahel sah, daß sie dem Jakob keine Kinder gebar, wurde sie auf ihre Schwester neidisch und sagte zu Jakob: »Schaffe mir Kinder, oder ich sterbe!«
 
@@ -1808,7 +1808,7 @@
 
 30:43 So wurde er ein außerordentlich reicher Mann, und er erwarb sich große Herden, auch Mägde und Knechte, Kamele und Esel.
 
-## Chapter 31
+## Kapitel 31
 
 31:1 Da erhielt Jakob Kunde von den Äußerungen der Söhne Labans, die da sagten: »Jakob hat das ganze Hab und Gut unsers Vaters an sich gebracht und seinen ganzen jetzigen Reichtum aus dem Besitz unsers Vaters gewonnen.«
 
@@ -1918,7 +1918,7 @@
 
 31:54 brachte er ein Schlachtopfer auf dem Berge dar und lud seine Stammesgenossen zur Teilnahme am Mahl ein. So hielten sie denn das Mahl und übernachteten auf dem Berge.
 
-## Chapter 32
+## Kapitel 32
 
 32:1 Am andern Morgen aber in der Frühe küßte Laban seine Enkel und seine Töchter und nahm Abschied von ihnen; dann brach er auf und kehrte an seinen Wohnort zurück.
 
@@ -1986,7 +1986,7 @@
 
 32:33 Darum essen die Israeliten bis auf den heutigen Tag den Muskel nicht, der über der Hüftpfanne liegt, weil er dem Jakob einen Schlag auf die Hüftpfanne, den Hüftmuskel, versetzt hatte.
 
-## Chapter 33
+## Kapitel 33
 
 33:1 Als nun Jakob aufblickte und seinen Bruder Esau mit vierhundert Mann herankommen sah, verteilte er die Kinder auf Lea, auf Rahel und auf die beiden Leibmägde,
 
@@ -2028,7 +2028,7 @@
 
 33:20 und er baute dort einen Altar, den er ›Allgott ist der Gott Israels‹ nannte.
 
-## Chapter 34
+## Kapitel 34
 
 34:1 Als Dina, die Tochter Jakobs, welche Lea ihm geboren hatte, einst ausging, um sich unter den Mädchen des Landes umzusehen,
 
@@ -2092,7 +2092,7 @@
 
 34:31 Sie aber antworteten: »Durfte er denn mit unserer Schwester wie mit einer Dirne verfahren?«
 
-## Chapter 35
+## Kapitel 35
 
 35:1 Da gebot Gott dem Jakob: »Mache dich auf, ziehe nach Bethel hinauf, nimm dort deinen Wohnsitz und errichte dort einen Altar für den Gott, der dir erschienen ist, als du vor deinem Bruder Esau flohst!«
 
@@ -2136,7 +2136,7 @@
 
 35:21 Hierauf zog Israel weiter und schlug sein Zelt jenseits von Migdal-Eder auf.
 
-35:22 Während nun Israel sich in jener Gegend aufhielt, ging Ruben hin und verging sich mit Bilha, dem Nebenweibe seines Vaters; und Israel erfuhr es. –
+35:22 Während nun Israel sich in jener Gegend aufhielt, ging Ruben hin und verging sich mit Bilha, dem Nebenweibe seines Vaters; und Israel erfuhr es. – Jakob hatte aber zwölf Söhne.
 
 35:23 Die Söhne der Lea waren: Ruben, der Erstgeborene Jakobs, ferner Simeon, Levi, Juda, Issaschar und Sebulon.
 
@@ -2152,7 +2152,7 @@
 
 35:29 da verschied Isaak und starb und wurde zu seinen Stammesgenossen versammelt, alt und lebenssatt; und seine Söhne Esau und Jakob begruben ihn.
 
-## Chapter 36
+## Kapitel 36
 
 36:1 Dies sind die Nachkommen Esaus, das ist Edoms.
 
@@ -2240,7 +2240,7 @@
 
 36:43 der Häuptling von Magdiel, der Häuptling von Iram. Das sind die Häuptlinge der Edomiter nach ihren Wohnsitzen in dem Lande, das sie in Besitz genommen hatten. Das ist Esau, der Stammvater der Edomiter.
 
-## Chapter 37
+## Kapitel 37
 
 37:1 Jakob aber blieb in dem Lande wohnen, in dem sich sein Vater als Fremdling aufgehalten hatte, im Lande Kanaan.
 
@@ -2314,7 +2314,7 @@
 
 37:36 Die Midianiter aber verkauften Joseph nach Ägypten an Potiphar, einen Hofbeamten des Pharaos, den Obersten der Leibwächter.
 
-## Chapter 38
+## Kapitel 38
 
 38:1 Um diese Zeit begab es sich, daß Juda sich von seinen Brüdern trennte und sich an einen Mann aus Adullam namens Hira anschloß.
 
@@ -2376,7 +2376,7 @@
 
 38:30 Darauf kam sein Bruder zum Vorschein, an dessen Hand der rote Faden war; daher nannte man ihn ›Serah‹.
 
-## Chapter 39
+## Kapitel 39
 
 39:1 Als aber Joseph nach Ägypten gebracht worden war, kaufte ihn Potiphar, ein Ägypter, ein Hofbeamter des Pharaos, der Oberste der Leibwächter, von den Ismaelitern, die ihn dorthin gebracht hatten.
 
@@ -2388,7 +2388,7 @@
 
 39:5 Und von der Zeit an, wo er ihn zum Aufseher über sein Haus und zum Verwalter seines ganzen Besitzes gemacht hatte, segnete Gott das Haus des Ägypters um Josephs willen, so daß der Segen Gottes auf allem ruhte, was er besaß, im Hause und auf dem Felde.
 
-39:6 Daher überließ er sein ganzes Besitztum der Verwaltung Josephs: er selbst kümmerte sich neben ihm um nichts mehr als um seine Mahlzeiten.
+39:6 Daher überließ er sein ganzes Besitztum der Verwaltung Josephs: er selbst kümmerte sich neben ihm um nichts mehr als um seine Mahlzeiten. Joseph war aber schön von Gestalt und schön von Angesicht.
 
 39:7 So kam es schließlich dahin, daß die Gattin seines Herrn ihre Augen auf Joseph richtete und ihn verführen wollte.
 
@@ -2424,7 +2424,7 @@
 
 39:23 Der oberste Aufseher des Gefängnisses kümmerte sich um gar nichts bei allem, was ihm anvertraut war; denn Gott der HERR war mit ihm, und Gott ließ alles gelingen, was er vornahm.
 
-## Chapter 40
+## Kapitel 40
 
 40:1 Nun begab es sich einige Zeit danach, daß der Mundschenk und der Bäcker des Königs von Ägypten sich gegen ihren Herrn, den König von Ägypten, verfehlten.
 
@@ -2472,7 +2472,7 @@
 
 40:23 Aber der Obermundschenk dachte nicht mehr an Joseph, sondern vergaß ihn.
 
-## Chapter 41
+## Kapitel 41
 
 41:1 Nun begab es sich nach Verlauf von zwei vollen Jahren, daß der Pharao einen Traum hatte: ihm war es, er stehe am Nil.
 
@@ -2588,7 +2588,7 @@
 
 41:57 Da kam die ganze Erdbevölkerung zu Joseph nach Ägypten, um Getreide zu kaufen; denn auf der ganzen Erde herrschte drückende Hungersnot.
 
-## Chapter 42
+## Kapitel 42
 
 42:1 Als nun Jakob erfuhr, daß in Ägypten Getreide zu haben sei, sagte er zu seinen Söhnen: »Was seht ihr euch lange an?«
 
@@ -2666,7 +2666,7 @@
 
 42:38 Doch Jakob entgegnete: »Mein Sohn soll nicht mit euch hinabziehen! Sein rechter Bruder ist tot, und er ist allein übriggeblieben; wenn ihm ein Unfall auf dem Wege zustieße, den ihr ziehen müßt, so würdet ihr mein graues Haar mit Herzeleid in die Unterwelt bringen!«
 
-## Chapter 43
+## Kapitel 43
 
 43:1 Die Hungersnot lag aber schwer auf dem Lande.
 
@@ -2736,7 +2736,7 @@
 
 43:34 Hierauf ließ er von den vor ihm stehenden Gerichten Anteile zu ihnen hintragen; es war aber dessen, was man Benjamin vorlegte, fünfmal so viel, als was man allen anderen vorlegte. Und sie tranken mit ihm und wurden guter Dinge.
 
-## Chapter 44
+## Kapitel 44
 
 44:1 Hierauf befahl er (Joseph) seinem Hausverwalter: »Fülle den Männern ihre Säcke mit Getreide, soviel sie fortschaffen können, und lege einem jeden sein Geld (wieder) oben in seinen Sack!
 
@@ -2806,7 +2806,7 @@
 
 44:34 Denn wie könnte ich zu meinem Vater zurückkehren, ohne daß der Knabe bei mir wäre? Ich könnte den Jammer nicht mitansehen, der meinen Vater träfe!«
 
-## Chapter 45
+## Kapitel 45
 
 45:1 Da vermochte Joseph nicht länger an sich zu halten vor allen, die um ihn her standen, sondern er rief aus: »Laßt jedermann von mir weg hinausgehen!« So war denn niemand zugegen, als Joseph sich seinen Brüdern zu erkennen gab.
 
@@ -2864,7 +2864,7 @@
 
 45:28 so daß er ausrief: »Genug! Mein Sohn Joseph lebt noch! Ich will hinziehen und ihn noch einmal sehen, ehe ich sterbe!«
 
-## Chapter 46
+## Kapitel 46
 
 46:1 So brach denn Israel mit allen seinen Angehörigen auf, und als er nach Beerseba gekommen war, brachte er dort dem Gott seines Vaters Isaak Schlachtopfer dar.
 
@@ -2934,7 +2934,7 @@
 
 46:34 so antwortet: ›Deine Knechte sind von Jugend auf bis jetzt Viehzüchter gewesen, wir wie auch schon unsere Väter‹, – damit ihr im Lande Gosen wohnen dürft; denn alle Hirten von Kleinvieh sind den Ägyptern ein Greuel.«
 
-## Chapter 47
+## Kapitel 47
 
 47:1 So ging denn Joseph hin und erstattete dem Pharao Bericht mit den Worten: »Mein Vater und meine Brüder sind mit ihrem Kleinvieh, ihren Rindern und ihrem gesamten Besitz aus dem Lande Kanaan angekommen und befinden sich jetzt im Lande Gosen.«
 
@@ -2998,7 +2998,7 @@
 
 47:31 Da sagte er: »Schwöre es mir!«, und er schwur ihm. Israel aber beugte sich anbetend auf das Kopfende des Bettes hin.
 
-## Chapter 48
+## Kapitel 48
 
 48:1 Nach diesen Begebenheiten meldete man dem Joseph: »Wisse, dein Vater ist erkrankt«; da nahm er seine beiden Söhne Manasse und Ephraim mit sich.
 
@@ -3044,7 +3044,7 @@
 
 48:22 Ich aber gebe dir einen Landstrich, den du vor deinen Brüdern voraushaben sollst; ich habe ihn den Amoritern einst mit meinem Schwert und meinem Bogen abgenommen.«
 
-## Chapter 49
+## Kapitel 49
 
 49:1 Dann berief Jakob seine Söhne und sagte: »Versammelt euch, damit ich euch das verkünde, was euch in künftigen Tagen widerfahren wird!
 
@@ -3112,7 +3112,7 @@
 
 49:33 Als nun Jakob mit der Mitteilung seines letzten Willens an seine Söhne zu Ende war, zog er seine Füße auf das Bett zurück und verschied und wurde zu seinen Stammesgenossen versammelt.
 
-## Chapter 50
+## Kapitel 50
 
 50:1 Da warf sich Joseph über seinen Vater hin, weinte über ihn gebeugt und küßte ihn.
 

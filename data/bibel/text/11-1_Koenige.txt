@@ -1,6 +1,6 @@
 # DAS ERSTE BUCH DER KÖNIGE
 
-## Chapter 1
+## Kapitel 1
 
 1:1 Als nun der König David alt (und) hochbetagt geworden war, hüllte man ihn in Decken ein, aber er konnte trotzdem nicht warm werden.
 
@@ -108,7 +108,7 @@
 
 1:53 Darauf ließ ihn der König Salomo vom Altar wegholen; und als er kam und sich vor dem König Salomo niederwarf, sagte dieser zu ihm: »Gehe in dein Haus!«
 
-## Chapter 2
+## Kapitel 2
 
 2:1 Als es nun mit Davids Leben zu Ende ging, gab er seinem Sohne Salomo folgende Weisungen:
 
@@ -200,9 +200,9 @@
 
 2:45 Der König Salomo dagegen wird gesegnet sein und der Thron Davids immerdar feststehen vor dem HERRN!«
 
-2:46 Darauf erteilte der König dem Benaja, dem Sohn Jojadas, Befehl; der ging hinaus und stieß ihn nieder: so starb er.
+2:46 Darauf erteilte der König dem Benaja, dem Sohn Jojadas, Befehl; der ging hinaus und stieß ihn nieder: so starb er. Als nun das Königtum sich in Salomos Hand befestigt hatte,
 
-## Chapter 3
+## Kapitel 3
 
 3:1 verschwägerte sich Salomo mit dem Pharao, dem König von Ägypten; er heiratete nämlich eine Tochter des Pharaos und führte sie in die Davidsstadt, bis er mit dem Bau seines Palastes sowie mit dem Bau des Tempels des HERRN und der Ringmauer um Jerusalem fertig war.
 
@@ -260,7 +260,7 @@
 
 3:28 Als nun ganz Israel den Richterspruch vernahm, den der König gefällt hatte, fühlte man Ehrfurcht vor dem König, denn man erkannte, daß eine göttliche Weisheit in ihm wohnte, um Recht zu sprechen.
 
-## Chapter 4
+## Kapitel 4
 
 4:1 So herrschte also Salomo als König über ganz Israel;
 
@@ -302,7 +302,7 @@
 
 4:20 (Die Bewohner von) Juda und Israel waren so zahlreich wie der Sand am Meer an Menge; sie aßen und tranken und waren guter Dinge.
 
-## Chapter 5
+## Kapitel 5
 
 5:1 Salomo war aber Beherrscher aller Reiche vom Euphratstrom bis zum Philisterland und bis an die Grenze Ägyptens; sie zahlten Tribut und waren Salomo untertan, solange er lebte.
 
@@ -368,7 +368,7 @@
 
 5:32 Die Bauleute Salomos und die Bauleute Hirams behieben sie dann gemeinsam und richteten die Hölzer und die Steine zum Bau des Tempels her.
 
-## Chapter 6
+## Kapitel 6
 
 6:1 Im vierhundertachtzigsten Jahr nach dem Auszug der Israeliten aus Ägypten, im vierten Jahre der Regierung Salomos über Israel, im Monat Siw – das ist der zweite Monat –, da begann Salomo den Bau des Tempels für den HERRN.
 
@@ -446,7 +446,7 @@
 
 6:38 und im elften Jahre, im Monat Bul – das ist der achte Monat –, war der Tempel vollendet in allen seinen Teilen und mit allem, was dazu gehörte; sieben Jahre also hatte man daran gebaut.
 
-## Chapter 7
+## Kapitel 7
 
 7:1 Aber an seinem eigenen Hause baute Salomo dreizehn Jahre lang, bis er seinen Palast ganz vollendet hatte.
 
@@ -554,7 +554,7 @@
 
 7:51 Als nun alle Arbeiten, die der König Salomo für den Tempel des HERRN hatte herstellen lassen, fertig waren, ließ Salomo auch die Weihgeschenke seines Vaters David hineinbringen; und zwar legte er das Silber, das Gold und die Geräte in die Schatzkammern des Tempels des HERRN.
 
-## Chapter 8
+## Kapitel 8
 
 8:1 Damals ließ Salomo die Ältesten der Israeliten und (zwar besonders) alle Häupter der Stämme und die Obersten der israelitischen Geschlechter bei sich in Jerusalem zusammenkommen, um die Bundeslade des HERRN aus der Davidstadt, das ist Zion, hinaufzubringen.
 
@@ -688,7 +688,7 @@
 
 8:66 Am achten Tage aber entließ er das Volk; sie nahmen Abschied vom König und kehrten zu ihren Zelten zurück, fröhlich und wohlgemut wegen all des Guten, mit dem der HERR seinen Knecht David und sein Volk Israel gesegnet hatte.
 
-## Chapter 9
+## Kapitel 9
 
 9:1 Als nun Salomo den Bau des Tempels des HERRN und des königlichen Palastes vollendet hatte und mit allem, was er sonst noch auszuführen gewünscht hatte, fertig war,
 
@@ -738,7 +738,7 @@
 
 9:24 Sobald die Tochter des Pharaos aus der Davidstadt in ihren eigenen Palast eingezogen war, den Salomo für sie hatte bauen lassen, machte er sich an den Bau der Burg Millo. –
 
-9:25 Dreimal jährlich pflegte Salomo Brand- und Heilsopfer auf dem Altar darzubringen, den er dem HERRN erbaut hatte, und ebenso auf dem (Altar) zu räuchern, der vor dem HERRN stand.
+9:25 Dreimal jährlich pflegte Salomo Brand- und Heilsopfer auf dem Altar darzubringen, den er dem HERRN erbaut hatte, und ebenso auf dem (Altar) zu räuchern, der vor dem HERRN stand. Als er den Häuserbau vollendet hatte,
 
 9:26 schuf König Salomo auch eine Flotte in Ezjon-Geber, das bei Elath am Ufer des Schilfmeeres im Lande der Edomiter liegt.
 
@@ -746,7 +746,7 @@
 
 9:28 Sie fuhren bis nach Ophir und holten von dort Gold, 420 Talente, und brachten es dem König Salomo.
 
-## Chapter 10
+## Kapitel 10
 
 10:1 Als aber die Königin von Saba den Ruhm Salomos vernahm und von dem Tempel hörte, den er dem Namen des HERRN erbaut hatte, kam sie, um ihn mit Rätselfragen auf die Probe zu stellen.
 
@@ -806,7 +806,7 @@
 
 10:29 so daß ein Wagen bei der Ausfuhr aus Ägypten auf sechshundert Schekel Silber zu stehen kam und ein Pferd auf einhundertundfünfzig. Auf gleiche Weise wurden sie durch Vermittelung (seiner Händler) für alle Könige der Hethiter und für die Könige von Syrien bezogen.
 
-## Chapter 11
+## Kapitel 11
 
 11:1 Der König Salomo liebte aber zahlreiche ausländische Frauen, nämlich neben der Tochter des Pharaos auch moabitische, ammonitische, edomitische, phönizische und hethitische,
 
@@ -896,7 +896,7 @@
 
 11:43 Dann legte Salomo sich zu seinen Vätern und wurde in der Stadt Davids, seines Vaters, begraben. Sein Sohn Rehabeam folgte ihm in der Regierung nach.
 
-## Chapter 12
+## Kapitel 12
 
 12:1 Rehabeam begab sich nach Sichem; denn in Sichem hatten sich alle Israeliten eingefunden, um ihn zum König zu machen.
 
@@ -906,7 +906,7 @@
 
 12:4 »Dein Vater hat uns ein hartes Joch auferlegt; so erleichtere du uns jetzt deines Vaters harten Dienst und das schwere Joch, das er uns aufgelegt hat, so wollen wir dir untertan sein.«
 
-12:5 Er antwortete ihnen: »Geduldet euch noch drei Tage, dann kommt wieder zu mir!«
+12:5 Er antwortete ihnen: »Geduldet euch noch drei Tage, dann kommt wieder zu mir!« Nachdem sich nun das Volk entfernt hatte,
 
 12:6 beriet sich der König Rehabeam mit den alten Räten, die seinem Vater Salomo während dessen Lebzeiten gedient hatten, und fragte sie: »Welche Antwort ratet ihr mir diesen Leuten zu erteilen?«
 
@@ -964,7 +964,7 @@
 
 12:33 Als er nun zu dem Altar hinaufgestiegen war, den er in Bethel errichtet hatte, am fünfzehnten Tage des achten Monats, in demselben Monat, den er willkürlich zu einem Festtag der Israeliten bestimmt hatte, – als er also zu dem Altar hinaufgestiegen war, um zu opfern,
 
-## Chapter 13
+## Kapitel 13
 
 13:1 da kam plötzlich auf Geheiß des HERRN ein Gottesmann aus Juda nach Bethel, während Jerobeam gerade am Altar stand, um zu opfern.
 
@@ -1034,7 +1034,7 @@
 
 13:34 Dieses Verfahren führte aber beim Hause Jerobeams zur Versündigung und weiter zu seiner Vernichtung und Vertilgung vom Erdboden hinweg.
 
-## Chapter 14
+## Kapitel 14
 
 14:1 Zu jener Zeit wurde Abia, der Sohn Jerobeams, krank.
 
@@ -1044,7 +1044,7 @@
 
 14:4 Da tat die Gemahlin Jerobeams so; sie machte sich auf den Weg nach Silo und kam in das Haus Ahias. Ahia aber konnte nicht mehr sehen, denn seine Augen waren infolge seines hohen Alters erblindet.
 
-14:5 Der HERR aber hatte zu Ahia gesagt: »Soeben kommt die Gemahlin Jerobeams, um von dir Auskunft über ihren Sohn zu erhalten, denn er ist krank. So und so sollst du zu ihr sagen.«
+14:5 Der HERR aber hatte zu Ahia gesagt: »Soeben kommt die Gemahlin Jerobeams, um von dir Auskunft über ihren Sohn zu erhalten, denn er ist krank. So und so sollst du zu ihr sagen.« Als sie nun in ihrer Verkleidung eintrat
 
 14:6 und Ahia, während sie zur Tür hereintrat, das Geräusch ihrer Schritte vernahm, rief er ihr zu: »Komm herein, Gattin Jerobeams! Warum doch verstellst du dich so? Mir ist eine harte Botschaft an dich aufgetragen.
 
@@ -1098,7 +1098,7 @@
 
 14:31 Rehabeam legte sich dann zu seinen Vätern und wurde bei seinen Vätern in der Davidsstadt begraben [seine Mutter hieß Naama und war eine Ammonitin]; und sein Sohn Abia folgte ihm in der Regierung nach.
 
-## Chapter 15
+## Kapitel 15
 
 15:1 Im achtzehnten Regierungsjahre Jerobeams, des Sohnes Nebats, wurde Abia König über Juda.
 
@@ -1168,7 +1168,7 @@
 
 15:34 Er tat, was dem HERRN mißfiel, und wandelte auf dem Wege Jerobeams und in dessen Sünde, zu der er Israel verführt hatte.
 
-## Chapter 16
+## Kapitel 16
 
 16:1 Da erging das Wort des HERRN an Jehu, den Sohn Hananis, gegen Baesa also:
 
@@ -1238,7 +1238,7 @@
 
 16:34 Während seiner Regierung baute Hiel von Bethel die Stadt Jericho wieder auf. Die Grundlegung kostete seinem ältesten Sohne Abiram das Leben, und die Einsetzung der Tore brachte seinem jüngsten Sohne Segub den Tod, wie der HERR es durch den Mund Josuas, des Sohnes Nuns, vorausgesagt hatte.
 
-## Chapter 17
+## Kapitel 17
 
 17:1 Da sagte Elia, der Thisbiter, aus Thisbe in Gilead, zu Ahab: »So wahr der HERR, der Gott Israels, lebt, in dessen Dienst ich stehe: es soll in den nächsten Jahren weder Tau noch Regen fallen, es sei denn auf mein Wort!«
 
@@ -1288,11 +1288,11 @@
 
 17:24 Da antwortete die Frau dem Elia: »Ja, nun weiß ich, daß du ein Mann Gottes bist und daß das Wort des HERRN in deinem Munde Wahrheit ist!«
 
-## Chapter 18
+## Kapitel 18
 
 18:1 Lange Zeit darauf aber erging das Wort des HERRN an Elia im dritten Jahr der Dürre also: »Gehe hin, zeige dich dem Ahab; denn ich will auf Erden regnen lassen«.
 
-18:2 Da machte sich Elia auf den Weg, um dem Ahab vor die Augen zu treten.
+18:2 Da machte sich Elia auf den Weg, um dem Ahab vor die Augen zu treten. Die Hungersnot war aber in Samaria immer drückender geworden;
 
 18:3 da hatte Ahab seinen Haushofmeister Obadja rufen lassen – dieser war ein treuer Verehrer des HERRN;
 
@@ -1382,13 +1382,13 @@
 
 18:46 Über Elia aber kam die Hand des HERRN, so daß er seine Lenden gürtete und vor Ahab herlief bis nach Jesreel hin.
 
-## Chapter 19
+## Kapitel 19
 
 19:1 Als nun Ahab der Isebel alles mitteilte, was Elia getan, und vor allem, wie er alle Propheten mit dem Schwert umgebracht hatte,
 
 19:2 da schickte Isebel einen Boten an Elia und ließ ihm sagen: »Die Götter sollen mich jetzt und künftig strafen, wenn ich nicht morgen um diese Zeit mit deinem Leben ebenso verfahre, wie du mit dem Leben eines jeden von ihnen verfahren bist!«
 
-19:3 Da geriet er in Furcht und machte sich schnell auf den Weg, um sein Leben zu retten.
+19:3 Da geriet er in Furcht und machte sich schnell auf den Weg, um sein Leben zu retten. Als er dann nach Beerseba, das schon zu Juda gehört, gekommen war, ließ er seinen Diener dort zurück;
 
 19:4 er selbst aber ging eine Tagereise weit in die Wüste hinein; dort angekommen, setzte er sich unter einem Ginsterstrauch nieder. Da wünschte er sich den Tod und betete: »Es ist genug! Nimm nunmehr, HERR, mein Leben hin, denn ich bin nicht besser als meine Väter.«
 
@@ -1400,7 +1400,7 @@
 
 19:8 Da stand er auf, aß und trank und wanderte, durch diese Speise gestärkt, vierzig Tage und vierzig Nächte lang bis zum Gottesberge Horeb,
 
-19:9 wo er in eine Höhle ging und darin über Nacht blieb.
+19:9 wo er in eine Höhle ging und darin über Nacht blieb. Da nun erging an ihn das Wort des HERRN, der zu ihm sagte: »Was willst du hier, Elia?«
 
 19:10 Er antwortete: »Ich habe für den HERRN, den Gott der Heerscharen, unerschrocken geeifert; denn die Israeliten haben deinen Bund verlassen, deine Altäre niedergerissen und deine Propheten mit dem Schwert getötet; ich allein bin übriggeblieben, und nun trachten sie auch mir nach dem Leben.«
 
@@ -1426,7 +1426,7 @@
 
 19:21 Da kehrte er von ihm zurück, nahm das eine Joch Rinder und schlachtete es, mit dem Geschirr der Rinder aber kochte er ihr Fleisch und gab es den Leuten zu essen; dann machte er sich auf den Weg, schloß sich an Elia an und wurde sein Diener.
 
-## Chapter 20
+## Kapitel 20
 
 20:1 Benhadad aber, der König von Syrien, bot seine ganze Streitmacht auf, zweiunddreißig Könige leisteten ihm Heeresfolge mit Rossen und Wagen; so zog er heran, belagerte Samaria und bestürmte es.
 
@@ -1486,7 +1486,7 @@
 
 20:29 So lagerten sie denn sieben Tage lang einander gegenüber; am siebten Tage aber kam es zur Schlacht, und die Israeliten erschlugen von den Syrern hunderttausend Mann Fußvolk an einem einzigen Tage;
 
-20:30 die Übriggebliebenen flüchteten sich in die Stadt Aphek. Da fiel die Stadtmauer über den 27000 Mann zusammen, die übriggeblieben waren.
+20:30 die Übriggebliebenen flüchteten sich in die Stadt Aphek. Da fiel die Stadtmauer über den 27000 Mann zusammen, die übriggeblieben waren. Auch Benhadad war geflohen und in die Stadt gekommen (und versteckte sich) von einem Gemach in das andere.
 
 20:31 Da sagten seine Diener zu ihm: »Wir haben oft genug gehört, daß die Könige der Israeliten großmütige Könige seien. So wollen wir uns denn Bußgewänder um unsere Lenden legen und Stricke um unseren Kopf und so zum König von Israel hinausgehen; vielleicht schenkt er dir das Leben.«
 
@@ -1514,7 +1514,7 @@
 
 20:43 Da zog der König von Israel mißmutig und verstört nach Hause und gelangte nach Samaria.
 
-## Chapter 21
+## Kapitel 21
 
 21:1 Nachmals aber begab sich folgendes: Naboth, (ein Bürger) von Jesreel, besaß einen Weinberg in Jesreel nahe bei dem Palaste Ahabs, des Königs von Samaria.
 
@@ -1574,7 +1574,7 @@
 
 21:29 »Hast du gesehen, wie Ahab sich vor mir gedemütigt hat? Weil er sich vor mir gedemütigt hat, will ich das Unglück nicht schon bei seinen Lebzeiten hereinbrechen lassen: erst unter der Regierung seines Sohnes will ich das Unglück über sein Haus kommen lassen.«
 
-## Chapter 22
+## Kapitel 22
 
 22:1 Drei Jahre vergingen ruhig, ohne daß Krieg zwischen Syrien und Israel stattfand.
 

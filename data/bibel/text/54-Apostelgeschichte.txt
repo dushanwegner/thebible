@@ -1,6 +1,6 @@
 # DIE APOSTELGESCHICHTE
 
-## Chapter 1
+## Kapitel 1
 
 1:1 Meinen ersten Bericht habe ich, lieber Theophilus, über alles das verfaßt, was Jesus getan und gelehrt hat von Anfang an
 
@@ -54,7 +54,7 @@
 
 1:26 Hierauf teilte man ihnen Lose zu, und das Los fiel auf Matthias, der nunmehr den elf Aposteln zugeordnet wurde.
 
-## Chapter 2
+## Kapitel 2
 
 2:1 Als dann der Tag des Pfingstfestes herbeigekommen war, befanden sie alle sich an einem Ort beisammen.
 
@@ -150,7 +150,7 @@
 
 2:47 priesen Gott und standen mit dem ganzen Volk in gutem Einvernehmen. Der Herr aber fügte täglich solche, die gerettet wurden, zu festem Anschluß hinzu.
 
-## Chapter 3
+## Kapitel 3
 
 3:1 Petrus und Johannes aber gingen (eines Tages) zusammen um die neunte Stunde, die Gebetsstunde, in den Tempel hinauf.
 
@@ -204,7 +204,7 @@
 
 3:26 Für euch zuerst hat Gott seinen Knecht erstehen lassen und ihn gesandt, um euch dadurch zu segnen, daß ein jeder unter euch sich von seinen Bosheiten bekehrt.«
 
-## Chapter 4
+## Kapitel 4
 
 4:1 Während sie noch zum Volk redeten, traten die Priester sowie der Tempelhauptmann und die Sadduzäer an sie heran;
 
@@ -280,7 +280,7 @@
 
 4:37 den verkaufte er, brachte dann den Geldbetrag und stellte ihn den Aposteln zur Verfügung.
 
-## Chapter 5
+## Kapitel 5
 
 5:1 Ein Mann dagegen namens Ananias verkaufte im Einvernehmen mit seiner Frau Sapphira ein Grundstück,
 
@@ -358,7 +358,7 @@
 
 5:38 Und nunmehr gebe ich euch den Rat: Steht von diesen Leuten ab und laßt sie gewähren! Denn wenn dieses Vorhaben oder dieses Werk von Menschen ausgeht, so wird es zunichte werden;
 
-5:39 hat es aber seinen Ursprung in Gott, so werdet ihr diese Leute nicht zu vernichten vermögen. Laßt ihr euch nur nicht gar als Widersacher Gottes erfinden!«
+5:39 hat es aber seinen Ursprung in Gott, so werdet ihr diese Leute nicht zu vernichten vermögen. Laßt ihr euch nur nicht gar als Widersacher Gottes erfinden!« Daraufhin folgten sie seinem Rat:
 
 5:40 sie ließen die Apostel wieder hereinrufen und geißeln und befahlen ihnen, auf Grund des Namens Jesu nicht mehr zu predigen; dann gab man sie frei.
 
@@ -366,7 +366,7 @@
 
 5:42 und sie hörten nicht auf, täglich im Tempel und in den Häusern zu lehren und die Heilsbotschaft von Christus Jesus zu verkündigen.
 
-## Chapter 6
+## Kapitel 6
 
 6:1 In diesen Tagen nun entstand bei der Zunahme der Zahl der Jünger laute Unzufriedenheit der Hellenisten gegen die Hebräer, weil ihre Witwen bei der täglichen Verpflegung nicht genügend berücksichtigt würden.
 
@@ -398,7 +398,7 @@
 
 6:15 Als nun alle, die im Hohen Rate saßen, ihre Blicke gespannt auf ihn richteten, sahen sie sein Antlitz (verklärt) wie das Angesicht eines Engels.
 
-## Chapter 7
+## Kapitel 7
 
 7:1 Der Hohepriester fragte ihn nun: »Verhält sich dies so?«
 
@@ -520,9 +520,9 @@
 
 7:60 Alsdann auf die Knie niedergesunken, rief er noch laut aus: »Herr, rechne ihnen diese Sünde nicht zu!« Nach diesen Worten gab er seinen Geist auf.
 
-## Chapter 8
+## Kapitel 8
 
-8:1 Saulus aber war mit seiner Hinrichtung durchaus einverstanden.
+8:1 Saulus aber war mit seiner Hinrichtung durchaus einverstanden. b An jenem Tage kam es aber zu einer schweren Verfolgung der Gemeinde in Jerusalem. Da zerstreuten sich alle mit Ausnahme der Apostel in die Landbezirke von Judäa und Samaria.
 
 8:2 Den Stephanus aber bestatteten gottesfürchtige Männer und veranstalteten eine feierliche Trauerfeier um ihn.
 
@@ -602,7 +602,7 @@
 
 8:40 Philippus aber befand sich in Asdod; er zog dort von Ort zu Ort und verkündigte die Heilsbotschaft in allen Städten, bis er nach Cäsarea kam.
 
-## Chapter 9
+## Kapitel 9
 
 9:1 Saulus aber, der noch immer Drohungen und Mord gegen die Jünger des Herrn schnaubte, wandte sich an den Hohenpriester
 
@@ -640,7 +640,7 @@
 
 9:18 Da fiel es ihm sogleich von den Augen ab wie Schuppen: er konnte wieder sehen, stand auf und ließ sich taufen;
 
-9:19 a dann nahm er auch Nahrung zu sich und kam wieder zu Kräften.
+9:19 a dann nahm er auch Nahrung zu sich und kam wieder zu Kräften. b Einige Tage war er nun mit den Jüngern in Damaskus zusammen;
 
 9:20 dann predigte er sogleich in den (dortigen) Synagogen von Jesus, daß dieser der Sohn Gottes sei.
 
@@ -690,7 +690,7 @@
 
 9:43 Petrus blieb dann noch geraume Zeit in Joppe bei einem gewissen Simon, einem Gerber.
 
-## Chapter 10
+## Kapitel 10
 
 10:1 In Cäsarea aber lebte (damals) ein Mann namens Kornelius, ein Hauptmann bei der sogenannten Italischen Abteilung;
 
@@ -736,7 +736,7 @@
 
 10:22 Jene antworteten: »Ein Hauptmann Kornelius, ein ehrenhafter, gottesfürchtiger und von der ganzen jüdischen Bevölkerung anerkannter Mann, hat von einem heiligen Engel die (göttliche) Weisung erhalten, dich in sein Haus kommen zu lassen und zu hören, was du ihm zu sagen hast.«
 
-10:23 Da lud Petrus sie zu sich herein und nahm sie gastlich auf.
+10:23 Da lud Petrus sie zu sich herein und nahm sie gastlich auf. Am folgenden Tage aber machte er sich mit ihnen auf den Weg; auch einige von den Brüdern aus Joppe begleiteten ihn.
 
 10:24 Tags darauf kam er in Cäsarea an, wo Kornelius sie schon erwartete und alle seine Verwandten und vertrauten Freunde zu sich eingeladen hatte.
 
@@ -788,7 +788,7 @@
 
 10:48 So ordnete er denn an, daß sie im Namen Jesu Christi getauft würden. Hierauf baten sie ihn, noch einige Tage bei ihnen zu bleiben.
 
-## Chapter 11
+## Kapitel 11
 
 11:1 Es erhielten aber die Apostel und die Brüder in Judäa Kunde davon, daß auch die Heiden das Wort Gottes angenommen hätten.
 
@@ -850,7 +850,7 @@
 
 11:30 Sie führten diesen Beschluß auch aus und ließen es (den Ertrag der Sammlung) durch Vermittlung des Barnabas und Saulus an die Ältesten (der Gemeinde) gelangen.
 
-## Chapter 12
+## Kapitel 12
 
 12:1 Um jene Zeit ließ der König Herodes einige Mitglieder der Gemeinde gefangennehmen, um seine Wut an ihnen auszulassen.
 
@@ -902,7 +902,7 @@
 
 12:25 Barnabas und Saulus aber kehrten nach Ausrichtung ihres Auftrags von Jerusalem (nach Antiochia) zurück und nahmen auch Johannes mit dem Beinamen Markus mit sich.
 
-## Chapter 13
+## Kapitel 13
 
 13:1 In Antiochia wirkten damals in der dortigen Gemeinde folgende Propheten und Lehrer: Barnabas, Symeon mit dem Beinamen Niger, Lucius aus Cyrene, Manaën, der mit dem Vierfürsten Herodes erzogen worden war, und Saulus.
 
@@ -934,7 +934,7 @@
 
 13:15 Nach der Schriftverlesung aus dem Gesetz und den Propheten ließen ihnen die Vorsteher der Synagoge sagen: »Werte Brüder, wenn ihr eine erbauliche Ansprache an das Volk zu richten habt, so redet!«
 
-13:16 Da stand Paulus auf, gab einen Wink mit der Hand und sagte:
+13:16 Da stand Paulus auf, gab einen Wink mit der Hand und sagte: »Ihr Männer von Israel und ihr, die ihr Gott fürchtet, hört mich an!
 
 13:17 Der Gott unsers Volkes Israel hat unsere Väter sich erwählt und unser Volk während seines Aufenthalts in dem fremden Lande Ägypten emporgebracht und sie dann mit hocherhobenem Arm von dort weggeführt.
 
@@ -1008,7 +1008,7 @@
 
 13:52 die Jünger aber wurden mit Freude und mit heiligem Geist erfüllt.
 
-## Chapter 14
+## Kapitel 14
 
 14:1 In Ikonium gingen sie in derselben Weise (wie in Antiochia) in die Synagoge der Juden und predigten mit solchem Erfolg, daß sowohl von den Juden als auch von den Griechen eine große Zahl zum Glauben kam.
 
@@ -1050,7 +1050,7 @@
 
 14:20 Als ihn aber die Jünger umringten, stand er auf und ging wieder in die Stadt hinein.
 
-14:21 a Am folgenden Tage zog er dann mit Barnabas nach Derbe weiter.
+14:21 a Am folgenden Tage zog er dann mit Barnabas nach Derbe weiter. b Sie verkündigten die Heilsbotschaft (auch) in dieser Stadt und kehrten, nachdem sie zahlreiche Jünger gewonnen hatten, nach Lystra, Ikonium und (dem pisidischen) Antiochia zurück.
 
 14:22 Sie stärkten überall die Herzen der Jünger, ermahnten sie zu festem Ausharren im Glauben und wiesen sie darauf hin, daß wir durch viele Leiden in das Reich Gottes eingehen müssen.
 
@@ -1066,7 +1066,7 @@
 
 14:28 Sie blieben sodann noch längere Zeit bei den Jüngern dort.
 
-## Chapter 15
+## Kapitel 15
 
 15:1 Da trugen einige (Gläubige), die aus Judäa (nach Antiochia) herabgekommen waren, den Brüdern die Lehre vor: »Wenn ihr euch nicht nach mosaischem Brauch beschneiden laßt, könnt ihr die Rettung nicht erlangen!«
 
@@ -1150,7 +1150,7 @@
 
 15:41 Er durchzog (zunächst) Syrien und Cilicien und stärkte die dortigen Gemeinden.
 
-## Chapter 16
+## Kapitel 16
 
 16:1 Weiter kam er dann auch nach Derbe und Lystra. Und siehe, hier war ein Jünger namens Timotheus – der Sohn einer gläubig gewordenen Jüdin, aber eines griechischen Vaters –,
 
@@ -1174,7 +1174,7 @@
 
 16:11 So segelten wir denn von Troas ab und fuhren geradeswegs nach Samothrake, am folgenden Tage nach Neapolis
 
-16:12 und von dort nach Philippi, welches die erste Stadt des (dortigen) mazedonischen Bezirks ist, eine römische Kolonie.
+16:12 und von dort nach Philippi, welches die erste Stadt des (dortigen) mazedonischen Bezirks ist, eine römische Kolonie. In dieser Stadt blieben wir einige Tage
 
 16:13 und gingen am Sabbattage zum Stadttor hinaus an den Fluß, wo wir eine (jüdische) Gebetsstätte vermuteten. Wir setzten uns dort nieder und redeten zu den Frauen, die sich da versammelt hatten.
 
@@ -1232,7 +1232,7 @@
 
 16:40 Da gingen sie aus dem Gefängnis hinaus und begaben sich zu Lydia, besuchten dann die Brüder, sprachen ihnen zu und zogen weiter.
 
-## Chapter 17
+## Kapitel 17
 
 17:1 Nachdem sie durch Amphipolis und Apollonia gewandert waren, kamen sie nach Thessalonike, wo es eine Synagoge der Juden gab.
 
@@ -1302,7 +1302,7 @@
 
 17:34 Einige Männer jedoch schlossen sich ihm an und kamen zum Glauben, z.B. Dionysius, ein Mitglied des Areopags, sowie eine Frau namens Damaris und noch mehrere andere mit ihnen.
 
-## Chapter 18
+## Kapitel 18
 
 18:1 Hierauf verließ Paulus Athen und begab sich nach Korinth.
 
@@ -1360,7 +1360,7 @@
 
 18:28 denn in schlagender Weise widerlegte er die Juden öffentlich, indem er aus den (heiligen) Schriften nachwies, daß Jesus der Messias sei.
 
-## Chapter 19
+## Kapitel 19
 
 19:1 Während nun Apollos sich in Korinth aufhielt, kam Paulus, nachdem er das Binnenland von Kleinasien durchwandert hatte, nach Ephesus und fand dort einige Jünger vor.
 
@@ -1444,7 +1444,7 @@
 
 19:41 Durch diese Worte brachte er die Versammlung zum Auseinandergehen.
 
-## Chapter 20
+## Kapitel 20
 
 20:1 Als sich nun die Unruhe gelegt hatte, ließ Paulus die Jünger zu sich kommen, hielt eine ermahnende Ansprache an sie, nahm dann Abschied von ihnen und trat die Reise nach Mazedonien an.
 
@@ -1522,7 +1522,7 @@
 
 20:38 am schmerzlichsten war für sie das Wort, das er ausgesprochen hatte, sie würden sein Angesicht nicht wiedersehen. Sie gaben ihm darauf das Geleit bis zum Schiff.
 
-## Chapter 21
+## Kapitel 21
 
 21:1 Als wir uns dann von ihnen losgerissen hatten und wieder in See gegangen waren, kamen wir in gerader Fahrt nach Kos, am nächsten Tage nach Rhodus und von dort nach Patara.
 
@@ -1604,7 +1604,7 @@
 
 21:40 Als jener ihm die Erlaubnis gegeben hatte, gab Paulus, auf der Treppe stehend, dem Volk ein Zeichen mit der Hand; als dann völlige Stille eingetreten war, hielt er in der hebräischen Landessprache folgende Ansprache an sie:
 
-## Chapter 22
+## Kapitel 22
 
 22:1 »Werte Brüder und Väter, hört jetzt meine Rechtfertigung vor euch an!«
 
@@ -1666,7 +1666,7 @@
 
 22:30 Weil er aber über das Vergehen, das ihm von seiten der Juden vorgeworfen wurde, ins klare kommen wollte, ließ er ihm am folgenden Tage die Fesseln abnehmen und ordnete eine Versammlung der Hohenpriester und des ganzen Hohen Rates an; dann ließ er Paulus hinabführen und ihn vor sie stellen.
 
-## Chapter 23
+## Kapitel 23
 
 23:1 Paulus blickte nun den Hohen Rat fest an und sagte: »Werte Brüder! Ich habe bis heute meinen Wandel mit durchaus reinem Gewissen im Dienste Gottes geführt.«
 
@@ -1738,7 +1738,7 @@
 
 23:35 »Ich werde dich verhören, wenn auch deine Ankläger hier eingetroffen sind.« Zugleich befahl er, ihn in der Statthalterei des Herodes in Gewahrsam zu halten.
 
-## Chapter 24
+## Kapitel 24
 
 24:1 Fünf Tage später kam dann der Hohepriester Ananias mit einigen Ältesten und einem Rechtsanwalt, einem gewissen Tertullus (nach Cäsarea) hinab, und sie machten die Anklage gegen Paulus beim Statthalter anhängig.
 
@@ -1792,7 +1792,7 @@
 
 24:27 Nach Verlauf von zwei Jahren aber erhielt Felix einen Nachfolger in Porcius Festus; und weil Felix sich die Juden zu Dank verpflichten wollte, ließ er Paulus als Gefangenen zurück.
 
-## Chapter 25
+## Kapitel 25
 
 25:1 Als Festus nun die Statthalterschaft in der Provinz angetreten hatte, begab er sich drei Tage später von Cäsarea nach Jerusalem hinauf.
 
@@ -1848,7 +1848,7 @@
 
 25:27 Denn es scheint mir widersinnig zu sein, einen Gefangenen hinzusenden, ohne zugleich die gegen ihn erhobenen Beschuldigungen anzugeben.«
 
-## Chapter 26
+## Kapitel 26
 
 26:1 Darauf sagte Agrippa zu Paulus: »Es ist dir gestattet, zu deiner Rechtfertigung zu reden.« Da streckte Paulus die Hand aus und hielt folgende Verteidigungsrede:
 
@@ -1914,7 +1914,7 @@
 
 26:32 Agrippa aber erklärte dem Festus: »Dieser Mann könnte freigelassen werden, wenn er nicht Berufung an den Kaiser eingelegt hätte.«
 
-## Chapter 27
+## Kapitel 27
 
 27:1 Als nun unsere Abfahrt nach Italien beschlossen war, übergab man den Paulus und einige andere Gefangene einem Hauptmann der Kaiserlichen Abteilung namens Julius.
 
@@ -2004,7 +2004,7 @@
 
 27:44 die übrigen (mußten) dann teils auf Brettern, teils auf irgendwelchen Gegenständen aus dem Schiff (das Ufer gewinnen). Auf diese Weise gelang es allen, wohlbehalten ans Land zu kommen.
 
-## Chapter 28
+## Kapitel 28
 
 28:1 Jetzt, nach unserer Rettung, erfuhren wir, daß die Insel Malta hieß.
 
