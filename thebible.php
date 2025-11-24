@@ -17,6 +17,7 @@ class TheBible_Plugin {
     const QV_VTO = 'thebible_vto';
     const QV_SLUG = 'thebible_slug';
     const QV_OG   = 'thebible_og';
+    const QV_SITEMAP = 'thebible_sitemap';
 
     private static $books = null; // array of [order, short_name, filename]
     private static $slug_map = null; // slug => array entry
@@ -25,6 +26,7 @@ class TheBible_Plugin {
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
         add_filter('query_vars', [__CLASS__, 'add_query_vars']);
+        add_action('template_redirect', [__CLASS__, 'handle_sitemap'], 5);
         add_action('template_redirect', [__CLASS__, 'handle_template_redirect']);
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
@@ -322,6 +324,9 @@ class TheBible_Plugin {
             // /{slug}/{book}/{chapter}
             add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
         }
+        // Sitemaps: English and German (use unique endpoints to avoid conflicts with other sitemap plugins)
+        add_rewrite_rule('^bible-sitemap-bible\.xml$', 'index.php?' . self::QV_SITEMAP . '=bible&' . self::QV_SLUG . '=bible', 'top');
+        add_rewrite_rule('^bible-sitemap-bibel\.xml$', 'index.php?' . self::QV_SITEMAP . '=bibel&' . self::QV_SLUG . '=bibel', 'top');
     }
 
     public static function enqueue_assets() {
@@ -343,6 +348,7 @@ class TheBible_Plugin {
         $vars[] = self::QV_VTO;
         $vars[] = self::QV_SLUG;
         $vars[] = self::QV_OG;
+        $vars[] = self::QV_SITEMAP;
         return $vars;
     }
 
@@ -732,6 +738,77 @@ class TheBible_Plugin {
             }
         }
         return [$ot, $nt];
+    }
+
+    public static function handle_sitemap() {
+        $map = get_query_var(self::QV_SITEMAP);
+        if (!$map) return;
+
+        $slug = get_query_var(self::QV_SLUG);
+        if ($slug !== 'bible' && $slug !== 'bibel') {
+            status_header(404);
+            exit;
+        }
+
+        self::load_index();
+        if (empty(self::$books)) {
+            status_header(404);
+            exit;
+        }
+
+        status_header(200);
+        nocache_headers();
+        header('Content-Type: application/xml; charset=UTF-8');
+
+        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+
+        $base_path = '/' . trim($slug, '/') . '/';
+        $domain = (string) get_option('thebible_prod_domain', 'https://www.dushanwegner.com');
+        if ($domain === '') {
+            $domain = home_url();
+        }
+        $domain = rtrim($domain, '/');
+
+        $index_url = $domain . $base_path;
+        echo '  <url><loc>' . esc_url($index_url) . '</loc></url>' . "\n";
+
+        foreach (self::$books as $entry) {
+            if (!is_array($entry) || empty($entry['short_name'])) continue;
+            $book_slug = self::slugify($entry['short_name']);
+            if ($book_slug === '') continue;
+            // Book URL
+            $book_url = $domain . $base_path . $book_slug . '/';
+            echo '  <url><loc>' . esc_url($book_url) . '</loc></url>' . "\n";
+
+            // Per-verse URLs: scan the book HTML for verse IDs like slug-CH-V
+            $file = self::html_dir() . $entry['filename'];
+            if (!is_string($file) || $file === '' || !file_exists($file)) {
+                continue;
+            }
+            $html = @file_get_contents($file);
+            if (!is_string($html) || $html === '') {
+                continue;
+            }
+            $pattern = '/\bid="' . preg_quote($book_slug, '/') . '-(\d+)-(\d+)"/';
+            if (!preg_match_all($pattern, $html, $matches, PREG_SET_ORDER)) {
+                continue;
+            }
+            $seen = [];
+            foreach ($matches as $m) {
+                $ch = intval($m[1]);
+                $v  = intval($m[2]);
+                if ($ch <= 0 || $v <= 0) continue;
+                $key = $ch . ':' . $v;
+                if (isset($seen[$key])) continue;
+                $seen[$key] = true;
+                $loc = $domain . $base_path . $book_slug . '/' . $ch . ':' . $v;
+                echo '  <url><loc>' . esc_url($loc) . '</loc></url>' . "\n";
+            }
+        }
+
+        echo '</urlset>';
+        exit;
     }
 
     public static function handle_template_redirect() {
@@ -1288,9 +1365,43 @@ class TheBible_Plugin {
         $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id, $human);
         status_header(200);
         nocache_headers();
-        $title = isset($entry['display_name']) && $entry['display_name'] !== ''
+        $base_title = isset($entry['display_name']) && $entry['display_name'] !== ''
             ? $entry['display_name']
             : self::pretty_label( $entry['short_name'] );
+        $title = $base_title;
+        $slug_ctx = get_query_var(self::QV_SLUG);
+        if (!is_string($slug_ctx) || $slug_ctx === '') { $slug_ctx = 'bible'; }
+        $ch = absint( get_query_var( self::QV_CHAPTER ) );
+        $vf = absint( get_query_var( self::QV_VFROM ) );
+        $vt = absint( get_query_var( self::QV_VTO ) );
+        if ($ch && $vf) {
+            if (!$vt || $vt < $vf) { $vt = $vf; }
+            $ref = $base_title . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt));
+            $snippet = self::extract_verse_text($entry, $ch, $vf, $vt);
+            if (is_string($snippet) && $snippet !== '') {
+                $snippet = wp_strip_all_tags($snippet);
+                $snippet = preg_replace('/\s+/u', ' ', trim($snippet));
+                if ($snippet !== '') {
+                    if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+                        $max = 80;
+                        if (mb_strlen($snippet, 'UTF-8') > $max) {
+                            $snippet = mb_substr($snippet, 0, $max, 'UTF-8') . '…';
+                        }
+                    } else {
+                        if (strlen($snippet) > 80) {
+                            $snippet = substr($snippet, 0, 80) . '…';
+                        }
+                    }
+                    $title = $ref . ' (»' . $snippet . '«)';
+                } else {
+                    $title = $ref;
+                }
+            } else {
+                $title = $ref;
+            }
+        } elseif ($ch) {
+            $title = $base_title . ' ' . $ch;
+        }
         $content = '<div class="thebible thebible-book">' . $html . '</div>';
         $footer = self::render_footer_html();
         if ($footer !== '') { $content .= $footer; }
@@ -1411,6 +1522,18 @@ class TheBible_Plugin {
             ]
         );
 
+        register_setting(
+            'thebible_options',
+            'thebible_prod_domain',
+            [
+                'type'              => 'string',
+                'sanitize_callback' => function( $val ) {
+                    return is_string( $val ) ? trim( $val ) : '';
+                },
+                'default'           => 'https://www.dushanwegner.com',
+            ]
+        );
+
         register_setting('thebible_options', 'thebible_og_enabled', [ 'type' => 'string', 'sanitize_callback' => function($v){ return $v==='0' ? '0' : '1'; }, 'default' => '1' ]);
         register_setting('thebible_options', 'thebible_og_width', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 1200 ]);
         register_setting('thebible_options', 'thebible_og_height', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 630 ]);
@@ -1524,6 +1647,7 @@ class TheBible_Plugin {
         $slugs_opt = get_option( 'thebible_slugs', 'bible,bibel' );
         $active = array_filter( array_map( 'trim', explode( ',', is_string($slugs_opt)?$slugs_opt:'' ) ) );
         $known = [ 'bible' => 'English (Douay)', 'bibel' => 'Deutsch (Menge)' ];
+        $prod_domain = (string) get_option( 'thebible_prod_domain', 'https://www.dushanwegner.com' );
         $og_enabled = get_option('thebible_og_enabled','1');
         $og_w = intval(get_option('thebible_og_width',1200));
         $og_h = intval(get_option('thebible_og_height',630));
@@ -1579,6 +1703,17 @@ class TheBible_Plugin {
             $deleted = self::og_cache_purge();
             echo '<div class="updated notice"><p>OG image cache cleared (' . intval($deleted) . ' files removed).</p></div>';
         }
+        if ( isset($_POST['thebible_regen_sitemaps_nonce']) && wp_verify_nonce($_POST['thebible_regen_sitemaps_nonce'],'thebible_regen_sitemaps') && current_user_can('manage_options') ) {
+            $slugs = self::base_slugs();
+            foreach ($slugs as $slug) {
+                $slug = trim($slug, "/ ");
+                if ($slug !== 'bible' && $slug !== 'bibel') continue;
+                $path = ($slug === 'bible') ? '/bible-sitemap-bible.xml' : '/bible-sitemap-bibel.xml';
+                $url = home_url($path);
+                wp_remote_get($url, ['timeout' => 10]);
+            }
+            echo '<div class="updated notice"><p>Bible sitemaps refreshed. If generation is heavy, it may take a moment for all URLs to be crawled.</p></div>';
+        }
         ?>
         <div class="wrap">
             <h1>The Bible</h1>
@@ -1598,6 +1733,33 @@ class TheBible_Plugin {
                                 <input type="hidden" name="thebible_slugs" id="thebible_slugs" value="<?php echo esc_attr( implode(',', $active ) ); ?>">
                                 <script>(function(){function sync(){var boxes=document.querySelectorAll('input[name="thebible_slugs_list[]"]');var out=[];boxes.forEach(function(b){if(b.checked) out.push(b.value);});document.getElementById('thebible_slugs').value=out.join(',');}document.addEventListener('change',function(e){if(e.target && e.target.name==='thebible_slugs_list[]'){sync();}});document.addEventListener('DOMContentLoaded',sync);})();</script>
                                 <p class="description">Select which bibles are publicly accessible. Others remain installed but routed pages are disabled.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="thebible_prod_domain">Production domain</label></th>
+                            <td>
+                                <input type="url" name="thebible_prod_domain" id="thebible_prod_domain" class="regular-text" value="<?php echo esc_attr( $prod_domain ); ?>" placeholder="https://www.dushanwegner.com">
+                                <p class="description">Base domain used when generating Bible sitemaps and canonical verse URLs. Leave empty to fall back to the current site URL.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label>Sitemaps</label></th>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    <?php wp_nonce_field('thebible_regen_sitemaps','thebible_regen_sitemaps_nonce'); ?>
+                                    <button type="submit" class="button">Refresh Bible sitemaps</button>
+                                </form>
+                                <?php
+                                $active_slugs = $active;
+                                $links = [];
+                                if (in_array('bible', $active_slugs, true)) {
+                                    $links[] = '<a href="' . esc_url( home_url('/bible-sitemap-bible.xml') ) . '" target="_blank" rel="noopener noreferrer">English sitemap</a>';
+                                }
+                                if (in_array('bibel', $active_slugs, true)) {
+                                    $links[] = '<a href="' . esc_url( home_url('/bible-sitemap-bibel.xml') ) . '" target="_blank" rel="noopener noreferrer">German sitemap</a>';
+                                }
+                                ?>
+                                <p class="description">Triggers regeneration of per-verse Bible sitemaps for active bibles by requesting their sitemap URLs on the server. <?php if (!empty($links)) { echo 'View: ' . implode(' | ', $links); } ?></p>
                             </td>
                         </tr>
                         <tr>
