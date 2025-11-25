@@ -311,6 +311,9 @@ class TheBible_Plugin {
 
     public static function deactivate() {
         flush_rewrite_rules();
+        // Clean up legacy options no longer used by the plugin.
+        delete_option( 'thebible_custom_css' );
+        delete_option( 'thebible_prod_domain' );
     }
 
     public static function add_rewrite_rules() {
@@ -767,11 +770,7 @@ class TheBible_Plugin {
         echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
         $base_path = '/' . trim($slug, '/') . '/';
-        $domain = (string) get_option('thebible_prod_domain', 'https://www.dushanwegner.com');
-        if ($domain === '') {
-            $domain = home_url();
-        }
-        $domain = rtrim($domain, '/');
+        $domain = rtrim( home_url(), '/' );
 
         $index_url = $domain . $base_path;
         echo '  <url><loc>' . esc_url($index_url) . '</loc></url>' . "\n";
@@ -1541,15 +1540,6 @@ class TheBible_Plugin {
     public static function register_settings() {
         register_setting(
             'thebible_options',
-            'thebible_custom_css',
-            [
-                'type'              => 'string',
-                'sanitize_callback' => function( $css ) { return is_string($css) ? $css : ''; },
-                'default'           => '',
-            ]
-        );
-        register_setting(
-            'thebible_options',
             'thebible_slugs',
             [
                 'type'              => 'string',
@@ -1565,18 +1555,6 @@ class TheBible_Plugin {
                     return implode( ',', array_unique( $out ) );
                 },
                 'default'           => 'bible,bibel',
-            ]
-        );
-
-        register_setting(
-            'thebible_options',
-            'thebible_prod_domain',
-            [
-                'type'              => 'string',
-                'sanitize_callback' => function( $val ) {
-                    return is_string( $val ) ? trim( $val ) : '';
-                },
-                'default'           => 'https://www.dushanwegner.com',
             ]
         );
 
@@ -1645,6 +1623,7 @@ class TheBible_Plugin {
     }
 
     public static function admin_menu() {
+        // Top-level menu
         add_menu_page(
             'The Bible',
             'The Bible',
@@ -1654,11 +1633,46 @@ class TheBible_Plugin {
             'dashicons-book-alt',
             58
         );
+
+        // Sub-pages: main settings (default), OG image/layout, and per-Bible footers
+        add_submenu_page(
+            'thebible',
+            'The Bible',
+            'The Bible',
+            'manage_options',
+            'thebible',
+            [ __CLASS__, 'render_settings_page' ]
+        );
+
+        add_submenu_page(
+            'thebible',
+            'OG Image & Layout',
+            'OG Image & Layout',
+            'manage_options',
+            'thebible_og',
+            [ __CLASS__, 'render_settings_page' ]
+        );
+
+        add_submenu_page(
+            'thebible',
+            'Footers',
+            'Footers',
+            'manage_options',
+            'thebible_footers',
+            [ __CLASS__, 'render_settings_page' ]
+        );
     }
 
     public static function admin_enqueue($hook) {
-        // Only enqueue on our settings page
-        if ($hook !== 'toplevel_page_thebible') return;
+        // Only enqueue on our settings pages
+        if (
+            $hook !== 'toplevel_page_thebible'
+            && $hook !== 'thebible_page_thebible'
+            && $hook !== 'thebible_page_thebible_og'
+            && $hook !== 'thebible_page_thebible_footers'
+        ) {
+            return;
+        }
         if (function_exists('wp_enqueue_media')) {
             wp_enqueue_media();
         }
@@ -1689,11 +1703,12 @@ class TheBible_Plugin {
 
     public static function render_settings_page() {
         if ( ! current_user_can( 'manage_options' ) ) return;
-        $css = get_option( 'thebible_custom_css', '' );
+
+        $page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : 'thebible';
+
         $slugs_opt = get_option( 'thebible_slugs', 'bible,bibel' );
         $active = array_filter( array_map( 'trim', explode( ',', is_string($slugs_opt)?$slugs_opt:'' ) ) );
         $known = [ 'bible' => 'English (Douay)', 'bibel' => 'Deutsch (Menge)' ];
-        $prod_domain = (string) get_option( 'thebible_prod_domain', 'https://www.dushanwegner.com' );
         $og_enabled = get_option('thebible_og_enabled','1');
         $og_w = intval(get_option('thebible_og_width',1200));
         $og_h = intval(get_option('thebible_og_height',630));
@@ -1763,6 +1778,8 @@ class TheBible_Plugin {
         ?>
         <div class="wrap">
             <h1>The Bible</h1>
+
+            <?php if ( $page === 'thebible' ) : ?>
             <form method="post" action="options.php">
                 <?php settings_fields( 'thebible_options' ); ?>
                 <table class="form-table" role="presentation">
@@ -1777,15 +1794,8 @@ class TheBible_Plugin {
                                     </label>
                                 <?php endforeach; ?>
                                 <input type="hidden" name="thebible_slugs" id="thebible_slugs" value="<?php echo esc_attr( implode(',', $active ) ); ?>">
-                                <script>(function(){function sync(){var boxes=document.querySelectorAll('input[name="thebible_slugs_list[]"]');var out=[];boxes.forEach(function(b){if(b.checked) out.push(b.value);});document.getElementById('thebible_slugs').value=out.join(',');}document.addEventListener('change',function(e){if(e.target && e.target.name==='thebible_slugs_list[]'){sync();}});document.addEventListener('DOMContentLoaded',sync);})();</script>
+                                <script>(function(){function sync(){var boxes=document.querySelectorAll('input[name=\"thebible_slugs_list[]\"]');var out=[];boxes.forEach(function(b){if(b.checked) out.push(b.value);});document.getElementById('thebible_slugs').value=out.join(',');}document.addEventListener('change',function(e){if(e.target && e.target.name==='thebible_slugs_list[]'){sync();}});document.addEventListener('DOMContentLoaded',sync);})();</script>
                                 <p class="description">Select which bibles are publicly accessible. Others remain installed but routed pages are disabled.</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><label for="thebible_prod_domain">Production domain</label></th>
-                            <td>
-                                <input type="url" name="thebible_prod_domain" id="thebible_prod_domain" class="regular-text" value="<?php echo esc_attr( $prod_domain ); ?>" placeholder="https://www.dushanwegner.com">
-                                <p class="description">Base domain used when generating Bible sitemaps and canonical verse URLs. Leave empty to fall back to the current site URL.</p>
                             </td>
                         </tr>
                         <tr>
@@ -1809,6 +1819,34 @@ class TheBible_Plugin {
                             </td>
                         </tr>
                         <tr>
+                            <th scope="row"><label for="thebible_export_bible_slug">Export Bible as .txt</label></th>
+                            <td>
+                                <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
+                                    <?php wp_nonce_field('thebible_export_bible','thebible_export_bible_nonce'); ?>
+                                    <input type="hidden" name="action" value="thebible_export_bible">
+                                    <label for="thebible_export_bible_slug">Bible:</label>
+                                    <select name="thebible_export_bible_slug" id="thebible_export_bible_slug">
+                                        <?php foreach ($known as $slug => $label): ?>
+                                            <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($label); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="submit" class="button">Download .txt</button>
+                                    <p class="description">Downloads a plain-text file with one verse per line in a machine-friendly format.</p>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <?php submit_button(); ?>
+            </form>
+
+            <?php elseif ( $page === 'thebible_og' ) : ?>
+            <form method="post" action="options.php">
+                <?php settings_fields( 'thebible_options' ); ?>
+                <table class="form-table" role="presentation">
+                    <tbody>
+
+                        <tr>
                             <th scope="row"><label>Quotation marks</label></th>
                             <td>
                                 <label>Left <input type="text" name="thebible_og_quote_left" value="<?php echo esc_attr($og_qL); ?>" style="width:4em;text-align:center;"></label>
@@ -1830,13 +1868,6 @@ class TheBible_Plugin {
                                     <option value="left" <?php selected($og_refalign==='left'); ?>>Left</option>
                                     <option value="right" <?php selected($og_refalign==='right'); ?>>Right</option>
                                 </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><label for="thebible_custom_css">Custom CSS (applied on Bible pages)</label></th>
-                            <td>
-                                <textarea name="thebible_custom_css" id="thebible_custom_css" class="large-text code" rows="14" style="font-family:monospace;"><?php echo esc_textarea( $css ); ?></textarea>
-                                <p class="description">Rendered on /bible and any /bible/{book} pages.</p>
                             </td>
                         </tr>
                         <tr>
@@ -1912,23 +1943,6 @@ class TheBible_Plugin {
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label>Export Bible as .txt</label></th>
-                            <td>
-                                <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
-                                    <?php wp_nonce_field('thebible_export_bible','thebible_export_bible_nonce'); ?>
-                                    <input type="hidden" name="action" value="thebible_export_bible">
-                                    <label for="thebible_export_bible_slug">Bible:</label>
-                                    <select name="thebible_export_bible_slug" id="thebible_export_bible_slug">
-                                        <?php foreach ($known as $slug => $label): ?>
-                                            <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($label); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <button type="submit" class="button">Download .txt</button>
-                                    <p class="description">Downloads a plain-text file with one verse per line in a machine-friendly format.</p>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr>
                             <th scope="row"><label for="thebible_og_background_image_url">Background image</label></th>
                             <td>
                                 <p style="margin:.2em 0 .6em;">
@@ -1997,6 +2011,10 @@ class TheBible_Plugin {
                 <?php submit_button(); ?>
             </form>
 
+            <?php endif; // $page === 'thebible' or 'thebible_og' ?>
+
+            <?php if ( $page === 'thebible_footers' ) : ?>
+
             <h2>Per‑Bible footers</h2>
             <form method="post">
                 <?php wp_nonce_field('thebible_footer_save_all', 'thebible_footer_nonce_all'); ?>
@@ -2058,6 +2076,8 @@ class TheBible_Plugin {
                     <li>Verse paragraphs: <code>p[id^="{book-slug}-"]</code> with pattern <code>{slug}-{chapter}-{verse}</code>, e.g. <code>#sophonias-3-5</code></li>
                 </ul>
             </div>
+
+            <?php endif; // $page === 'thebible_footers' ?>
         </div>
         <?php
     }
@@ -2160,10 +2180,8 @@ class TheBible_Plugin {
     public static function print_custom_css() {
         $is_bible = get_query_var( self::QV_FLAG );
         if ( ! $is_bible ) return;
-        $css = get_option( 'thebible_custom_css', '' );
         $footer_css = get_option( 'thebible_footer_css', '' );
         $out = '';
-        if ( is_string($css) && $css !== '' ) { $out .= $css . "\n"; }
         if ( is_string($footer_css) && $footer_css !== '' ) { $out .= $footer_css . "\n"; }
         if ( $out !== '' ) {
             echo '<style id="thebible-custom-css">' . $out . '</style>';
