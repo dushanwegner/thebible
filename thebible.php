@@ -1561,7 +1561,8 @@ class TheBible_Plugin {
                 if ($txt !== '') $parts[] = $txt;
             }
         }
-        return trim(implode(' ', $parts));
+        $combined = trim(implode(' ', $parts));
+        return self::clean_verse_quotes($combined);
     }
 
     private static function extract_votd_texts_for_entry($entry) {
@@ -1644,6 +1645,58 @@ class TheBible_Plugin {
         $s = preg_replace('/\s+/u', ' ', $s);
         // Trim and ensure no trailing space remains before closing quotes
         $s = trim($s);
+        return $s;
+    }
+
+    private static function clean_verse_quotes($s) {
+        // General quotation mark cleaner for verse text.
+        // Rules:
+        // - If the verse block contains both » and «, convert all of them
+        //   to single inner guillemets › and ‹.
+        // - If it has only opening-style » and no «, append a matching « at the end,
+        //   then apply the above conversion.
+        // - If it has only closing-style « and no », prepend a matching » at the start,
+        //   then apply the above conversion.
+        // - Final rule: if the cleaned text would begin with "»›" and end with "‹«",
+        //   collapse those pairs to single outer quotes » and «.
+
+        $s = (string) $s;
+        if ($s === '') return $s;
+
+        $has_left  = (strpos($s, '«') !== false);
+        $has_right = (strpos($s, '»') !== false);
+
+        if ($has_right && !$has_left) {
+            // Only » present: add a closing « at the very end
+            $s .= '«';
+            $has_left = true;
+        } elseif ($has_left && !$has_right) {
+            // Only « present: add an opening » at the very start
+            $s = '»' . $s;
+            $has_right = true;
+        }
+
+        if ($has_left && $has_right) {
+            // Now that we have a pair, normalize all outer guillemets to inner ones
+            $s = str_replace(['«', '»'], ['‹', '›'], $s);
+        }
+
+        // Post-pass: ONLY if text both begins with "»›" AND ends with "‹«",
+        // collapse these outer+inner pairs back to single outer quotes.
+        $len = self::u_strlen($s);
+        if ($len >= 2) {
+            $starts = (self::u_substr($s, 0, 2) === '»›');
+            $ends   = (self::u_substr($s, -2) === '‹«');
+            if ($starts && $ends) {
+                $s = '»' . self::u_substr($s, 2); // collapse leading »› -> »
+                // recompute length after leading change
+                $len = self::u_strlen($s);
+                if ($len >= 2 && self::u_substr($s, -2) === '‹«') {
+                    $s = self::u_substr($s, 0, $len - 2) . '«'; // collapse trailing ‹« -> «
+                }
+            }
+        }
+
         return $s;
     }
 
