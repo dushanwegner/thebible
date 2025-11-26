@@ -1720,6 +1720,13 @@ class TheBible_Plugin {
         $s = preg_replace('/[–—]\s*$/u', '', $s);
         $s = trim($s);
 
+        // Final safety: if the entire text is still wrapped in inner guillemets
+        // ›...‹, promote them back to outer »...« for display.
+        $len = self::u_strlen($s);
+        if ($len >= 2 && self::u_substr($s, 0, 1) === '›' && self::u_substr($s, -1) === '‹') {
+            $s = '»' . self::u_substr($s, 1, $len - 2) . '«';
+        }
+
         return $s;
     }
 
@@ -2043,12 +2050,9 @@ class TheBible_Plugin {
         }
 
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-        // Use custom quotation marks from settings; fallback to ASCII if TTF is unavailable and marks are non-ASCII
-        $qL_opt = (string) get_option('thebible_og_quote_left','«');
-        $qR_opt = (string) get_option('thebible_og_quote_right','»');
-        $non_ascii = function($s){ return preg_match('/[^\x20-\x7E]/', (string)$s); };
-        $qL = (!$use_ttf && $non_ascii($qL_opt)) ? '"' : $qL_opt;
-        $qR = (!$use_ttf && $non_ascii($qR_opt)) ? '"' : $qR_opt;
+        // Always use fixed outer guillemets for OG images; do not make them optional.
+        $qL = '»';
+        $qR = '«';
 
         $ref_size = $font_ref;
         // Force bottom placement; align opposite of logo side
