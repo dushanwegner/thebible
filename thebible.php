@@ -63,6 +63,8 @@ class TheBible_Plugin {
         add_action('manage_thebible_votd_posts_custom_column', [__CLASS__, 'render_votd_column'], 10, 2);
         add_action('restrict_manage_posts', [__CLASS__, 'votd_date_filter']);
         add_action('pre_get_posts', [__CLASS__, 'apply_votd_date_filter']);
+        add_action('load-edit.php', [__CLASS__, 'handle_votd_condense_request']);
+        add_action('admin_notices', [__CLASS__, 'votd_condense_notice']);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
@@ -664,10 +666,14 @@ class TheBible_Plugin {
             $new[ $key ] = $label;
             if ( $key === 'title' ) {
                 $new['votd_date'] = __( 'VOTD Date', 'thebible' );
+                $new['votd_texts'] = __( 'EN/DE', 'thebible' );
             }
         }
         if ( ! isset( $new['votd_date'] ) ) {
             $new['votd_date'] = __( 'VOTD Date', 'thebible' );
+        }
+        if ( ! isset( $new['votd_texts'] ) ) {
+            $new['votd_texts'] = __( 'EN/DE', 'thebible' );
         }
         return $new;
     }
@@ -682,22 +688,57 @@ class TheBible_Plugin {
     }
 
     public static function render_votd_column( $column, $post_id ) {
-        if ( $column !== 'votd_date' ) {
+        if ( $column === 'votd_date' ) {
+            $date = get_post_meta( $post_id, '_thebible_votd_date', true );
+            if ( ! is_string( $date ) || $date === '' ) {
+                echo '&mdash;';
+                return;
+            }
+            $ts = strtotime( $date . ' 00:00:00' );
+            if ( $ts ) {
+                $human = date_i18n( 'Y-m-d (D)', $ts );
+            } else {
+                $human = $date;
+            }
+            echo esc_html( $human );
             return;
         }
-        $date = get_post_meta( $post_id, '_thebible_votd_date', true );
-        if ( ! is_string( $date ) || $date === '' ) {
-            echo '&mdash;';
-            return;
+
+        if ( $column === 'votd_texts' ) {
+            $all = get_option( 'thebible_votd_all', [] );
+            $en  = '';
+            $de  = '';
+            if ( is_array( $all ) ) {
+                foreach ( $all as $entry ) {
+                    if ( isset( $entry['post_id'] ) && (int) $entry['post_id'] === (int) $post_id && isset( $entry['texts'] ) && is_array( $entry['texts'] ) ) {
+                        if ( isset( $entry['texts']['bible'] ) && is_string( $entry['texts']['bible'] ) ) {
+                            $en = $entry['texts']['bible'];
+                        }
+                        if ( isset( $entry['texts']['bibel'] ) && is_string( $entry['texts']['bibel'] ) ) {
+                            $de = $entry['texts']['bibel'];
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if ( $en === '' && $de === '' ) {
+                echo '<small>&mdash;</small>';
+                return;
+            }
+
+            echo '<small>';
+            if ( $en !== '' ) {
+                echo '<strong>EN:</strong> ' . esc_html( trim( (string) $en ) );
+            }
+            if ( $de !== '' ) {
+                if ( $en !== '' ) {
+                    echo '<br />';
+                }
+                echo '<strong>DE:</strong> ' . esc_html( trim( (string) $de ) );
+            }
+            echo '</small>';
         }
-        // Show date and weekday for quick visual grouping
-        $ts = strtotime( $date . ' 00:00:00' );
-        if ( $ts ) {
-            $human = date_i18n( 'Y-m-d (D)', $ts );
-        } else {
-            $human = $date;
-        }
-        echo esc_html( $human );
     }
 
     public static function votd_date_filter() {
@@ -725,6 +766,10 @@ class TheBible_Plugin {
         $months   = array_keys( $months );
         sort( $months );
         $selected = isset( $_GET['thebible_votd_month'] ) ? (string) wp_unslash( $_GET['thebible_votd_month'] ) : '';
+
+        // Condense button (near filters, visually close to "Add New" button)
+        $condense_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'condense' ] ), 'thebible_votd_condense' );
+        echo '<a href="' . esc_url( $condense_url ) . '" class="button">' . esc_html__( 'Condense VOTD schedule', 'thebible' ) . '</a> ';
 
         echo '<label for="thebible_votd_month" class="screen-reader-text">' . esc_html__( 'Filter by VOTD month', 'thebible' ) . '</label>';
         echo '<select name="thebible_votd_month" id="thebible_votd_month">';
@@ -773,6 +818,117 @@ class TheBible_Plugin {
             $query->set( 'meta_key', '_thebible_votd_date' );
             $query->set( 'orderby', 'meta_value' );
             $query->set( 'order', ( $order === 'DESC' && $orderby === 'votd_date' ) ? 'DESC' : 'ASC' );
+        }
+    }
+
+    public static function handle_votd_condense_request() {
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        if ( ! $screen || $screen->id !== 'edit-thebible_votd' ) {
+            return;
+        }
+        if ( ! isset( $_GET['thebible_votd_action'] ) || $_GET['thebible_votd_action'] !== 'condense' ) {
+            return;
+        }
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            return;
+        }
+        if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'thebible_votd_condense' ) ) {
+            return;
+        }
+
+        // Ensure cache is current
+        self::rebuild_votd_cache();
+        $map = get_option( 'thebible_votd_by_date', [] );
+        if ( ! is_array( $map ) || empty( $map ) ) {
+            $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
+            $redirect = add_query_arg( [ 'thebible_votd_condensed' => 1, 'moved' => 0, 'gaps' => 0 ], $redirect );
+            wp_safe_redirect( $redirect );
+            exit;
+        }
+
+        $today = current_time( 'Y-m-d' );
+        $dates = array_keys( $map );
+        sort( $dates );
+
+        $entries = [];
+        foreach ( $dates as $d ) {
+            if ( ! is_string( $d ) || $d === '' ) {
+                continue;
+            }
+            if ( $d < $today ) {
+                continue; // keep past untouched
+            }
+            if ( isset( $map[ $d ] ) && is_array( $map[ $d ] ) ) {
+                $entries[] = $map[ $d ];
+            }
+        }
+
+        if ( empty( $entries ) ) {
+            $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
+            $redirect = add_query_arg( [ 'thebible_votd_condensed' => 1, 'moved' => 0, 'gaps' => 0 ], $redirect );
+            wp_safe_redirect( $redirect );
+            exit;
+        }
+
+        // Compute gaps between first and last future dates
+        $first_date = $entries[0]['date'];
+        $last_date  = $entries[ count( $entries ) - 1 ]['date'];
+        $gaps       = 0;
+        if ( is_string( $first_date ) && is_string( $last_date ) && $first_date !== '' && $last_date !== '' ) {
+            $dt_first = new DateTime( max( $today, $first_date ) );
+            $dt_last  = new DateTime( $last_date );
+            if ( $dt_last >= $dt_first ) {
+                $span_days = (int) $dt_first->diff( $dt_last )->days + 1;
+                $gaps      = max( 0, $span_days - count( $entries ) );
+            }
+        }
+
+        // Condense: reassign future entries to consecutive days from today forward
+        $cursor = new DateTime( $today );
+        $moved  = 0;
+        foreach ( $entries as $entry ) {
+            if ( ! isset( $entry['post_id'] ) ) {
+                continue;
+            }
+            $new_date = $cursor->format( 'Y-m-d' );
+            if ( ! isset( $entry['date'] ) || ! is_string( $entry['date'] ) || $entry['date'] !== $new_date ) {
+                update_post_meta( (int) $entry['post_id'], '_thebible_votd_date', $new_date );
+                $moved++;
+            }
+            $cursor->modify( '+1 day' );
+        }
+
+        self::rebuild_votd_cache();
+
+        $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
+        $redirect = add_query_arg( [ 'thebible_votd_condensed' => 1, 'moved' => $moved, 'gaps' => $gaps ], $redirect );
+        wp_safe_redirect( $redirect );
+        exit;
+    }
+
+    public static function votd_condense_notice() {
+        if ( ! is_admin() ) {
+            return;
+        }
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        if ( ! $screen || $screen->id !== 'edit-thebible_votd' ) {
+            return;
+        }
+        if ( ! isset( $_GET['thebible_votd_condensed'] ) ) {
+            return;
+        }
+        $moved = isset( $_GET['moved'] ) ? (int) $_GET['moved'] : 0;
+        $gaps  = isset( $_GET['gaps'] ) ? (int) $_GET['gaps'] : 0;
+
+        if ( $moved === 0 && $gaps === 0 ) {
+            echo '<div class="notice notice-info is-dismissible"><p>' . esc_html__( 'VOTD schedule is already contiguous; no changes were made.', 'thebible' ) . '</p></div>';
+            return;
+        }
+
+        if ( $gaps > 0 ) {
+            echo '<div class="notice notice-warning is-dismissible"><p>' . sprintf( esc_html__( 'Condensed Verse-of-the-Day schedule: filled %1$d empty day slots and adjusted %2$d entries from today forward.', 'thebible' ), $gaps, $moved ) . '</p></div>';
+        } else {
+            echo '<div class="notice notice-success is-dismissible"><p>' . sprintf( esc_html__( 'Condensed Verse-of-the-Day schedule: adjusted %1$d entries from today forward.', 'thebible' ), $moved ) . '</p></div>';
         }
     }
 
@@ -843,6 +999,27 @@ class TheBible_Plugin {
         echo '</td></tr>';
 
         echo '</tbody></table>';
+
+        $entry_for_preview = [
+            'book_slug' => $book,
+            'chapter'   => (int) $ch,
+            'vfrom'     => (int) $vfrom,
+            'vto'       => (int) ( (int) $vto > 0 ? $vto : $vfrom ),
+            'date'      => $date,
+        ];
+        $texts = self::extract_votd_texts_for_entry( $entry_for_preview );
+        if ( is_array( $texts ) && ( ! empty( $texts['bible'] ) || ! empty( $texts['bibel'] ) ) ) {
+            echo '<h3>' . esc_html__( 'Preview (cached verse text)', 'thebible' ) . '</h3>';
+            echo '<p class="description">' . esc_html__( 'These snippets are read from the verse cache for English (Douay) and German (Menge).', 'thebible' ) . '</p>';
+            echo '<div style="padding:.5em 1em;border:1px solid #ccd0d4;background:#f6f7f7;max-width:48em;">';
+            if ( ! empty( $texts['bible'] ) && is_string( $texts['bible'] ) ) {
+                echo '<p><strong>EN:</strong> ' . esc_html( $texts['bible'] ) . '</p>';
+            }
+            if ( ! empty( $texts['bibel'] ) && is_string( $texts['bibel'] ) ) {
+                echo '<p><strong>DE:</strong> ' . esc_html( $texts['bibel'] ) . '</p>';
+            }
+            echo '</div>';
+        }
     }
 
     public static function save_votd_meta($post_id, $post) {
