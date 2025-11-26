@@ -2251,7 +2251,14 @@ class TheBible_Plugin {
             [
                 'type'              => 'string',
                 'sanitize_callback' => function( $val ) {
-                    if ( ! is_string( $val ) ) return 'bible';
+                    // If this save does not provide the field (e.g. another settings tab),
+                    // keep the existing value instead of resetting slugs.
+                    if ( ! isset( $val ) || $val === '' ) {
+                        $current = get_option( 'thebible_slugs', 'bible,bibel' );
+                        return is_string( $current ) && $current !== '' ? $current : 'bible,bibel';
+                    }
+
+                    if ( ! is_string( $val ) ) return 'bible,bibel';
                     // normalize comma-separated list
                     $parts = array_filter( array_map( 'trim', explode( ',', $val ) ) );
                     // only allow known slugs for now
@@ -2265,43 +2272,43 @@ class TheBible_Plugin {
             ]
         );
 
-        register_setting('thebible_options', 'thebible_og_enabled', [ 'type' => 'string', 'sanitize_callback' => function($v){ return $v==='0' ? '0' : '1'; }, 'default' => '1' ]);
-        register_setting('thebible_options', 'thebible_og_width', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 1200 ]);
-        register_setting('thebible_options', 'thebible_og_height', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 630 ]);
-        register_setting('thebible_options', 'thebible_og_bg_color', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:'#111111'; }, 'default' => '#111111' ]);
-        register_setting('thebible_options', 'thebible_og_text_color', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:'#ffffff'; }, 'default' => '#ffffff' ]);
-        register_setting('thebible_options', 'thebible_og_font_ttf', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '' ]);
-        register_setting('thebible_options', 'thebible_og_font_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?esc_url_raw($v):''; }, 'default' => '' ]);
+        register_setting('thebible_options', 'thebible_og_enabled', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_enabled', '1'); return $c === '0' ? '0' : '1'; } return $v === '0' ? '0' : '1'; }, 'default' => '1' ]);
+        register_setting('thebible_options', 'thebible_og_width', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_width', 1200); $n = absint($v); return $n < 100 ? 1200 : $n; }, 'default' => 1200 ]);
+        register_setting('thebible_options', 'thebible_og_height', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_height', 630); $n = absint($v); return $n < 100 ? 630 : $n; }, 'default' => 630 ]);
+        register_setting('thebible_options', 'thebible_og_bg_color', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_bg_color', '#111111'); return is_string($c) && $c !== '' ? $c : '#111111'; } return is_string($v) ? $v : '#111111'; }, 'default' => '#111111' ]);
+        register_setting('thebible_options', 'thebible_og_text_color', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_text_color', '#ffffff'); return is_string($c) && $c !== '' ? $c : '#ffffff'; } return is_string($v) ? $v : '#ffffff'; }, 'default' => '#ffffff' ]);
+        register_setting('thebible_options', 'thebible_og_font_ttf', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v)) return (string) get_option('thebible_og_font_ttf', ''); return is_string($v) ? $v : ''; }, 'default' => '' ]);
+        register_setting('thebible_options', 'thebible_og_font_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v)) return (string) get_option('thebible_og_font_url', ''); return is_string($v) ? esc_url_raw($v) : ''; }, 'default' => '' ]);
         // Back-compat size (still read as fallback)
-        register_setting('thebible_options', 'thebible_og_font_size', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 40 ]);
+        register_setting('thebible_options', 'thebible_og_font_size', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_font_size', 40); $n = absint($v); return $n < 8 ? 40 : $n; }, 'default' => 40 ]);
         // New: separate sizes for main text and reference
-        register_setting('thebible_options', 'thebible_og_font_size_main', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 40 ]);
-        register_setting('thebible_options', 'thebible_og_font_size_ref', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 40 ]);
+        register_setting('thebible_options', 'thebible_og_font_size_main', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_font_size_main', 40); $n = absint($v); return $n < 8 ? 40 : $n; }, 'default' => 40 ]);
+        register_setting('thebible_options', 'thebible_og_font_size_ref', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_font_size_ref', 40); $n = absint($v); return $n < 8 ? 40 : $n; }, 'default' => 40 ]);
         // Minimum main size before truncation kicks in
-        register_setting('thebible_options', 'thebible_og_min_font_size_main', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 18 ]);
+        register_setting('thebible_options', 'thebible_og_min_font_size_main', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_min_font_size_main', 18); $n = absint($v); return $n < 8 ? 18 : $n; }, 'default' => 18 ]);
         // Layout & spacing
         // Specific paddings (defaults 50px). General padding deprecated.
-        register_setting('thebible_options', 'thebible_og_padding_x', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 50 ]);
-        register_setting('thebible_options', 'thebible_og_padding_top', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 50 ]);
-        register_setting('thebible_options', 'thebible_og_padding_bottom', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 50 ]);
-        register_setting('thebible_options', 'thebible_og_min_gap', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 16 ]);
+        register_setting('thebible_options', 'thebible_og_padding_x', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_padding_x', 50); return absint($v); }, 'default' => 50 ]);
+        register_setting('thebible_options', 'thebible_og_padding_top', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_padding_top', 50); return absint($v); }, 'default' => 50 ]);
+        register_setting('thebible_options', 'thebible_og_padding_bottom', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_padding_bottom', 50); return absint($v); }, 'default' => 50 ]);
+        register_setting('thebible_options', 'thebible_og_min_gap', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_min_gap', 16); return absint($v); }, 'default' => 16 ]);
         // Main text line-height (as a factor, e.g., 1.35)
-        register_setting('thebible_options', 'thebible_og_line_height_main', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?trim($v):''; return $v; }, 'default' => '1.35' ]);
+        register_setting('thebible_options', 'thebible_og_line_height_main', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_line_height_main', '1.35'); return is_string($c) && $c !== '' ? $c : '1.35'; } return is_string($v) ? trim($v) : '1.35'; }, 'default' => '1.35' ]);
         // Icon settings
-        register_setting('thebible_options', 'thebible_og_icon_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?esc_url_raw($v):''; }, 'default' => '' ]);
+        register_setting('thebible_options', 'thebible_og_icon_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v)) return (string) get_option('thebible_og_icon_url', ''); return is_string($v) ? esc_url_raw($v) : ''; }, 'default' => '' ]);
         // Simplified placement: always bottom; choose which side holds the logo; source uses the opposite
-        register_setting('thebible_options', 'thebible_og_logo_side', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["left","right"],true)?$v:'left'; }, 'default' => 'left' ]);
+        register_setting('thebible_options', 'thebible_og_logo_side', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_logo_side', 'left'); return in_array($c, ['left','right'], true) ? $c : 'left'; } return in_array($v, ['left','right'], true) ? $v : 'left'; }, 'default' => 'left' ]);
         // Padding adjust for logo relative to general padding (can be negative)
-        register_setting('thebible_options', 'thebible_og_logo_pad_adjust', [ 'type' => 'integer', 'sanitize_callback' => 'intval', 'default' => 0 ]); // legacy single-axis
-        register_setting('thebible_options', 'thebible_og_logo_pad_adjust_x', [ 'type' => 'integer', 'sanitize_callback' => 'intval', 'default' => 0 ]);
-        register_setting('thebible_options', 'thebible_og_logo_pad_adjust_y', [ 'type' => 'integer', 'sanitize_callback' => 'intval', 'default' => 0 ]);
-        register_setting('thebible_options', 'thebible_og_icon_max_w', [ 'type' => 'integer', 'sanitize_callback' => 'absint', 'default' => 160 ]);
-        register_setting('thebible_options', 'thebible_og_background_image_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '' ]);
+        register_setting('thebible_options', 'thebible_og_logo_pad_adjust', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_logo_pad_adjust', 0); return intval($v); }, 'default' => 0 ]); // legacy single-axis
+        register_setting('thebible_options', 'thebible_og_logo_pad_adjust_x', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_logo_pad_adjust_x', 0); return intval($v); }, 'default' => 0 ]);
+        register_setting('thebible_options', 'thebible_og_logo_pad_adjust_y', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_logo_pad_adjust_y', 0); return intval($v); }, 'default' => 0 ]);
+        register_setting('thebible_options', 'thebible_og_icon_max_w', [ 'type' => 'integer', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') return (int) get_option('thebible_og_icon_max_w', 160); $n = absint($v); return $n < 1 ? 160 : $n; }, 'default' => 160 ]);
+        register_setting('thebible_options', 'thebible_og_background_image_url', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v)) return (string) get_option('thebible_og_background_image_url', ''); return is_string($v) ? $v : ''; }, 'default' => '' ]);
         // Quotation marks and reference position
-        register_setting('thebible_options', 'thebible_og_quote_left', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '«' ]);
-        register_setting('thebible_options', 'thebible_og_quote_right', [ 'type' => 'string', 'sanitize_callback' => function($v){ return is_string($v)?$v:''; }, 'default' => '»' ]);
-        register_setting('thebible_options', 'thebible_og_ref_position', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["top","bottom"],true)?$v:'bottom'; }, 'default' => 'bottom' ]);
-        register_setting('thebible_options', 'thebible_og_ref_align', [ 'type' => 'string', 'sanitize_callback' => function($v){ $v=is_string($v)?$v:''; return in_array($v,["left","right"],true)?$v:'left'; }, 'default' => 'left' ]);
+        register_setting('thebible_options', 'thebible_og_quote_left', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_quote_left', '«'); return is_string($c) && $c !== '' ? $c : '«'; } return is_string($v) ? $v : '«'; }, 'default' => '«' ]);
+        register_setting('thebible_options', 'thebible_og_quote_right', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_quote_right', '»'); return is_string($c) && $c !== '' ? $c : '»'; } return is_string($v) ? $v : '»'; }, 'default' => '»' ]);
+        register_setting('thebible_options', 'thebible_og_ref_position', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_ref_position', 'bottom'); return in_array($c, ['top','bottom'], true) ? $c : 'bottom'; } return in_array($v, ['top','bottom'], true) ? $v : 'bottom'; }, 'default' => 'bottom' ]);
+        register_setting('thebible_options', 'thebible_og_ref_align', [ 'type' => 'string', 'sanitize_callback' => function($v){ if (!isset($v) || $v === '') { $c = get_option('thebible_og_ref_align', 'left'); return in_array($c, ['left','right'], true) ? $c : 'left'; } return in_array($v, ['left','right'], true) ? $v : 'left'; }, 'default' => 'left' ]);
     }
 
     public static function customize_register( $wp_customize ) {
