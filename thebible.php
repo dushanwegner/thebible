@@ -2440,19 +2440,22 @@ class TheBible_Plugin {
     }
 
     public static function admin_enqueue($hook) {
-        // Only enqueue on our settings pages
-        if (
-            $hook !== 'toplevel_page_thebible'
-            && $hook !== 'thebible_page_thebible'
-            && $hook !== 'thebible_page_thebible_og'
-            && $hook !== 'thebible_page_thebible_footers'
-            && $hook !== 'thebible_page_thebible_import'
-        ) {
+        // Only enqueue on our settings pages (hook varies by WP version/menu title)
+        // Match any hook containing 'thebible'
+        if (strpos($hook, 'thebible') === false) {
             return;
         }
         if (function_exists('wp_enqueue_media')) {
             wp_enqueue_media();
         }
+        // Enqueue our admin media picker script (depends on wp.media via jquery)
+        wp_enqueue_script(
+            'thebible-admin-media',
+            plugin_dir_url(__FILE__) . 'assets/admin-media.js',
+            ['jquery'],
+            '1.0.1',
+            true
+        );
     }
 
     public static function allow_font_uploads($mimes) {
@@ -2804,25 +2807,6 @@ class TheBible_Plugin {
                                     <label>Line height (main) <input type="number" step="0.05" min="1" name="thebible_og_line_height_main" id="thebible_og_line_height_main" value="<?php echo esc_attr($og_line_main); ?>" style="width:6em;"></label>
                                 </div>
                                 <p class="description">Main text auto-shrinks between Max and Min. If still too long at Min, it is truncated with … Source uses up to its max size and wraps as needed.</p>
-                                <script>(function(){
-                                    function initPicker(){
-                                        if (!window.wp || !wp.media) return;
-                                        var frame=null;
-                                        var btn=document.getElementById('thebible_pick_font');
-                                        if(!btn) return;
-                                        btn.addEventListener('click', function(e){
-                                            e.preventDefault();
-                                            if(frame){ frame.open(); return; }
-                                            frame = wp.media({ title: 'Select a font file', library: { type: ['application/octet-stream','font/ttf','font/otf','application/x-font-ttf','application/x-font-otf'] }, button: { text: 'Use this font' }, multiple: false });
-                                            frame.on('select', function(){
-                                                var att = frame.state().get('selection').first().toJSON();
-                                                if(att && att.url){ document.getElementById('thebible_og_font_url').value = att.url; }
-                                            });
-                                            frame.open();
-                                        });
-                                    }
-                                    if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initPicker); } else { initPicker(); }
-                                })();</script>
                             </td>
                         </tr>
                         <tr>
@@ -2843,15 +2827,6 @@ class TheBible_Plugin {
                                     <button type="button" class="button" id="thebible_pick_bg">Select/upload image</button>
                                 </p>
                                 <p class="description">Optional. If set, the image is used as a cover background with a dark overlay for readability.</p>
-                                <script>(function(){
-                                    function initBgPicker(){
-                                        if (!window.wp || !wp.media) return;
-                                        var btn=document.getElementById('thebible_pick_bg');
-                                        if(!btn) return; var frame=null;
-                                        btn.addEventListener('click', function(e){ e.preventDefault(); if(frame){frame.open();return;} frame=wp.media({title:'Select background image', library:{ type:['image'] }, button:{ text:'Use this image' }, multiple:false}); frame.on('select', function(){ var att=frame.state().get('selection').first().toJSON(); if(att && att.url){ document.getElementById('thebible_og_background_image_url').value = att.url; } }); frame.open(); });
-                                    }
-                                    if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initBgPicker); } else { initBgPicker(); }
-                                })();</script>
                             </td>
                         </tr>
                         <tr>
@@ -2888,15 +2863,6 @@ class TheBible_Plugin {
                                     <label>Max width <input type="number" min="1" name="thebible_og_icon_max_w" id="thebible_og_icon_max_w" value="<?php echo esc_attr($og_icon_max_w); ?>" style="width:6em;"> px</label>
                                 </p>
                                 <p class="description">Logo and source are always at the bottom. Choose which side holds the logo; the source uses the other side. Logo padding X/Y shift the logo relative to side/bottom padding (can be negative).</p>
-                                <script>(function(){
-                                    function initIconPicker(){
-                                        if (!window.wp || !wp.media) return;
-                                        var btn=document.getElementById('thebible_pick_icon');
-                                        if(!btn) return; var frame=null;
-                                        btn.addEventListener('click', function(e){ e.preventDefault(); if(frame){frame.open();return;} frame=wp.media({title:'Select icon', library:{ type:['image'] }, button:{ text:'Use this image' }, multiple:false}); frame.on('select', function(){ var att=frame.state().get('selection').first().toJSON(); if(att && att.url){ document.getElementById('thebible_og_icon_url').value = att.url; } }); frame.open(); });
-                                    }
-                                    if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initIconPicker); } else { initIconPicker(); }
-                                })();</script>
                             </td>
                         </tr>
                     </tbody>
