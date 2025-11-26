@@ -57,6 +57,12 @@ class TheBible_Plugin {
         add_filter('pre_get_document_title', [__CLASS__, 'filter_document_title'], 100);
         add_filter('document_title_parts', [__CLASS__, 'filter_document_title_parts'], 100);
         add_action('widgets_init', [__CLASS__, 'register_widgets']);
+        // Admin list enhancements for Verse of the Day CPT
+        add_filter('manage_edit-thebible_votd_columns', [__CLASS__, 'votd_columns']);
+        add_filter('manage_edit-thebible_votd_sortable_columns', [__CLASS__, 'votd_sortable_columns']);
+        add_action('manage_thebible_votd_posts_custom_column', [__CLASS__, 'render_votd_column'], 10, 2);
+        add_action('restrict_manage_posts', [__CLASS__, 'votd_date_filter']);
+        add_action('pre_get_posts', [__CLASS__, 'apply_votd_date_filter']);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
@@ -646,6 +652,128 @@ class TheBible_Plugin {
         ];
 
         register_post_type('thebible_votd', $args);
+    }
+
+    public static function votd_columns( $columns ) {
+        if ( ! is_array( $columns ) ) {
+            $columns = [];
+        }
+        // Insert VOTD date near the title column
+        $new = [];
+        foreach ( $columns as $key => $label ) {
+            $new[ $key ] = $label;
+            if ( $key === 'title' ) {
+                $new['votd_date'] = __( 'VOTD Date', 'thebible' );
+            }
+        }
+        if ( ! isset( $new['votd_date'] ) ) {
+            $new['votd_date'] = __( 'VOTD Date', 'thebible' );
+        }
+        return $new;
+    }
+
+    public static function votd_sortable_columns( $columns ) {
+        if ( ! is_array( $columns ) ) {
+            $columns = [];
+        }
+        // Make the VOTD Date column sortable via meta_key _thebible_votd_date
+        $columns['votd_date'] = 'votd_date';
+        return $columns;
+    }
+
+    public static function render_votd_column( $column, $post_id ) {
+        if ( $column !== 'votd_date' ) {
+            return;
+        }
+        $date = get_post_meta( $post_id, '_thebible_votd_date', true );
+        if ( ! is_string( $date ) || $date === '' ) {
+            echo '&mdash;';
+            return;
+        }
+        // Show date and weekday for quick visual grouping
+        $ts = strtotime( $date . ' 00:00:00' );
+        if ( $ts ) {
+            $human = date_i18n( 'Y-m-d (D)', $ts );
+        } else {
+            $human = $date;
+        }
+        echo esc_html( $human );
+    }
+
+    public static function votd_date_filter() {
+        global $typenow;
+        if ( $typenow !== 'thebible_votd' ) {
+            return;
+        }
+        $map = get_option( 'thebible_votd_by_date', [] );
+        if ( ! is_array( $map ) || empty( $map ) ) {
+            return;
+        }
+        // Build distinct list of months (YYYY-MM) from known VOTD dates
+        $months = [];
+        foreach ( $map as $d => $_entry ) {
+            if ( ! is_string( $d ) || $d === '' ) {
+                continue;
+            }
+            if ( preg_match( '/^(\d{4}-\d{2})-\d{2}$/', $d, $m ) ) {
+                $months[ $m[1] ] = true;
+            }
+        }
+        if ( empty( $months ) ) {
+            return;
+        }
+        $months   = array_keys( $months );
+        sort( $months );
+        $selected = isset( $_GET['thebible_votd_month'] ) ? (string) wp_unslash( $_GET['thebible_votd_month'] ) : '';
+
+        echo '<label for="thebible_votd_month" class="screen-reader-text">' . esc_html__( 'Filter by VOTD month', 'thebible' ) . '</label>';
+        echo '<select name="thebible_votd_month" id="thebible_votd_month">';
+        echo '<option value="">' . esc_html__( 'All VOTD months', 'thebible' ) . '</option>';
+        foreach ( $months as $m ) {
+            $label = $m;
+            $ts    = strtotime( $m . '-01 00:00:00' );
+            if ( $ts ) {
+                $label = date_i18n( 'F Y', $ts );
+            }
+            echo '<option value="' . esc_attr( $m ) . '"' . selected( $selected, $m, false ) . '>' . esc_html( $label ) . '</option>';
+        }
+        echo '</select>';
+    }
+
+    public static function apply_votd_date_filter( $query ) {
+        if ( ! is_admin() || ! $query->is_main_query() ) {
+            return;
+        }
+
+        $screen    = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        $post_type = $screen && isset( $screen->post_type ) ? $screen->post_type : ( isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '' );
+        if ( $post_type !== 'thebible_votd' ) {
+            return;
+        }
+
+        $month = isset( $_GET['thebible_votd_month'] ) ? sanitize_text_field( wp_unslash( $_GET['thebible_votd_month'] ) ) : '';
+
+        // If a specific VOTD month is chosen, constrain to dates starting with YYYY-MM
+        if ( $month !== '' ) {
+            $meta_query   = (array) $query->get( 'meta_query' );
+            $meta_query[] = [
+                'key'     => '_thebible_votd_date',
+                'value'   => $month . '-',
+                'compare' => 'LIKE',
+            ];
+            $query->set( 'meta_query', $meta_query );
+        }
+
+        // Determine if the user explicitly requested a different sort
+        $orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : '';
+        $order   = isset( $_GET['order'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_GET['order'] ) ) ) : '';
+
+        // Default sort: always by VOTD date ascending, unless another orderby is set
+        if ( $orderby === '' || $orderby === 'votd_date' ) {
+            $query->set( 'meta_key', '_thebible_votd_date' );
+            $query->set( 'orderby', 'meta_value' );
+            $query->set( 'order', ( $order === 'DESC' && $orderby === 'votd_date' ) ? 'DESC' : 'ASC' );
+        }
     }
 
     public static function add_votd_meta_box() {
@@ -2063,6 +2191,15 @@ class TheBible_Plugin {
             'thebible_footers',
             [ __CLASS__, 'render_settings_page' ]
         );
+
+        add_submenu_page(
+            'thebible',
+            'Verse Importer',
+            'Verse Importer',
+            'manage_options',
+            'thebible_import',
+            [ __CLASS__, 'render_settings_page' ]
+        );
     }
 
     public static function admin_enqueue($hook) {
@@ -2072,6 +2209,7 @@ class TheBible_Plugin {
             && $hook !== 'thebible_page_thebible'
             && $hook !== 'thebible_page_thebible_og'
             && $hook !== 'thebible_page_thebible_footers'
+            && $hook !== 'thebible_page_thebible_import'
         ) {
             return;
         }
@@ -2176,6 +2314,122 @@ class TheBible_Plugin {
                 wp_remote_get($url, ['timeout' => 10]);
             }
             echo '<div class="updated notice"><p>Bible sitemaps refreshed. If generation is heavy, it may take a moment for all URLs to be crawled.</p></div>';
+        }
+
+        // Handle Verse Importer CSV (fills free dates from today onwards)
+        if ( isset($_POST['thebible_import_nonce']) && wp_verify_nonce($_POST['thebible_import_nonce'],'thebible_import') && current_user_can('manage_options') ) {
+            $raw_csv = isset($_POST['thebible_import_csv']) ? (string) wp_unslash($_POST['thebible_import_csv']) : '';
+            $today_str = current_time('Y-m-d');
+            if ($raw_csv !== '') {
+                $lines = preg_split("/\r\n|\r|\n/", $raw_csv);
+                $header = null;
+                $rows = [];
+                foreach ($lines as $line) {
+                    $line = trim((string) $line);
+                    if ($line === '') continue;
+                    if ($header === null) {
+                        $header = str_getcsv($line);
+                    } else {
+                        $rows[] = str_getcsv($line);
+                    }
+                }
+                $created = 0;
+                if (is_array($header) && !empty($rows)) {
+                    $index = [];
+                    foreach ($header as $i => $name) {
+                        $name = strtolower(trim((string)$name));
+                        if ($name !== '') { $index[$name] = $i; }
+                    }
+                    // Only citation fields are required; dataset_slug/date/text/note columns are ignored by the importer
+                    $required = ['canonical_book_key','chapter','verse_from','verse_to'];
+                    $has_all = true;
+                    foreach ($required as $key) {
+                        if (!isset($index[$key])) { $has_all = false; break; }
+                    }
+                    if ($has_all) {
+                        $cursor = new DateTime($today_str);
+                        $by_date = get_option('thebible_votd_by_date', []);
+                        $used = [];
+                        if (is_array($by_date)) {
+                            foreach ($by_date as $d => $_entry) {
+                                if (is_string($d) && $d !== '' && $d >= $today_str) {
+                                    $used[$d] = true;
+                                }
+                            }
+                        }
+                        foreach ($rows as $cols) {
+                            // Extract core fields
+                            $book_key = isset($cols[$index['canonical_book_key']]) ? trim((string)$cols[$index['canonical_book_key']]) : '';
+                            $chapter  = isset($cols[$index['chapter']]) ? (int)$cols[$index['chapter']] : 0;
+                            $vfrom    = isset($cols[$index['verse_from']]) ? (int)$cols[$index['verse_from']] : 0;
+                            $vto      = isset($cols[$index['verse_to']]) ? (int)$cols[$index['verse_to']] : 0;
+                            if ($book_key === '' || $chapter <= 0 || $vfrom <= 0) {
+                                continue;
+                            }
+                            if ($vto <= 0 || $vto < $vfrom) {
+                                $vto = $vfrom;
+                            }
+
+                            // Find next free date from cursor onwards
+                            while (true) {
+                                $d = $cursor->format('Y-m-d');
+                                if (!isset($used[$d])) {
+                                    break;
+                                }
+                                $cursor = $cursor->modify('+1 day');
+                            }
+                            $assigned_date = $cursor->format('Y-m-d');
+                            $used[$assigned_date] = true;
+                            // Advance cursor for next verse
+                            $cursor = $cursor->modify('+1 day');
+
+                            // Create VOTD post
+                            $post_id = wp_insert_post([
+                                'post_type'   => 'thebible_votd',
+                                'post_status' => 'publish',
+                                'post_title'  => '',
+                                'post_content'=> '',
+                            ], true);
+                            if (is_wp_error($post_id) || !$post_id) {
+                                continue;
+                            }
+
+                            update_post_meta($post_id, '_thebible_votd_book', $book_key);
+                            update_post_meta($post_id, '_thebible_votd_chapter', $chapter);
+                            update_post_meta($post_id, '_thebible_votd_vfrom', $vfrom);
+                            update_post_meta($post_id, '_thebible_votd_vto', $vto);
+                            update_post_meta($post_id, '_thebible_votd_date', $assigned_date);
+
+                            // Generate a title like save_votd_meta() does
+                            $entry = self::normalize_votd_entry(get_post($post_id));
+                            if (is_array($entry)) {
+                                $book_key_norm = $entry['book_slug'];
+                                $short = self::resolve_book_for_dataset($book_key_norm, 'bible');
+                                if (!is_string($short) || $short === '') {
+                                    $label = ucwords(str_replace('-', ' ', (string) $book_key_norm));
+                                } else {
+                                    $label = self::pretty_label($short);
+                                }
+                                $ref = $label . ' ' . $entry['chapter'] . ':' . ($entry['vfrom'] === $entry['vto'] ? $entry['vfrom'] : ($entry['vfrom'] . '-' . $entry['vto']));
+                                $title = $ref . ' (' . $entry['date'] . ')';
+                                wp_update_post([
+                                    'ID'         => $post_id,
+                                    'post_title' => $title,
+                                    'post_name'  => sanitize_title($title),
+                                ]);
+                            }
+
+                            $created++;
+                        }
+                        // Rebuild VOTD cache once after import
+                        if ($created > 0) {
+                            self::rebuild_votd_cache();
+                        }
+                    }
+                }
+
+                echo '<div class="updated notice"><p>Verse importer created ' . intval($created) . ' new Verse-of-the-Day entries, filling free dates from ' . esc_html($today_str) . ' onward.</p></div>';
+            }
         }
         ?>
         <div class="wrap">
@@ -2413,7 +2667,130 @@ class TheBible_Plugin {
                 <?php submit_button(); ?>
             </form>
 
-            <?php endif; // $page === 'thebible' or 'thebible_og' ?>
+            <?php elseif ( $page === 'thebible_import' ) : ?>
+
+            <h2>Verse Importer (CSV)</h2>
+
+            <form method="post">
+                <?php wp_nonce_field('thebible_import','thebible_import_nonce'); ?>
+
+            <p class="description">
+                This page documents a machine-friendly CSV format for importing verses into The Bible plugin.
+                Paste CSV data into the textarea below to be consumed by an external importer or future automation.
+                No data is imported yet; this UI is documentation and a staging area only.
+            </p>
+
+            <h3>CSV format overview</h3>
+            <p>
+                The importer expects a UTF-8 CSV with a header row and one verse (or verse range) per line.
+                Columns are designed to be unambiguous for an AI or script:
+            </p>
+
+            <table class="widefat striped" style="max-width:960px;margin-top:1em;">
+                <thead>
+                    <tr>
+                        <th scope="col">Column</th>
+                        <th scope="col">Required?</th>
+                        <th scope="col">Example</th>
+                        <th scope="col">Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>canonical_book_key</code></td>
+                        <td>Yes</td>
+                        <td><code>john</code>, <code>psalms</code></td>
+                        <td>
+                            Canonical book key as used by <code>book_map.json</code> and VOTD (see <code>list_canonical_books()</code>).
+                            The mapping in <code>book_map.json</code> determines the correct title for each language, so no separate bible/bibel column is needed.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>chapter</code></td>
+                        <td>Yes</td>
+                        <td><code>3</code></td>
+                        <td>Positive integer chapter number within the book.</td>
+                    </tr>
+                    <tr>
+                        <td><code>verse_from</code></td>
+                        <td>Yes</td>
+                        <td><code>16</code></td>
+                        <td>First verse number in the range (inclusive).</td>
+                    </tr>
+                    <tr>
+                        <td><code>verse_to</code></td>
+                        <td>Optional</td>
+                        <td><code>18</code> or empty</td>
+                        <td>Last verse number in the range (inclusive). If empty or &lt; <code>verse_from</code>, treat as a single verse.</td>
+                    </tr>
+                    <tr>
+                        <td><code>date</code></td>
+                        <td>Ignored</td>
+                        <td>(leave empty)</td>
+                        <td>
+                            The importer always assigns dates automatically from today forward, filling free days.
+                            You may omit this column entirely or leave it empty; it is not read.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Header and example rows</h3>
+            <p>Recommended header line (only citation fields):</p>
+            <pre class="code">canonical_book_key,chapter,verse_from,verse_to</pre>
+
+            <p>Example lines (one single verse and one range):</p>
+            <pre class="code" style="white-space:pre-wrap;">
+john,3,16,
+johannes,3,16,18
+            </pre>
+
+            <h3>Staging textarea</h3>
+            <p>
+                Use this textarea as a scratchpad when preparing CSV data (for example, when collaborating with an AI that generates verses).
+                The prefilled text below is written as direct instructions that an AI can follow to emit valid CSV for this importer.
+            </p>
+
+            <textarea class="large-text code" rows="16" style="max-width:960px;" name="thebible_import_csv">
+INSTRUCTIONS FOR GENERATING VERSE CSV FOR "THE BIBLE" PLUGIN
+
+1. Output UTF-8 CSV text only, inside a single Markdown code block for easy copy. Use this structure:
+
+```csv
+canonical_book_key,chapter,verse_from,verse_to
+...your data rows here...
+```
+
+2. The first line INSIDE the code block MUST be this exact header (all lowercase, comma-separated):
+   canonical_book_key,chapter,verse_from,verse_to
+
+3. For each verse or verse range, output ONE CSV row with these rules:
+   - canonical_book_key: one of the following canonical keys from book_map.json (exact spelling):
+     genesis, exodus, leviticus, numbers, deuteronomy, josue, judges, ruth,
+     job, psalms, proverbs, ecclesiastes, canticle-of-canticles,
+     isaias, jeremias, lamentations, ezechiel, daniel, osee, joel, amos, abdias,
+     jonas, micheas, nahum, habacuc, sophonias, aggeus, zacharias, malachias,
+     matthew, mark, luke, john, acts, romans, 1-corinthians, 2-corinthians,
+     galatians, ephesians, philippians, colossians, 1-thessalonians, 2-thessalonians,
+     1-timothy, 2-timothy, titus, philemon, hebrews, james, 1-peter, 2-peter,
+     1-john, 2-john, 3-john, jude, apocalypse.
+   - chapter: positive integer chapter number (e.g. 3).
+   - verse_from: positive integer first verse in the range (e.g. 16).
+   - verse_to: last verse in the range (inclusive). If there is no range, leave this field empty.
+
+4. The importer will automatically assign calendar dates from today forward, filling free days one per CSV row. Do NOT try to set dates in the CSV.
+
+5. Example of TWO valid data lines (after the header):
+   john,3,16,
+   johannes,3,16,18
+
+6. Do NOT add extra columns. Every row must have exactly four comma-separated fields matching the header.
+            </textarea>
+
+                <?php submit_button( __( 'Import verses (fill free dates from today)', 'thebible' ) ); ?>
+            </form>
+
+            <?php endif; // $page === 'thebible' / 'thebible_og' / 'thebible_import' ?>
 
             <?php if ( $page === 'thebible_footers' ) : ?>
 
