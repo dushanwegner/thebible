@@ -22,10 +22,12 @@ class TheBible_Plugin {
     private static $books = null; // array of [order, short_name, filename]
     private static $slug_map = null; // slug => array entry
     private static $abbr_maps = [];
+    private static $book_map = null;
     private static $current_page_title = '';
 
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
+        add_action('init', [__CLASS__, 'register_votd_cpt']);
         add_filter('query_vars', [__CLASS__, 'add_query_vars']);
         add_action('template_redirect', [__CLASS__, 'handle_sitemap'], 5);
         add_action('template_redirect', [__CLASS__, 'handle_template_redirect']);
@@ -34,7 +36,9 @@ class TheBible_Plugin {
         add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
         add_action('admin_post_thebible_export_bible', [__CLASS__, 'handle_export_bible_txt']);
         add_action('add_meta_boxes', [__CLASS__, 'add_bible_meta_box']);
+        add_action('add_meta_boxes', [__CLASS__, 'add_votd_meta_box']);
         add_action('save_post', [__CLASS__, 'save_bible_meta'], 10, 2);
+        add_action('save_post', [__CLASS__, 'save_votd_meta'], 10, 2);
         add_filter('manage_posts_columns', [__CLASS__, 'add_bible_column']);
         add_filter('manage_pages_columns', [__CLASS__, 'add_bible_column']);
         add_action('manage_posts_custom_column', [__CLASS__, 'render_bible_column'], 10, 2);
@@ -52,6 +56,7 @@ class TheBible_Plugin {
         add_filter('the_content', [__CLASS__, 'filter_content_auto_link_bible_refs'], 20);
         add_filter('pre_get_document_title', [__CLASS__, 'filter_document_title'], 100);
         add_filter('document_title_parts', [__CLASS__, 'filter_document_title_parts'], 100);
+        add_action('widgets_init', [__CLASS__, 'register_widgets']);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
@@ -424,13 +429,67 @@ class TheBible_Plugin {
         }
     }
 
-    private static function slugify($name) {
+    public static function slugify($name) {
         $slug = strtolower($name);
         $slug = str_replace([' ', '__'], ['-', '-'], $slug);
         $slug = str_replace(['_', '\\', '/'], ['-', '-', '-'], $slug);
         $slug = preg_replace('/[^a-z0-9\-]+/', '', $slug);
         $slug = preg_replace('/\-+/', '-', $slug);
         return trim($slug, '-');
+    }
+
+    private static function load_book_map() {
+        if (self::$book_map !== null) {
+            return;
+        }
+        $file = plugin_dir_path(__FILE__) . 'data/book_map.json';
+        $map = [];
+        if (file_exists($file)) {
+            $raw = file_get_contents($file);
+            if (is_string($raw) && $raw !== '') {
+                $data = json_decode($raw, true);
+                if (is_array($data)) {
+                    $map = $data;
+                }
+            }
+        }
+        self::$book_map = $map;
+    }
+
+    public static function resolve_book_for_dataset($canonical_key, $dataset_slug) {
+        if (!is_string($canonical_key) || $canonical_key === '') {
+            return null;
+        }
+        if (!is_string($dataset_slug) || $dataset_slug === '') {
+            return null;
+        }
+        self::load_book_map();
+        if (!is_array(self::$book_map) || empty(self::$book_map)) {
+            return null;
+        }
+        $key = strtolower($canonical_key);
+        if (!isset(self::$book_map[$key]) || !is_array(self::$book_map[$key])) {
+            return null;
+        }
+        $entry = self::$book_map[$key];
+        if (!isset($entry[$dataset_slug]) || !is_string($entry[$dataset_slug]) || $entry[$dataset_slug] === '') {
+            return null;
+        }
+        return $entry[$dataset_slug];
+    }
+
+    public static function list_canonical_books() {
+        self::load_book_map();
+        if (!is_array(self::$book_map) || empty(self::$book_map)) {
+            return [];
+        }
+        $out = [];
+        foreach (self::$book_map as $key => $val) {
+            if (!is_string($key) || $key === '') continue;
+            $out[] = $key;
+        }
+        sort($out);
+        return $out;
     }
 
     private static function get_abbreviation_map($slug) {
@@ -493,7 +552,7 @@ class TheBible_Plugin {
         return $book_slug !== '' ? $book_slug : null;
     }
 
-    private static function pretty_label($short_name) {
+    public static function pretty_label($short_name) {
         if (!is_string($short_name)) return '';
         $label = $short_name;
         // Convert underscores to spaces by default
@@ -555,6 +614,291 @@ class TheBible_Plugin {
         update_post_meta($post_id, 'thebible_slug', $val);
     }
 
+    public static function register_votd_cpt() {
+        $labels = [
+            'name'                  => __('Verses of the Day', 'thebible'),
+            'singular_name'         => __('Verse of the Day', 'thebible'),
+            'add_new'               => __('Add New', 'thebible'),
+            'add_new_item'          => __('Add New Verse of the Day', 'thebible'),
+            'edit_item'             => __('Edit Verse of the Day', 'thebible'),
+            'new_item'              => __('New Verse of the Day', 'thebible'),
+            'view_item'             => __('View Verse of the Day', 'thebible'),
+            'search_items'          => __('Search Verses of the Day', 'thebible'),
+            'not_found'             => __('No verses of the day found.', 'thebible'),
+            'not_found_in_trash'    => __('No verses of the day found in Trash.', 'thebible'),
+            'all_items'             => __('Verses of the Day', 'thebible'),
+            'menu_name'             => __('Verse of the Day', 'thebible'),
+        ];
+
+        $args = [
+            'labels'             => $labels,
+            'public'             => false,
+            'show_ui'            => true,
+            'show_in_menu'       => true,
+            'show_in_nav_menus'  => false,
+            'show_in_admin_bar'  => false,
+            'exclude_from_search'=> true,
+            'publicly_queryable' => false,
+            'has_archive'        => false,
+            'hierarchical'       => false,
+            'supports'           => [],
+            'menu_position'      => null,
+        ];
+
+        register_post_type('thebible_votd', $args);
+    }
+
+    public static function add_votd_meta_box() {
+        add_meta_box(
+            'thebible_votd_meta',
+            __('Verse reference', 'thebible'),
+            [__CLASS__, 'render_votd_meta_box'],
+            'thebible_votd',
+            'normal',
+            'default'
+        );
+    }
+
+    public static function render_votd_meta_box($post) {
+        wp_nonce_field('thebible_votd_meta_save', 'thebible_votd_meta_nonce');
+
+        $book  = get_post_meta($post->ID, '_thebible_votd_book', true);
+        $ch    = get_post_meta($post->ID, '_thebible_votd_chapter', true);
+        $vfrom = get_post_meta($post->ID, '_thebible_votd_vfrom', true);
+        $vto   = get_post_meta($post->ID, '_thebible_votd_vto', true);
+        $date  = get_post_meta($post->ID, '_thebible_votd_date', true);
+
+        if (!is_string($book))  $book = '';
+        if (!is_string($date))  $date = '';
+        $ch    = (string) (int) $ch;
+        $vfrom = (string) (int) $vfrom;
+        $vto   = (string) (int) $vto;
+
+        $canonical_books = self::list_canonical_books();
+
+        echo '<p>' . esc_html__('Define the Bible reference and optional calendar date for this verse-of-the-day entry.', 'thebible') . '</p>';
+
+        echo '<table class="form-table" role="presentation"><tbody>';
+
+        echo '<tr><th scope="row"><label for="thebible_votd_book">' . esc_html__('Book', 'thebible') . '</label></th><td>';
+        echo '<select id="thebible_votd_book" name="thebible_votd_book">';
+        echo '<option value="">' . esc_html__('Select a book…', 'thebible') . '</option>';
+        if (is_array($canonical_books)) {
+            foreach ($canonical_books as $key) {
+                if (!is_string($key) || $key === '') continue;
+                $label = $key;
+                $label = str_replace('-', ' ', $label);
+                $label = ucwords($label);
+                echo '<option value="' . esc_attr($key) . '"' . selected($book, $key, false) . '>' . esc_html($label) . '</option>';
+            }
+        }
+        echo '</select>';
+        echo '<p class="description">' . esc_html__('Canonical book key used to map to all Bible datasets (e.g. "john", "psalms").', 'thebible') . '</p>';
+        echo '</td></tr>';
+
+        echo '<tr><th scope="row"><label for="thebible_votd_chapter">' . esc_html__('Chapter', 'thebible') . '</label></th><td>';
+        echo '<input type="number" min="1" step="1" class="small-text" id="thebible_votd_chapter" name="thebible_votd_chapter" value="' . esc_attr($ch) . '" />';
+        echo '</td></tr>';
+
+        echo '<tr><th scope="row"><label for="thebible_votd_vfrom">' . esc_html__('First verse', 'thebible') . '</label></th><td>';
+        echo '<input type="number" min="1" step="1" class="small-text" id="thebible_votd_vfrom" name="thebible_votd_vfrom" value="' . esc_attr($vfrom) . '" />';
+        echo '</td></tr>';
+
+        echo '<tr><th scope="row"><label for="thebible_votd_vto">' . esc_html__('Last verse', 'thebible') . '</label></th><td>';
+        echo '<input type="number" min="1" step="1" class="small-text" id="thebible_votd_vto" name="thebible_votd_vto" value="' . esc_attr($vto) . '" />';
+        echo '<p class="description">' . esc_html__('If empty or smaller than first verse, the range is treated as a single verse.', 'thebible') . '</p>';
+        echo '</td></tr>';
+
+        echo '<tr><th scope="row"><label for="thebible_votd_date">' . esc_html__('Calendar date (optional)', 'thebible') . '</label></th><td>';
+        echo '<input type="text" class="regular-text" id="thebible_votd_date" name="thebible_votd_date" value="' . esc_attr($date) . '" placeholder="YYYY-MM-DD" />';
+        echo '<p class="description">' . esc_html__('If set, this entry will be used as the verse of the day for that local date (widget mode "today").', 'thebible') . '</p>';
+        echo '</td></tr>';
+
+        echo '</tbody></table>';
+    }
+
+    public static function save_votd_meta($post_id, $post) {
+        if ($post->post_type !== 'thebible_votd') {
+            return;
+        }
+        if (!isset($_POST['thebible_votd_meta_nonce']) || !wp_verify_nonce($_POST['thebible_votd_meta_nonce'], 'thebible_votd_meta_save')) {
+            return;
+        }
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+        if (!current_user_can('edit_post', $post_id)) return;
+
+        $book  = isset($_POST['thebible_votd_book']) ? sanitize_text_field(wp_unslash($_POST['thebible_votd_book'])) : '';
+        $ch    = isset($_POST['thebible_votd_chapter']) ? (int) $_POST['thebible_votd_chapter'] : 0;
+        $vfrom = isset($_POST['thebible_votd_vfrom']) ? (int) $_POST['thebible_votd_vfrom'] : 0;
+        $vto   = isset($_POST['thebible_votd_vto']) ? (int) $_POST['thebible_votd_vto'] : 0;
+        $date  = isset($_POST['thebible_votd_date']) ? sanitize_text_field(wp_unslash($_POST['thebible_votd_date'])) : '';
+
+        if ($book !== '') {
+            update_post_meta($post_id, '_thebible_votd_book', $book);
+        } else {
+            delete_post_meta($post_id, '_thebible_votd_book');
+        }
+
+        if ($ch > 0) {
+            update_post_meta($post_id, '_thebible_votd_chapter', $ch);
+        } else {
+            delete_post_meta($post_id, '_thebible_votd_chapter');
+        }
+
+        if ($vfrom > 0) {
+            update_post_meta($post_id, '_thebible_votd_vfrom', $vfrom);
+        } else {
+            delete_post_meta($post_id, '_thebible_votd_vfrom');
+        }
+
+        if ($vto > 0) {
+            update_post_meta($post_id, '_thebible_votd_vto', $vto);
+        } else {
+            delete_post_meta($post_id, '_thebible_votd_vto');
+        }
+
+        if ($date !== '') {
+            $date = preg_replace('/[^0-9\-]/', '', $date);
+            update_post_meta($post_id, '_thebible_votd_date', $date);
+        } else {
+            // Default to today if no date provided
+            $date = current_time('Y-m-d');
+            update_post_meta($post_id, '_thebible_votd_date', $date);
+        }
+
+        // Auto-generate post title from reference and date
+        $entry = self::normalize_votd_entry(get_post($post_id));
+        if (is_array($entry)) {
+            $book_key = $entry['book_slug'];
+            $short = self::resolve_book_for_dataset($book_key, 'bible');
+            if (!is_string($short) || $short === '') {
+                $label = ucwords(str_replace('-', ' ', (string) $book_key));
+            } else {
+                $label = self::pretty_label($short);
+            }
+            $ref = $label . ' ' . $entry['chapter'] . ':' . ($entry['vfrom'] === $entry['vto'] ? $entry['vfrom'] : ($entry['vfrom'] . '-' . $entry['vto']));
+            $title = $ref . ' (' . $entry['date'] . ')';
+
+            // Avoid infinite recursion when updating the post inside save_post
+            remove_action('save_post', [__CLASS__, 'save_votd_meta'], 10);
+            wp_update_post([
+                'ID'         => $post_id,
+                'post_title' => $title,
+                'post_name'  => sanitize_title($title),
+            ]);
+            add_action('save_post', [__CLASS__, 'save_votd_meta'], 10, 2);
+        }
+
+        self::rebuild_votd_cache();
+    }
+
+    private static function rebuild_votd_cache() {
+        $by_date = [];
+        $all = [];
+
+        $q = new WP_Query([
+            'post_type'      => 'thebible_votd',
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'no_found_rows'  => true,
+        ]);
+
+        if (!empty($q->posts)) {
+            foreach ($q->posts as $post) {
+                $entry = self::normalize_votd_entry($post);
+                if (!is_array($entry)) {
+                    continue;
+                }
+                $entry['texts'] = self::extract_votd_texts_for_entry($entry);
+                $all[] = $entry;
+                if (!empty($entry['date'])) {
+                    $by_date[$entry['date']] = $entry;
+                }
+            }
+        }
+
+        update_option('thebible_votd_by_date', $by_date, false);
+        update_option('thebible_votd_all', $all, false);
+    }
+
+    private static function normalize_votd_entry($post) {
+        if (!$post || $post->post_type !== 'thebible_votd') return null;
+
+        $book  = get_post_meta($post->ID, '_thebible_votd_book', true);
+        $ch    = (int) get_post_meta($post->ID, '_thebible_votd_chapter', true);
+        $vfrom = (int) get_post_meta($post->ID, '_thebible_votd_vfrom', true);
+        $vto   = (int) get_post_meta($post->ID, '_thebible_votd_vto', true);
+        $date  = get_post_meta($post->ID, '_thebible_votd_date', true);
+
+        if (!is_string($book) || $book === '' || $ch <= 0 || $vfrom <= 0) {
+            return null;
+        }
+        if ($vto <= 0 || $vto < $vfrom) {
+            $vto = $vfrom;
+        }
+        if (!is_string($date)) {
+            $date = '';
+        }
+
+        return [
+            'post_id'   => (int) $post->ID,
+            'book_slug' => $book,
+            'chapter'   => $ch,
+            'vfrom'     => $vfrom,
+            'vto'       => $vto,
+            'date'      => $date,
+        ];
+    }
+
+    public static function get_votd_for_date($date = null) {
+        if ($date === null) {
+            $date = current_time('Y-m-d');
+        }
+        if (!is_string($date) || $date === '') {
+            return null;
+        }
+        $map = get_option('thebible_votd_by_date', []);
+        if (!is_array($map) || empty($map)) {
+            return null;
+        }
+        if (!isset($map[$date]) || !is_array($map[$date])) {
+            return null;
+        }
+        return $map[$date];
+    }
+
+    public static function get_votd_random($exclude_ids = []) {
+        $all = get_option('thebible_votd_all', []);
+        if (!is_array($all) || empty($all)) {
+            return null;
+        }
+        $exclude_ids = array_map('intval', (array) $exclude_ids);
+        $candidates = [];
+        foreach ($all as $entry) {
+            if (!is_array($entry) || empty($entry['post_id'])) {
+                continue;
+            }
+            if (in_array((int) $entry['post_id'], $exclude_ids, true)) {
+                continue;
+            }
+            $candidates[] = $entry;
+        }
+        if (empty($candidates)) {
+            return null;
+        }
+        $idx = array_rand($candidates);
+        return $candidates[$idx];
+    }
+
+    public static function get_votd_random_not_today() {
+        $today = self::get_votd_for_date();
+        $exclude = [];
+        if (is_array($today) && !empty($today['post_id'])) {
+            $exclude[] = (int) $today['post_id'];
+        }
+        return self::get_votd_random($exclude);
+    }
+
     public static function add_bible_column($columns) {
         if (!is_array($columns)) return $columns;
         $columns['thebible_slug'] = __('Bible', 'thebible');
@@ -570,6 +914,12 @@ class TheBible_Plugin {
             echo esc_html__('English (Douay-Rheims)', 'thebible');
         } else {
             echo '&#8212;';
+        }
+    }
+
+    public static function register_widgets() {
+        if (class_exists('WP_Widget')) {
+            register_widget('TheBible_VOTD_Widget');
         }
     }
 
@@ -879,6 +1229,13 @@ class TheBible_Plugin {
         $html = (string) file_get_contents($file);
         if ($html === '') return '';
         $book_slug = self::slugify($entry['short_name']);
+        return self::extract_verse_text_from_html($html, $book_slug, $ch, $vf, $vt);
+    }
+
+    private static function extract_verse_text_from_html($html, $book_slug, $ch, $vf, $vt) {
+        if (!is_string($html) || $html === '' || !is_string($book_slug) || $book_slug === '') {
+            return '';
+        }
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
         $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
@@ -900,6 +1257,51 @@ class TheBible_Plugin {
             }
         }
         return trim(implode(' ', $parts));
+    }
+
+    private static function extract_votd_texts_for_entry($entry) {
+        if (!is_array($entry)) return [];
+        $out = [];
+        $datasets = ['bible', 'bibel'];
+        foreach ($datasets as $dataset) {
+            $short = self::resolve_book_for_dataset($entry['book_slug'], $dataset);
+            if (!is_string($short) || $short === '') {
+                continue;
+            }
+            $index_file = plugin_dir_path(__FILE__) . 'data/' . $dataset . '/html/index.csv';
+            if (!file_exists($index_file)) {
+                continue;
+            }
+            $filename = '';
+            if (($fh = fopen($index_file, 'r')) !== false) {
+                $header = fgetcsv($fh);
+                while (($row = fgetcsv($fh)) !== false) {
+                    if (!is_array($row) || count($row) < 4) continue;
+                    if ((string) $row[1] === (string) $short) {
+                        $filename = (string) $row[3];
+                        break;
+                    }
+                }
+                fclose($fh);
+            }
+            if ($filename === '') {
+                continue;
+            }
+            $html_path = plugin_dir_path(__FILE__) . 'data/' . $dataset . '/html/' . $filename;
+            if (!file_exists($html_path)) {
+                continue;
+            }
+            $html = (string) file_get_contents($html_path);
+            if ($html === '') {
+                continue;
+            }
+            $book_slug = self::slugify($short);
+            $txt = self::extract_verse_text_from_html($html, $book_slug, (int) $entry['chapter'], (int) $entry['vfrom'], (int) $entry['vto']);
+            if (is_string($txt) && $txt !== '') {
+                $out[$dataset] = $txt;
+            }
+        }
+        return $out;
     }
 
     private static function normalize_whitespace($s) {
@@ -2267,3 +2669,258 @@ class TheBible_Plugin {
 }
 
 TheBible_Plugin::init();
+
+class TheBible_VOTD_Widget extends WP_Widget {
+    public function __construct() {
+        parent::__construct(
+            'thebible_votd',
+            __('Verse of the Day (Bible)', 'thebible'),
+            ['description' => __('Displays a simple verse-of-the-day reference from The Bible plugin.', 'thebible')]
+        );
+    }
+
+    public function widget($args, $instance) {
+        $title      = isset($instance['title']) ? $instance['title'] : '';
+        $date_mode  = isset($instance['date_mode']) ? $instance['date_mode'] : 'today_fallback';
+        $pick_date  = isset($instance['pick_date']) ? $instance['pick_date'] : '';
+        $lang_mode  = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
+        $custom_css = isset($instance['custom_css']) ? $instance['custom_css'] : '';
+
+        if (!is_string($title)) $title = '';
+        if (!in_array($date_mode, ['today_fallback', 'random', 'pick_date'], true)) {
+            $date_mode = 'today_fallback';
+        }
+        if (!is_string($pick_date)) $pick_date = '';
+        if (!in_array($lang_mode, ['bible', 'bibel', 'both'], true)) {
+            $lang_mode = 'bible';
+        }
+        if (!is_string($custom_css)) $custom_css = '';
+
+        // Resolve VOTD entry based on date mode
+        $ref = null;
+        if ($date_mode === 'random') {
+            $ref = TheBible_Plugin::get_votd_random();
+        } elseif ($date_mode === 'pick_date' && $pick_date !== '') {
+            $ref = TheBible_Plugin::get_votd_for_date($pick_date);
+        } else { // today_fallback
+            $ref = TheBible_Plugin::get_votd_for_date();
+            if (!is_array($ref)) {
+                $ref = TheBible_Plugin::get_votd_random();
+            }
+        }
+
+        if (!is_array($ref)) {
+            return;
+        }
+
+        $canonical = isset($ref['book_slug']) ? $ref['book_slug'] : '';
+        $chapter   = isset($ref['chapter']) ? (int) $ref['chapter'] : 0;
+        $vfrom     = isset($ref['vfrom']) ? (int) $ref['vfrom'] : 0;
+        $vto       = isset($ref['vto']) ? (int) $ref['vto'] : 0;
+        $date      = isset($ref['date']) ? $ref['date'] : '';
+        $texts     = isset($ref['texts']) && is_array($ref['texts']) ? $ref['texts'] : [];
+
+        if (!is_string($canonical) || $canonical === '' || $chapter <= 0 || $vfrom <= 0) {
+            return;
+        }
+        if ($vto <= 0 || $vto < $vfrom) {
+            $vto = $vfrom;
+        }
+
+        // Always build the main reference label from English dataset
+        $short_en = TheBible_Plugin::resolve_book_for_dataset($canonical, 'bible');
+        if (!is_string($short_en) || $short_en === '') {
+            $label = ucwords(str_replace('-', ' ', (string) $canonical));
+        } else {
+            $label = TheBible_Plugin::pretty_label($short_en);
+        }
+
+        $book_slug_en = TheBible_Plugin::slugify($short_en ? $short_en : $canonical);
+        $ref_str = $label . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
+        if (is_string($date) && $date !== '') {
+            $ref_str .= ' (' . $date . ')';
+        }
+
+        // Primary URL: English dataset
+        $path_en = '/bible/' . trim($book_slug_en, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
+        $url_en  = home_url($path_en);
+
+        echo isset($args['before_widget']) ? $args['before_widget'] : '';
+
+        if ($custom_css !== '') {
+            echo '<style class="thebible-votd-widget-css">' . $custom_css . '</style>';
+        }
+
+        // Localized meta texts
+        $is_german = ($lang_mode === 'bibel' || $lang_mode === 'both');
+        $primary_ds = $is_german ? 'bibel' : 'bible';
+        $short_primary = TheBible_Plugin::resolve_book_for_dataset($canonical, $primary_ds);
+        if (!is_string($short_primary) || $short_primary === '') {
+            $heading_label = $label;
+        } else {
+            $heading_label = TheBible_Plugin::pretty_label($short_primary);
+        }
+        $heading_ref = $heading_label . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
+
+        // Localized, pretty date
+        $display_date = $date;
+        if (is_string($date) && $date !== '') {
+            $ts = strtotime($date . ' 00:00:00');
+            if ($ts) {
+                $display_date = date_i18n(get_option('date_format'), $ts);
+            }
+        }
+
+        if ($is_german) {
+            $info_text = ($display_date !== '')
+                ? sprintf(__('Vers für den %s', 'thebible'), $display_date)
+                : __('Ausgewählter Vers', 'thebible');
+            $link_label = __('Vers im Kontext lesen →', 'thebible');
+        } else {
+            $info_text = ($display_date !== '')
+                ? sprintf(__('Verse for %s', 'thebible'), $display_date)
+                : __('Selected verse', 'thebible');
+            $link_label = __('Read verse in context →', 'thebible');
+        }
+
+        echo '<div class="thebible-votd-widget thebible-votd-widget-' . esc_attr($lang_mode) . '">';
+        echo '<h2 class="thebible-votd-heading">' . esc_html($heading_ref) . '</h2>';
+        echo '<div class="thebible-votd-info">' . esc_html($info_text) . '</div>';
+
+        // Verse text blocks per language
+        $langs_to_show = [];
+        if ($lang_mode === 'both') {
+            $langs_to_show = ['bible', 'bibel'];
+        } else {
+            $langs_to_show = [$lang_mode];
+        }
+
+        foreach ($langs_to_show as $ds) {
+            $text = isset($texts[$ds]) ? $texts[$ds] : '';
+            if (!is_string($text) || $text === '') {
+                continue;
+            }
+            $short_ds = TheBible_Plugin::resolve_book_for_dataset($canonical, $ds);
+            $book_slug_ds = TheBible_Plugin::slugify($short_ds ? $short_ds : $canonical);
+            $path_ds = '/' . trim($ds, '/') . '/' . trim($book_slug_ds, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
+            $url_ds  = home_url($path_ds);
+
+            echo '<div class="thebible-votd-lang thebible-votd-lang-' . esc_attr($ds) . '">';
+            echo '<div class="thebible-votd-text">' . esc_html($text) . '</div>';
+            echo '<div class="thebible-votd-context"><a class="thebible-votd-context-link" href="' . esc_url($url_ds) . '">' . esc_html($link_label) . '</a></div>';
+            echo '</div>';
+        }
+
+        echo '</div>';
+
+        echo isset($args['after_widget']) ? $args['after_widget'] : '';
+    }
+
+    public function form($instance) {
+        $title      = isset($instance['title']) ? $instance['title'] : '';
+        $date_mode  = isset($instance['date_mode']) ? $instance['date_mode'] : 'today_fallback';
+        $pick_date  = isset($instance['pick_date']) ? $instance['pick_date'] : '';
+        $lang_mode  = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
+        $custom_css = isset($instance['custom_css']) ? $instance['custom_css'] : '';
+        if (!is_string($title)) $title = '';
+        if (!in_array($date_mode, ['today_fallback', 'random', 'pick_date'], true)) {
+            $date_mode = 'today_fallback';
+        }
+        if (!is_string($pick_date)) $pick_date = '';
+        if (!in_array($lang_mode, ['bible', 'bibel', 'both'], true)) {
+            $lang_mode = 'bible';
+        }
+        if (!is_string($custom_css)) $custom_css = '';
+
+        $title_id = $this->get_field_id('title');
+        $title_name = $this->get_field_name('title');
+        $date_mode_id = $this->get_field_id('date_mode');
+        $date_mode_name = $this->get_field_name('date_mode');
+        $pick_date_id = $this->get_field_id('pick_date');
+        $pick_date_name = $this->get_field_name('pick_date');
+        $lang_mode_id = $this->get_field_id('lang_mode');
+        $lang_mode_name = $this->get_field_name('lang_mode');
+        $css_id = $this->get_field_id('custom_css');
+        $css_name = $this->get_field_name('custom_css');
+
+        echo '<p>';
+        echo '<label for="' . esc_attr($title_id) . '">' . esc_html__('Title:', 'thebible') . '</label> ';
+        echo '<input class="widefat" id="' . esc_attr($title_id) . '" name="' . esc_attr($title_name) . '" type="text" value="' . esc_attr($title) . '" />';
+        echo '</p>';
+
+        echo '<p>';
+        echo '<label for="' . esc_attr($date_mode_id) . '">' . esc_html__('Date mode:', 'thebible') . '</label> ';
+        echo '<select id="' . esc_attr($date_mode_id) . '" name="' . esc_attr($date_mode_name) . '">';
+        $date_modes = [
+            'today_fallback' => __('Today (fallback to random)', 'thebible'),
+            'random'         => __('Random', 'thebible'),
+            'pick_date'      => __('Pick specific date', 'thebible'),
+        ];
+        foreach ($date_modes as $key => $label) {
+            echo '<option value="' . esc_attr($key) . '"' . selected($date_mode, $key, false) . '>' . esc_html($label) . '</option>';
+        }
+        echo '</select>';
+        echo '</p>';
+
+        // Date picker: list existing dates from cache
+        $by_date = get_option('thebible_votd_by_date', []);
+        if (is_array($by_date) && !empty($by_date)) {
+            $dates = array_keys($by_date);
+            sort($dates);
+            echo '<p>';
+            echo '<label for="' . esc_attr($pick_date_id) . '">' . esc_html__('Pick date (from existing):', 'thebible') . '</label> ';
+            echo '<select id="' . esc_attr($pick_date_id) . '" name="' . esc_attr($pick_date_name) . '">';
+            echo '<option value="">' . esc_html__('— none —', 'thebible') . '</option>';
+            foreach ($dates as $d) {
+                echo '<option value="' . esc_attr($d) . '"' . selected($pick_date, $d, false) . '>' . esc_html($d) . '</option>';
+            }
+            echo '</select>';
+            echo '</p>';
+        }
+
+        echo '<p>';
+        echo '<label for="' . esc_attr($lang_mode_id) . '">' . esc_html__('Language(s):', 'thebible') . '</label> ';
+        echo '<select id="' . esc_attr($lang_mode_id) . '" name="' . esc_attr($lang_mode_name) . '">';
+        $lang_modes = [
+            'bible' => __('English only', 'thebible'),
+            'bibel' => __('German only', 'thebible'),
+            'both'  => __('Both (English + German)', 'thebible'),
+        ];
+        foreach ($lang_modes as $key => $label_l) {
+            echo '<option value="' . esc_attr($key) . '"' . selected($lang_mode, $key, false) . '>' . esc_html($label_l) . '</option>';
+        }
+        echo '</select>';
+        echo '</p>';
+
+        echo '<p>';
+        echo '<label for="' . esc_attr($css_id) . '">' . esc_html__('Custom CSS (scoped to this widget):', 'thebible') . '</label>';
+        echo '<br /><small>' . esc_html__('Available classes: .thebible-votd-widget, .thebible-votd-heading, .thebible-votd-info, .thebible-votd-lang, .thebible-votd-text, .thebible-votd-context-link', 'thebible') . '</small>';
+        echo '<textarea class="widefat" rows="6" id="' . esc_attr($css_id) . '" name="' . esc_attr($css_name) . '">' . esc_textarea($custom_css) . '</textarea>';
+        echo '</p>';
+    }
+
+    public function update($new_instance, $old_instance) {
+        $inst = [];
+        $inst['title'] = isset($new_instance['title']) ? sanitize_text_field($new_instance['title']) : '';
+
+        $date_mode = isset($new_instance['date_mode']) ? $new_instance['date_mode'] : 'today_fallback';
+        if (!in_array($date_mode, ['today_fallback', 'random', 'pick_date'], true)) {
+            $date_mode = 'today_fallback';
+        }
+        $inst['date_mode'] = $date_mode;
+
+        $pick_date = isset($new_instance['pick_date']) ? $new_instance['pick_date'] : '';
+        $inst['pick_date'] = is_string($pick_date) ? $pick_date : '';
+
+        $lang_mode = isset($new_instance['lang_mode']) ? $new_instance['lang_mode'] : 'bible';
+        if (!in_array($lang_mode, ['bible', 'bibel', 'both'], true)) {
+            $lang_mode = 'bible';
+        }
+        $inst['lang_mode'] = $lang_mode;
+
+        $css = isset($new_instance['custom_css']) ? $new_instance['custom_css'] : '';
+        $inst['custom_css'] = is_string($css) ? $css : '';
+
+        return $inst;
+    }
+}
