@@ -1562,7 +1562,7 @@ class TheBible_Plugin {
             }
         }
         $combined = trim(implode(' ', $parts));
-        return self::clean_verse_quotes($combined);
+        return self::clean_verse_text_for_output($combined);
     }
 
     private static function extract_votd_texts_for_entry($entry) {
@@ -1648,6 +1648,13 @@ class TheBible_Plugin {
         return $s;
     }
 
+    public static function clean_verse_text_for_output($s) {
+        // Convenience helper for external callers (e.g., widgets):
+        // normalize whitespace and apply the internal quotation cleaner.
+        $s = self::normalize_whitespace($s);
+        return self::clean_verse_quotes($s);
+    }
+
     private static function clean_verse_quotes($s) {
         // General quotation mark cleaner for verse text.
         // Rules:
@@ -1663,9 +1670,16 @@ class TheBible_Plugin {
         $s = (string) $s;
         if ($s === '') return $s;
 
+        // (4) Strip hidden/control/combining characters that fonts may have trouble with.
+        // We already normalized many Unicode spaces in normalize_whitespace(); here we
+        // remove remaining control (\p{C}) and combining mark (\p{M}) codepoints.
+        $s = preg_replace('/[\p{C}\p{M}]+/u', '', $s);
+
         $has_left  = (strpos($s, '«') !== false);
         $has_right = (strpos($s, '»') !== false);
 
+        // (1) When only a single side is present, synthesize the missing partner so
+        // we always operate on a balanced pair.
         if ($has_right && !$has_left) {
             // Only » present: add a closing « at the very end
             $s .= '«';
@@ -1676,12 +1690,13 @@ class TheBible_Plugin {
             $has_right = true;
         }
 
+        // (2) If there is both » and «, normalize them to inner guillemets.
         if ($has_left && $has_right) {
             // Now that we have a pair, normalize all outer guillemets to inner ones
             $s = str_replace(['«', '»'], ['‹', '›'], $s);
         }
 
-        // Post-pass: ONLY if text both begins with "»›" AND ends with "‹«",
+        // (3) Post-pass: ONLY if text both begins with "»›" AND ends with "‹«",
         // collapse these outer+inner pairs back to single outer quotes.
         $len = self::u_strlen($s);
         if ($len >= 2) {
@@ -1696,6 +1711,14 @@ class TheBible_Plugin {
                 }
             }
         }
+
+        // Normalize surrounding whitespace once more after quote adjustments
+        $s = trim($s);
+
+        // (5) If the quote ends with an m- or n-dash, strip that dash and any
+        // trailing spaces. This covers cases like “…«–” or “…«— ” in source text.
+        $s = preg_replace('/[–—]\s*$/u', '', $s);
+        $s = trim($s);
 
         return $s;
     }
@@ -3381,8 +3404,10 @@ class TheBible_VOTD_Widget extends WP_Widget {
         }
 
         // Default templates if none set (same structure for all languages; date is localized via date_i18n)
+        // Note: {votd-content} already includes cleaned quotation marks from clean_verse_quotes(),
+        // so we do NOT wrap it in additional guillemets here.
         $default_tpl = "<h2 class=\"thebible-votd-heading\">Vers des Tages {votd-date}</h2>\n"
-                     . "<p class=\"thebible-votd-text\">»{votd-content}«</p>\n"
+                     . "<p class=\"thebible-votd-text\">{votd-content}</p>\n"
                      . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen →</a></div>";
 
         if ($tpl_en === '') {
@@ -3407,6 +3432,9 @@ class TheBible_VOTD_Widget extends WP_Widget {
             if (!is_string($text) || $text === '') {
                 continue;
             }
+
+            // Normalize and clean quotation marks for widget output
+            $text = TheBible_Plugin::clean_verse_text_for_output($text);
 
             $short_ds = TheBible_Plugin::resolve_book_for_dataset($canonical, $ds);
             $book_slug_ds = TheBible_Plugin::slugify($short_ds ? $short_ds : $canonical);
