@@ -2685,6 +2685,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
         $pick_date  = isset($instance['pick_date']) ? $instance['pick_date'] : '';
         $lang_mode  = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
         $custom_css = isset($instance['custom_css']) ? $instance['custom_css'] : '';
+        $tpl_en     = isset($instance['template_en']) ? $instance['template_en'] : '';
+        $tpl_de     = isset($instance['template_de']) ? $instance['template_de'] : '';
 
         if (!is_string($title)) $title = '';
         if (!in_array($date_mode, ['today_fallback', 'random', 'pick_date'], true)) {
@@ -2695,6 +2697,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $lang_mode = 'bible';
         }
         if (!is_string($custom_css)) $custom_css = '';
+        if (!is_string($tpl_en)) $tpl_en = '';
+        if (!is_string($tpl_de)) $tpl_de = '';
 
         // Resolve VOTD entry based on date mode
         $ref = null;
@@ -2751,18 +2755,7 @@ class TheBible_VOTD_Widget extends WP_Widget {
             echo '<style class="thebible-votd-widget-css">' . $custom_css . '</style>';
         }
 
-        // Localized meta texts
-        $is_german = ($lang_mode === 'bibel' || $lang_mode === 'both');
-        $primary_ds = $is_german ? 'bibel' : 'bible';
-        $short_primary = TheBible_Plugin::resolve_book_for_dataset($canonical, $primary_ds);
-        if (!is_string($short_primary) || $short_primary === '') {
-            $heading_label = $label;
-        } else {
-            $heading_label = TheBible_Plugin::pretty_label($short_primary);
-        }
-        $heading_ref = $heading_label . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
-
-        // Localized, pretty date
+        // Localized, pretty date (shared for all languages)
         $display_date = $date;
         if (is_string($date) && $date !== '') {
             $ts = strtotime($date . ' 00:00:00');
@@ -2771,21 +2764,19 @@ class TheBible_VOTD_Widget extends WP_Widget {
             }
         }
 
-        if ($is_german) {
-            $info_text = ($display_date !== '')
-                ? sprintf(__('Vers für den %s', 'thebible'), $display_date)
-                : __('Ausgewählter Vers', 'thebible');
-            $link_label = __('Vers im Kontext lesen →', 'thebible');
-        } else {
-            $info_text = ($display_date !== '')
-                ? sprintf(__('Verse for %s', 'thebible'), $display_date)
-                : __('Selected verse', 'thebible');
-            $link_label = __('Read verse in context →', 'thebible');
+        // Default templates if none set (same structure for all languages; date is localized via date_i18n)
+        $default_tpl = "<h2 class=\"thebible-votd-heading\">Vers des Tages {votd-date}</h2>\n"
+                     . "<p class=\"thebible-votd-text\">»{votd-content}«</p>\n"
+                     . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen →</a></div>";
+
+        if ($tpl_en === '') {
+            $tpl_en = $default_tpl;
+        }
+        if ($tpl_de === '') {
+            $tpl_de = $default_tpl;
         }
 
         echo '<div class="thebible-votd-widget thebible-votd-widget-' . esc_attr($lang_mode) . '">';
-        echo '<h2 class="thebible-votd-heading">' . esc_html($heading_ref) . '</h2>';
-        echo '<div class="thebible-votd-info">' . esc_html($info_text) . '</div>';
 
         // Verse text blocks per language
         $langs_to_show = [];
@@ -2800,14 +2791,35 @@ class TheBible_VOTD_Widget extends WP_Widget {
             if (!is_string($text) || $text === '') {
                 continue;
             }
+
             $short_ds = TheBible_Plugin::resolve_book_for_dataset($canonical, $ds);
             $book_slug_ds = TheBible_Plugin::slugify($short_ds ? $short_ds : $canonical);
             $path_ds = '/' . trim($ds, '/') . '/' . trim($book_slug_ds, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
             $url_ds  = home_url($path_ds);
 
+            // Citation label for this dataset
+            if (!is_string($short_ds) || $short_ds === '') {
+                $heading_label_ds = $label;
+            } else {
+                $heading_label_ds = TheBible_Plugin::pretty_label($short_ds);
+            }
+            $citation = $heading_label_ds . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
+
+            // Choose template per language
+            $tpl = ($ds === 'bibel') ? $tpl_de : $tpl_en;
+
+            // Prepare placeholder replacements
+            $replacements = [
+                '{votd-date}'      => (string) $display_date,
+                '{votd-content}'   => (string) $text,
+                '{votd-citation}'  => (string) $citation,
+                '{votd-link}'      => (string) $url_ds,
+            ];
+
+            $rendered = strtr($tpl, $replacements);
+
             echo '<div class="thebible-votd-lang thebible-votd-lang-' . esc_attr($ds) . '">';
-            echo '<div class="thebible-votd-text">' . esc_html($text) . '</div>';
-            echo '<div class="thebible-votd-context"><a class="thebible-votd-context-link" href="' . esc_url($url_ds) . '">' . esc_html($link_label) . '</a></div>';
+            echo wp_kses_post($rendered);
             echo '</div>';
         }
 
@@ -2822,6 +2834,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
         $pick_date  = isset($instance['pick_date']) ? $instance['pick_date'] : '';
         $lang_mode  = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
         $custom_css = isset($instance['custom_css']) ? $instance['custom_css'] : '';
+        $tpl_en     = isset($instance['template_en']) ? $instance['template_en'] : '';
+        $tpl_de     = isset($instance['template_de']) ? $instance['template_de'] : '';
         if (!is_string($title)) $title = '';
         if (!in_array($date_mode, ['today_fallback', 'random', 'pick_date'], true)) {
             $date_mode = 'today_fallback';
@@ -2831,6 +2845,20 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $lang_mode = 'bible';
         }
         if (!is_string($custom_css)) $custom_css = '';
+        if (!is_string($tpl_en)) $tpl_en = '';
+        if (!is_string($tpl_de)) $tpl_de = '';
+
+        // Show default templates in the form when empty (same structure for all languages)
+        $default_tpl = "<h2 class=\"thebible-votd-heading\">Vers des Tages {votd-date}</h2>\n"
+                     . "<p class=\"thebible-votd-text\">»{votd-content}«</p>\n"
+                     . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen →</a></div>";
+
+        if ($tpl_en === '') {
+            $tpl_en = $default_tpl;
+        }
+        if ($tpl_de === '') {
+            $tpl_de = $default_tpl;
+        }
 
         $title_id = $this->get_field_id('title');
         $title_name = $this->get_field_name('title');
@@ -2842,6 +2870,10 @@ class TheBible_VOTD_Widget extends WP_Widget {
         $lang_mode_name = $this->get_field_name('lang_mode');
         $css_id = $this->get_field_id('custom_css');
         $css_name = $this->get_field_name('custom_css');
+        $tpl_en_id = $this->get_field_id('template_en');
+        $tpl_en_name = $this->get_field_name('template_en');
+        $tpl_de_id = $this->get_field_id('template_de');
+        $tpl_de_name = $this->get_field_name('template_de');
 
         echo '<p>';
         echo '<label for="' . esc_attr($title_id) . '">' . esc_html__('Title:', 'thebible') . '</label> ';
@@ -2894,8 +2926,20 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         echo '<p>';
         echo '<label for="' . esc_attr($css_id) . '">' . esc_html__('Custom CSS (scoped to this widget):', 'thebible') . '</label>';
-        echo '<br /><small>' . esc_html__('Available classes: .thebible-votd-widget, .thebible-votd-heading, .thebible-votd-info, .thebible-votd-lang, .thebible-votd-text, .thebible-votd-context-link', 'thebible') . '</small>';
+        echo '<br /><small>' . esc_html__('Wrapper element uses the .thebible-votd-widget class (plus language modifier, e.g. .thebible-votd-widget-bible).', 'thebible') . '</small>';
         echo '<textarea class="widefat" rows="6" id="' . esc_attr($css_id) . '" name="' . esc_attr($css_name) . '">' . esc_textarea($custom_css) . '</textarea>';
+        echo '</p>';
+
+        echo '<p>';
+        echo '<label for="' . esc_attr($tpl_en_id) . '">' . esc_html__('HTML template (English dataset):', 'thebible') . '</label>';
+        echo '<br /><small>' . esc_html__('Placeholders: {votd-date}, {votd-content}, {votd-citation}, {votd-link}', 'thebible') . '</small>';
+        echo '<textarea class="widefat" rows="6" id="' . esc_attr($tpl_en_id) . '" name="' . esc_attr($tpl_en_name) . '">' . esc_textarea($tpl_en) . '</textarea>';
+        echo '</p>';
+
+        echo '<p>';
+        echo '<label for="' . esc_attr($tpl_de_id) . '">' . esc_html__('HTML template (German dataset):', 'thebible') . '</label>';
+        echo '<br /><small>' . esc_html__('Placeholders: {votd-date}, {votd-content}, {votd-citation}, {votd-link}', 'thebible') . '</small>';
+        echo '<textarea class="widefat" rows="6" id="' . esc_attr($tpl_de_id) . '" name="' . esc_attr($tpl_de_name) . '">' . esc_textarea($tpl_de) . '</textarea>';
         echo '</p>';
     }
 
@@ -2920,6 +2964,11 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         $css = isset($new_instance['custom_css']) ? $new_instance['custom_css'] : '';
         $inst['custom_css'] = is_string($css) ? $css : '';
+
+        $tpl_en = isset($new_instance['template_en']) ? $new_instance['template_en'] : '';
+        $tpl_de = isset($new_instance['template_de']) ? $new_instance['template_de'] : '';
+        $inst['template_en'] = is_string($tpl_en) ? wp_kses_post($tpl_en) : '';
+        $inst['template_de'] = is_string($tpl_de) ? wp_kses_post($tpl_de) : '';
 
         return $inst;
     }
