@@ -1672,8 +1672,11 @@ class TheBible_Plugin {
 
         // (4) Strip hidden/control/combining characters that fonts may have trouble with.
         // We already normalized many Unicode spaces in normalize_whitespace(); here we
-        // remove remaining control (\p{C}) and combining mark (\p{M}) codepoints.
+        // remove remaining control (\p{C}) and combining mark (\p{M}) codepoints,
+        // then drop any other character that is not a letter, number, punctuation,
+        // symbol, or whitespace.
         $s = preg_replace('/[\p{C}\p{M}]+/u', '', $s);
+        $s = preg_replace('/[^\p{L}\p{N}\p{P}\p{S}\s]/u', '', $s);
 
         $has_left  = (strpos($s, '«') !== false);
         $has_right = (strpos($s, '»') !== false);
@@ -2804,10 +2807,7 @@ class TheBible_Plugin {
                         <tr>
                             <th scope="row"><label>Quotation marks</label></th>
                             <td>
-                                <label>Left <input type="text" name="thebible_og_quote_left" value="<?php echo esc_attr($og_qL); ?>" style="width:4em;text-align:center;"></label>
-                                &nbsp;
-                                <label>Right <input type="text" name="thebible_og_quote_right" value="<?php echo esc_attr($og_qR); ?>" style="width:4em;text-align:center;"></label>
-                                <p class="description">Use any characters (e.g. « » or “ ”). If no TTF font is set, non-ASCII marks may fallback to straight quotes in the image.</p>
+                                <p><strong>OG images and widgets always use fixed outer guillemets:</strong> opening  bb and closing  ab. These marks are not configurable.</p>
                             </td>
                         </tr>
                         <tr>
