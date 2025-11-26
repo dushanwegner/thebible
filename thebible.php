@@ -1990,6 +1990,8 @@ class TheBible_Plugin {
         $logo_pad_adjust_y = intval(get_option('thebible_og_logo_pad_adjust_y', 0));
         $icon_max_w = max(0, intval(get_option('thebible_og_icon_max_w', 160)));
         $line_h_main = floatval(get_option('thebible_og_line_height_main', '1.35'));
+        // Sanity check: line height should be a factor (1.0-3.0), not pixels
+        if ($line_h_main < 1.0 || $line_h_main > 3.0) { $line_h_main = 1.35; }
         $icon_im = null; $icon_w = 0; $icon_h = 0;
         if ($icon_url) {
             $resp = wp_remote_get($icon_url, ['timeout' => 5]);
@@ -2048,6 +2050,7 @@ class TheBible_Plugin {
                 $text_clean = rtrim($text_clean);
             }
         }
+
         // Always-bottom layout
         // 1) Compute reference block height at bottom padding
         $ref_h = self::measure_text_block($ref, $w - 2*$pad_x, $font_file, $ref_size);
@@ -2514,8 +2517,8 @@ class TheBible_Plugin {
         $og_icon_max_w = intval(get_option('thebible_og_icon_max_w', 160));
         $og_line_main = (string) get_option('thebible_og_line_height_main','1.35');
         $og_line_main_f = floatval($og_line_main ? $og_line_main : '1.35');
-        $og_qL = (string) get_option('thebible_og_quote_left','«');
-        $og_qR = (string) get_option('thebible_og_quote_right','»');
+        $og_qL = (string) get_option('thebible_og_quote_left','»');
+        $og_qR = (string) get_option('thebible_og_quote_right','«');
         $og_refpos = (string) get_option('thebible_og_ref_position','bottom');
         $og_refalign = (string) get_option('thebible_og_ref_align','left');
 
@@ -2538,6 +2541,35 @@ class TheBible_Plugin {
                 }
             }
             echo '<div class="updated notice"><p>Footers saved.</p></div>';
+        }
+        // Handle OG layout reset to safe defaults
+        if ( isset($_POST['thebible_og_reset_defaults_nonce']) && wp_verify_nonce($_POST['thebible_og_reset_defaults_nonce'],'thebible_og_reset_defaults') && current_user_can('manage_options') ) {
+            update_option('thebible_og_enabled', '1');
+            update_option('thebible_og_width', 1600);
+            update_option('thebible_og_height', 900);
+            update_option('thebible_og_bg_color', '#111111');
+            update_option('thebible_og_text_color', '#ffffff');
+            update_option('thebible_og_font_size', 60);
+            update_option('thebible_og_font_size_main', 60);
+            update_option('thebible_og_font_size_ref', 40);
+            update_option('thebible_og_min_font_size_main', 24);
+            update_option('thebible_og_padding_x', 60);
+            update_option('thebible_og_padding_top', 60);
+            update_option('thebible_og_padding_bottom', 60);
+            update_option('thebible_og_min_gap', 30);
+            update_option('thebible_og_line_height_main', '1.35');
+            update_option('thebible_og_logo_side', 'left');
+            update_option('thebible_og_logo_pad_adjust', 0);
+            update_option('thebible_og_logo_pad_adjust_x', 0);
+            update_option('thebible_og_logo_pad_adjust_y', 0);
+            update_option('thebible_og_icon_max_w', 200);
+            update_option('thebible_og_quote_left', '«');
+            update_option('thebible_og_quote_right', '»');
+            update_option('thebible_og_ref_position', 'bottom');
+            update_option('thebible_og_ref_align', 'left');
+            // Note: font_url, icon_url, background_image_url are NOT reset to preserve user uploads
+            $deleted = self::og_cache_purge();
+            echo '<div class="updated notice"><p>OG layout and typography reset to safe defaults (1600×900). Cache cleared (' . intval($deleted) . ' files removed).</p></div>';
         }
         // Handle cache purge
         if ( isset($_POST['thebible_og_purge_cache_nonce']) && wp_verify_nonce($_POST['thebible_og_purge_cache_nonce'],'thebible_og_purge_cache') && current_user_can('manage_options') ) {
@@ -2812,11 +2844,15 @@ class TheBible_Plugin {
                         <tr>
                             <th scope="row"><label>Cache</label></th>
                             <td>
-                                <form method="post" style="display:inline;">
+                                <form method="post" style="display:inline;margin-right:0.5em;">
                                     <?php wp_nonce_field('thebible_og_purge_cache','thebible_og_purge_cache_nonce'); ?>
                                     <button type="submit" class="button">Clear cached images</button>
                                 </form>
-                                <p class="description">Cached OG images are stored under Uploads/thebible-og-cache and reused for identical requests. Clear the cache after changing design settings.</p>
+                                <form method="post" style="display:inline;">
+                                    <?php wp_nonce_field('thebible_og_reset_defaults','thebible_og_reset_defaults_nonce'); ?>
+                                    <button type="submit" class="button button-secondary">Reset layout to safe defaults</button>
+                                </form>
+                                <p class="description">Cached OG images are stored under Uploads/thebible-og-cache and reused for identical requests. Clear the cache after changing design settings. Use the reset button if layout values became extreme and the verse/logo no longer show.</p>
                             </td>
                         </tr>
                         <tr>
@@ -2862,7 +2898,7 @@ class TheBible_Plugin {
                                     &nbsp;
                                     <label>Max width <input type="number" min="1" name="thebible_og_icon_max_w" id="thebible_og_icon_max_w" value="<?php echo esc_attr($og_icon_max_w); ?>" style="width:6em;"> px</label>
                                 </p>
-                                <p class="description">Logo and source are always at the bottom. Choose which side holds the logo; the source uses the other side. Logo padding X/Y shift the logo relative to side/bottom padding (can be negative).</p>
+                                <p class="description">Logo and source are always at the bottom. Choose which side holds the logo; the source uses the other side. Logo padding X/Y shift the logo relative to side/bottom padding (can be negative). Use raster images such as PNG or JPEG; SVG and other vector formats are not supported by the image renderer.</p>
                             </td>
                         </tr>
                     </tbody>
