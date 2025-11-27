@@ -85,9 +85,13 @@ class TheBible_Plugin {
 
     private static function fit_text_to_area($text, $max_w, $max_h, $font_file, $max_font_size, $min_font_size = 12, $use_ttf_hint = false, $prefix = '', $suffix = '', $line_height_factor = 1.35) {
         $font_size = max($min_font_size, (int)$max_font_size);
+        // Only add non-empty prefix/suffix
+        $add_prefix = ($prefix !== '');
+        $add_suffix = ($suffix !== '');
+        
         // Try decreasing font size until it fits
         while ($font_size >= $min_font_size) {
-            $full = $prefix . $text . $suffix;
+            $full = ($add_prefix ? $prefix : '') . $text . ($add_suffix ? $suffix : '');
             $h = self::measure_text_block($full, $max_w, $font_file, $font_size, $line_height_factor);
             if ($h <= $max_h) return [ $font_size, $full ];
             $font_size -= 2;
@@ -99,12 +103,12 @@ class TheBible_Plugin {
         while ($low <= $high) {
             $mid = (int) floor(($low + $high)/2);
             $cand_body = self::u_substr($text, 0, $mid) . $ellipsis;
-            $cand_full = $prefix . $cand_body . $suffix;
+            $cand_full = ($add_prefix ? $prefix : '') . $cand_body . ($add_suffix ? $suffix : '');
             $h = self::measure_text_block($cand_full, $max_w, $font_file, $min_font_size, $line_height_factor);
             if ($h <= $max_h) { $best_body = $cand_body; $low = $mid + 1; } else { $high = $mid - 1; }
         }
         if ($best_body === '') { $best_body = $ellipsis; }
-        return [ $min_font_size, $prefix . $best_body . $suffix ];
+        return [ $min_font_size, ($add_prefix ? $prefix : '') . $best_body . ($add_suffix ? $suffix : '') ];
     }
 
     private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null, $book_label = '') {
@@ -1648,14 +1652,14 @@ class TheBible_Plugin {
         return $s;
     }
 
-    public static function clean_verse_text_for_output($s) {
-        // Convenience helper for external callers (e.g., widgets):
+    public static function clean_verse_text_for_output($s, $wrap_outer = false, $qL = '»', $qR = '«') {
+        // Convenience helper for external callers (e.g., widgets, OG images):
         // normalize whitespace and apply the internal quotation cleaner.
         $s = self::normalize_whitespace($s);
-        return self::clean_verse_quotes($s);
+        return self::clean_verse_quotes($s, $wrap_outer, $qL, $qR);
     }
 
-    private static function clean_verse_quotes($s) {
+    private static function clean_verse_quotes($s, $wrap_outer = false, $qL = '»', $qR = '«') {
         // General quotation mark cleaner for verse text.
         // Rules:
         // - If the verse block contains both » and «, convert all of them
@@ -1723,11 +1727,27 @@ class TheBible_Plugin {
         $s = preg_replace('/[–—]\s*$/u', '', $s);
         $s = trim($s);
 
-        // Final safety: if the entire text is still wrapped in inner guillemets
-        // ›...‹, promote them back to outer »...« for display.
+        // Final safety / wrapping behavior
         $len = self::u_strlen($s);
-        if ($len >= 2 && self::u_substr($s, 0, 1) === '›' && self::u_substr($s, -1) === '‹') {
-            $s = '»' . self::u_substr($s, 1, $len - 2) . '«';
+        // First, if the text begins with an outer+inner pair "»›" and ends with
+        // "‹«", collapse those boundary pairs back to a single outer quote on
+        // each side. This avoids visual combinations like »›...‹« at the edges.
+        if ($len >= 4 && self::u_substr($s, 0, 2) === '»›' && self::u_substr($s, -2) === '‹«') {
+            $s = '»' . self::u_substr($s, 2, $len - 4) . '«';
+            $len = self::u_strlen($s);
+        }
+        if ($wrap_outer) {
+            // If already wrapped with the requested outer quotes, do not wrap again.
+            if ($len >= 2 && self::u_substr($s, 0, 1) === $qL && self::u_substr($s, -1) === $qR) {
+                // no-op
+            }
+            // If wrapped in inner guillemets ›...‹, promote them to the requested outer quotes.
+            elseif ($len >= 2 && self::u_substr($s, 0, 1) === '›' && self::u_substr($s, -1) === '‹') {
+                $s = $qL . self::u_substr($s, 1, $len - 2) . $qR;
+            } else {
+                // Otherwise, wrap the whole text once using qL/qR.
+                $s = $qL . $s . $qR;
+            }
         }
 
         return $s;
@@ -2053,7 +2073,7 @@ class TheBible_Plugin {
         }
 
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-        // Always use fixed outer guillemets for OG images; do not make them optional.
+        // Outer quotation marks for OG images; wrapping is delegated to clean_verse_quotes().
         $qL = '»';
         $qR = '«';
 
@@ -2061,25 +2081,14 @@ class TheBible_Plugin {
         // Force bottom placement; align opposite of logo side
         $refpos = 'bottom';
         $refalign = ($logo_side === 'left') ? 'right' : 'left';
-        // Hard trim trailing Unicode spaces/invisibles before composing quotes
-        $text_clean = preg_replace('/[\p{Z}\x{00AD}\x{2000}-\x{200F}\x{2028}\x{2029}\x{202F}\x{2060}-\x{2064}\x{FEFF}\x{1680}]+$/u','',$text);
-        $text_clean = preg_replace('/[\p{C}\p{Z}\p{M}]+$/u','', $text_clean);
-        // Remove any remaining trailing chars that are not letters, numbers, punctuation, or symbols
-        $text_clean = preg_replace('/[^\p{L}\p{N}\p{P}\p{S}]+$/u','', $text_clean);
-        // Special handling of guillemets inside verse text
-        $has_inner_left = (strpos($text_clean, '«') !== false);
-        $has_inner_right = (strpos($text_clean, '»') !== false);
-        if ($has_inner_left && $has_inner_right) {
-            // If both present inside verse, normalize to single guillemets
-            $text_clean = str_replace(['«','»'], ['‹','›'], $text_clean);
-        } else {
-            // If verse ends with the configured closing quote, strip it to avoid doubled closer at the end
-            $qr_len = self::u_strlen($qR);
-            if ($qr_len > 0 && self::u_substr($text_clean, -$qr_len) === $qR) {
-                $text_clean = self::u_substr($text_clean, 0, self::u_strlen($text_clean) - $qr_len);
-                $text_clean = rtrim($text_clean);
-            }
-        }
+
+        // Let the shared cleaner handle whitespace and inner quote normalization only
+        $text_clean = self::clean_verse_text_for_output($text, false);
+        // For OG images we want exactly one visible pair of outer quotes. Strip any
+        // leading/trailing guillemets and surrounding spaces, then wrap once.
+        $text_clean = preg_replace('/^[«»‹›\s]+/u', '', (string)$text_clean);
+        $text_clean = preg_replace('/[«»‹›\s]+$/u', '', (string)$text_clean);
+        $text_clean = $qL . $text_clean . $qR;
 
         // Always-bottom layout
         // 1) Compute reference block height at bottom padding
@@ -2088,7 +2097,9 @@ class TheBible_Plugin {
         // 2) Draw main verse text above the reference with min gap
         $avail_h = ($bottom_for_ref - $min_gap) - $y;
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-        list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad_x, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, $qL, $qR, max(1.0, $line_h_main));
+        // text_clean is already wrapped in qL/qR by clean_verse_text_for_output(),
+        // so do not add another pair here via prefix/suffix.
+        list($fit_size, $fit_text) = self::fit_text_to_area($text_clean, $w - 2*$pad_x, $avail_h, $font_file, $font_main, $font_min_main, $use_ttf, '', '', max(1.0, $line_h_main));
         self::draw_text_block($im, $fit_text, $x, $y, $w - 2*$pad_x, $font_file, $fit_size, $fgc, $bottom_for_ref - $min_gap, 'left', max(1.0, $line_h_main));
         // 3) Draw logo (if any) at bottom on chosen side with adjusted padding
         if ($icon_im) {
@@ -2880,6 +2891,7 @@ class TheBible_Plugin {
                                     <button type="submit" class="button button-secondary">Reset layout to safe defaults</button>
                                 </form>
                                 <p class="description">Cached OG images are stored under Uploads/thebible-og-cache and reused for identical requests. Clear the cache after changing design settings. Use the reset button if layout values became extreme and the verse/logo no longer show.</p>
+                                <p class="description">For a one-off debug render that skips the cache, append <code>&thebible_og_nocache=1</code> to a verse URL that already has <code>thebible_og=1</code>, for example: <code>?thebible_og=1&amp;thebible_og_nocache=1</code>.</p>
                             </td>
                         </tr>
                         <tr>
@@ -3437,8 +3449,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
                 continue;
             }
 
-            // Normalize and clean quotation marks for widget output
-            $text = TheBible_Plugin::clean_verse_text_for_output($text);
+            // Normalize and clean quotation marks for widget output, and wrap once in outer guillemets
+            $text = TheBible_Plugin::clean_verse_text_for_output($text, true, '»', '«');
 
             $short_ds = TheBible_Plugin::resolve_book_for_dataset($canonical, $ds);
             $book_slug_ds = TheBible_Plugin::slugify($short_ds ? $short_ds : $canonical);
