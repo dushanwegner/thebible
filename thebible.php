@@ -157,7 +157,17 @@ class TheBible_Plugin {
         $book_label = is_string($book_label) ? self::pretty_label($book_label) : '';
         $book_slug_js = esc_js( self::slugify( $book_label ) );
         $book_label_html = esc_html( $book_label );
-        $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '">'
+
+        // Prepare data attributes for frontend JS (highlight targets / chapter scroll)
+        $data_attrs = '';
+        if ( is_array( $highlight_ids ) && ! empty( $highlight_ids ) ) {
+            $ids_json = wp_json_encode( array_values( array_unique( $highlight_ids ) ) );
+            $data_attrs .= ' data-highlight-ids=' . "'" . esc_attr( $ids_json ) . "'";
+        } elseif ( is_string( $chapter_scroll_id ) && $chapter_scroll_id !== '' ) {
+            $data_attrs .= ' data-chapter-scroll-id="' . esc_attr( $chapter_scroll_id ) . '"';
+        }
+
+        $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"' . $data_attrs . '>'
                 . '<div class="thebible-sticky__left">'
                 . '<span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> '
                 . '<span class="thebible-sticky__sep">—</span> '
@@ -170,185 +180,6 @@ class TheBible_Plugin {
                 . '</div>'
                 . '</div>';
         $html = $sticky . $html;
-
-        // Add highlight styles and scrolling script
-        $append = '';
-        if (is_array($highlight_ids) && !empty($highlight_ids)) {
-            $ids_json = wp_json_encode(array_values(array_unique($highlight_ids)));
-            // Scroll with 15% viewport offset so verse isn't glued to very top
-            $script = '<script>(function(){var ids=' . $ids_json . ';var first=null;ids.forEach(function(id){var el=document.getElementById(id);if(el){el.classList.add("verse-highlight");if(!first) first=el;}});if(first){var bar=document.querySelector(".thebible-sticky");var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab?ab.offsetHeight:0)+(bar?bar.offsetHeight:0)+25;var r=first.getBoundingClientRect();var y=window.pageYOffset + r.top - off;window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}})();</script>';
-            $append .= $script;
-        } elseif (is_string($chapter_scroll_id) && $chapter_scroll_id !== '') {
-            // Chapter-only: scroll to chapter heading accounting for admin bar and sticky bar heights
-            $cid = esc_js($chapter_scroll_id);
-            $script = '<script>(function(){var id="' . $cid . '";var el=document.getElementById(id);if(!el)return;var bar=document.querySelector(".thebible-sticky");var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab?ab.offsetHeight:0)+(bar?bar.offsetHeight:0)+25;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - off;window.scrollTo({top:Math.max(0,y),behavior:"smooth"});})();</script>';
-            $append .= $script;
-        }
-        // Sticky updater script: detect current chapter and update bar on scroll; offset for admin bar
-        $append .= '<script>(function(){var bar=document.querySelector(".thebible-sticky");if(!bar)return;var container=document.querySelector(".thebible.thebible-book")||document.querySelector(".thebible .thebible-book");function headsList(){var list=[];if(container){list=Array.prototype.slice.call(container.querySelectorAll("h2[id]"));}else{list=Array.prototype.slice.call(document.querySelectorAll(".thebible .thebible-book h2[id]"));}return list.filter(function(h){return /-ch-\d+$/.test(h.id);});}var heads=headsList();var controls=bar.querySelector(".thebible-sticky__controls");var origControlsHtml=controls?controls.innerHTML:"";var linkPrev=bar.querySelector("[data-prev]");var linkNext=bar.querySelector("[data-next]");var linkTop=bar.querySelector("[data-top]");function setTopOffset(){var ab=document.getElementById("wpadminbar");var off=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;if(off>0){bar.style.top=off+"px";}else{bar.style.top="";}}function disable(el,yes){if(!el)return;if(yes){el.classList.add("is-disabled");el.setAttribute("aria-disabled","true");el.setAttribute("tabindex","-1");}else{el.classList.remove("is-disabled");el.removeAttribute("aria-disabled");el.removeAttribute("tabindex");}}function smoothToEl(el,offsetPx){if(!el)return;var r=el.getBoundingClientRect();var y=window.pageYOffset + r.top - (offsetPx||0);window.scrollTo({top:Math.max(0,y),behavior:"smooth"});}
-        // Flash highlight on in-page verse link clicks
-        document.addEventListener("click",function(e){var a=e.target && e.target.closest && e.target.closest("a[href*=\"#\"]");if(!a)return;var href=a.getAttribute("href")||"";var hashIndex=href.indexOf("#");if(hashIndex===-1)return;var id=href.slice(hashIndex+1);if(!id)return;var tgt=document.getElementById(id);if(!tgt)return;var verse=null;if(tgt.matches&&tgt.matches("p")){verse=tgt;}else if(tgt.closest){var p=tgt.closest("p");if(p) verse=p;}if(!verse)return;verse.classList.add("verse");setTimeout(function(){verse.classList.remove("verse-flash");void verse.offsetWidth;verse.classList.add("verse-flash");setTimeout(function(){verse.classList.remove("verse-flash");},2000);},0);},true);
-        function currentOffset(){var ab=document.getElementById("wpadminbar");var abH=(document.body.classList.contains("admin-bar")&&ab)?ab.offsetHeight:0;var barH=bar?bar.offsetHeight:0;return abH+barH+25;}
-        function versesList(){var list=[]; if(!container) return list; list=Array.prototype.slice.call(container.querySelectorAll("p[id]")); return list.filter(function(p){return /-\d+-\d+$/.test(p.id);});}
-        function getVerseFromNode(node){
-            if(!node) return null; var el = (node.nodeType===1? node : node.parentElement);
-            while(el && el!==container){ if(el.matches && el.matches("p[id]") && /-\d+-\d+$/.test(el.id)) return el; el = el.parentElement; }
-            return null;
-        }
-        var verses=versesList();
-        function selectionInfo(){var sel=window.getSelection && window.getSelection(); if(!sel || sel.rangeCount===0 || sel.isCollapsed) return null; var range=sel.getRangeAt(0);
-            // Primary: use closest verse elements from anchor/focus
-            var aVerse=getVerseFromNode(sel.anchorNode); var fVerse=getVerseFromNode(sel.focusNode);
-            var startIdx=-1, endIdx=-1;
-            if(aVerse && fVerse){
-                for(var i=0;i<verses.length;i++){ if(verses[i]===aVerse) startIdx=i; if(verses[i]===fVerse) endIdx=i; }
-                if(startIdx>-1 && endIdx>-1){ if(startIdx>endIdx){ var t=startIdx; startIdx=endIdx; endIdx=t; }
-                }
-            }
-            // Fallback: intersect ranges
-            if(startIdx===-1 || endIdx===-1){
-                startIdx=-1; endIdx=-1;
-                for(var j=0;j<verses.length;j++){var v=verses[j]; var r=document.createRange(); r.selectNode(v); var intersects= !(range.compareBoundaryPoints(Range.END_TO_START, r) <= 0 || range.compareBoundaryPoints(Range.START_TO_END, r) >= 0); if(intersects){ if(startIdx===-1) startIdx=j; endIdx=j; }}
-            }
-            if(startIdx===-1) return null; var sid=verses[startIdx].id; var eid=verses[endIdx].id; var sm=sid.match(/-(\d+)-(\d+)$/); var em=eid.match(/-(\d+)-(\d+)$/); if(!sm||!em) return null; return { sCh: parseInt(sm[1],10), sV: parseInt(sm[2],10), eCh: parseInt(em[1],10), eV: parseInt(em[2],10) };
-        }
-        var selTimer=null; function scheduleUpdate(){ if(selTimer) clearTimeout(selTimer); selTimer=setTimeout(update, 50); }
-        function buildRef(info){ if(!info) return ""; var book=bar.querySelector("[data-label]")?bar.querySelector("[data-label]").textContent.trim():""; if(info.sCh===info.eCh){ return book+" "+info.sCh+":"+(info.sV===info.eV? info.sV : info.sV+"-"+info.eV); } return book+" "+info.sCh+":"+info.sV+"-"+info.eCh+":"+info.eV; }
-        function buildLink(info){
-            var base = location.origin + location.pathname
-                .replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, "/") // strip any trailing chapter/verse segment
-                .replace(/#.*$/, ""); // strip hash fragment just in case
-            if(info.sCh===info.eCh){
-                return base + info.sCh+":"+(info.sV===info.eV? info.sV : info.sV+"-"+info.eV);
-            }
-            return base + info.sCh+":"+info.sV+"-"+info.eCh+":"+info.eV;
-        }
-        function copyToClipboard(txt){ if(navigator.clipboard && navigator.clipboard.writeText){ return navigator.clipboard.writeText(txt); } var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }finally{ document.body.removeChild(ta);} return Promise.resolve(); }
-        function verseText(info){ var out=[]; if(!info) return ""; for(var i=0;i<verses.length;i++){ var pid=verses[i].id; var m=pid.match(/-(\d+)-(\d+)$/); if(!m) continue; var ch=parseInt(m[1],10), v=parseInt(m[2],10); var within=(ch>info.sCh || (ch===info.sCh && v>=info.sV)) && (ch<info.eCh || (ch===info.eCh && v<=info.eV)); if(within){ var body=verses[i].querySelector(".verse-body"); out.push(body? body.textContent.trim() : verses[i].textContent.trim()); } } return out.join(" "); }
-        function renderSelectionControls(info){
-            if(!controls) return;
-            var ref = buildRef(info);
-            var link = buildLink(info);
-            var txt = verseText(info).trim();
-            var payload = txt + " - " + ref + " " + link;
-            
-            controls.innerHTML = "share: <a href=\"#\" data-copy-url>URL</a> <a href=\"#\" data-copy-main>copy</a> <a href=\"#\" data-post-x>post to X</a>";
-            
-            var aUrl = controls.querySelector("[data-copy-url]");
-            if(aUrl) aUrl.addEventListener("click", function(e){
-                e.preventDefault();
-                copyToClipboard(link).then(function(){
-                    aUrl.textContent = "copied";
-                    setTimeout(function(){ aUrl.textContent = "URL"; }, 1000);
-                });
-            });
-            
-            var aCopy = controls.querySelector("[data-copy-main]");
-            if(aCopy) aCopy.addEventListener("click", function(e){
-                e.preventDefault();
-                copyToClipboard(payload).then(function(){
-                    aCopy.textContent = "copied";
-                    setTimeout(function(){ aCopy.textContent = "copy"; }, 1000);
-                });
-            });
-            
-            var aX = controls.querySelector("[data-post-x]");
-            if(aX) aX.addEventListener("click", function(e){
-                e.preventDefault();
-                var url = "https://x.com/intent/tweet?text=" + encodeURIComponent(payload);
-                window.open(url, "_blank", "noopener");
-            });
-        }
-        function ensureStandardControls(){ if(!controls) return; if(controls.innerHTML!==origControlsHtml){ controls.innerHTML=origControlsHtml; bar._bound=false; linkPrev=bar.querySelector("[data-prev]"); linkNext=bar.querySelector("[data-next]"); linkTop=bar.querySelector("[data-top]"); } }
-        function update(){if(!heads.length){heads=headsList();} if(!verses.length){verses=versesList();}
-            var info=selectionInfo(); var elCh=bar.querySelector("[data-ch]");
-            if(info && elCh){ elCh.textContent = buildRef(info).replace(/^.*?\s(.*)$/,"$1"); if(controls) renderSelectionControls(info); }
-            else { ensureStandardControls(); }
-            var topCut=window.innerHeight*0.2;var current=null;var currentIdx=0;for(var i=0;i<heads.length;i++){var h=heads[i];var r=h.getBoundingClientRect();if(r.top<=topCut){current=h;currentIdx=i;}else{break;}}if(!current){current=heads[0]||null;currentIdx=0;} if(!info){ var ch=1;if(current){var m=current.id.match(/-ch-(\d+)$/);if(m){ch=parseInt(m[1],10)||1;}} if(elCh){ elCh.textContent=String(ch);} }
-            // controls
-            var off=currentOffset();
-            // prev
-            if(currentIdx<=0){
-                disable(linkPrev,true); disable(linkTop,true);
-                if(linkPrev) linkPrev.href="#";
-            } else {
-                disable(linkPrev,false); disable(linkTop,false);
-                if(linkPrev) linkPrev.href="#"+heads[currentIdx-1].id;
-            }
-            // next
-            if(currentIdx>=heads.length-1){
-                disable(linkNext,true);
-                if(linkNext) linkNext.href="#";
-            } else {
-                disable(linkNext,false);
-                if(linkNext) linkNext.href="#"+heads[currentIdx+1].id;
-            }
-            // click handlers (once) — use href target to avoid stale indices
-            if(!bar._bound){
-                bar._bound=true;
-                if(linkPrev) linkPrev.addEventListener("click",function(e){
-                    if(this.classList.contains("is-disabled")) return;
-                    var hash=this.getAttribute("href")||""; if(!hash || hash==="#") return; e.preventDefault();
-                    var id=hash.replace(/^#/,""); var el=document.getElementById(id); smoothToEl(el, off);
-                });
-                if(linkNext) linkNext.addEventListener("click",function(e){
-                    if(this.classList.contains("is-disabled")) return;
-                    var hash=this.getAttribute("href")||""; if(!hash || hash==="#") return; e.preventDefault();
-                    var id=hash.replace(/^#/,""); var el=document.getElementById(id); smoothToEl(el, off);
-                });
-                if(linkTop) linkTop.addEventListener("click",function(e){
-                    if(this.classList.contains("is-disabled")) return; e.preventDefault();
-                    var topEl=document.getElementById("thebible-book-top"); smoothToEl(topEl, off);
-                });
-            }
-        }
-        window.addEventListener("scroll",update,{passive:true});
-        window.addEventListener("resize",function(){heads=headsList();setTopOffset();update();},{passive:true});
-        document.addEventListener("DOMContentLoaded",function(){setTopOffset();update();});
-        document.addEventListener("selectionchange", scheduleUpdate, {passive:true});
-        document.addEventListener("mouseup", scheduleUpdate, {passive:true});
-        document.addEventListener("keyup", scheduleUpdate, {passive:true});
-        window.addEventListener("load",function(){setTopOffset();update();});
-        // Intercept in-content anchor clicks to scroll below sticky
-        document.addEventListener("click", function(e){
-            var a = e.target.closest("a[href^=#]");
-            if(!a) return;
-            var href = a.getAttribute("href") || "";
-            if(!href || href === "#") return;
-            var id = href.replace(/^#/, "");
-            var el = document.getElementById(id);
-            if(!el) return;
-            e.preventDefault();
-            smoothToEl(el, currentOffset());
-            // If this is a verse id like book-CH-V, update the URL to /book/CH:V
-            var m = id.match(/-(\d+)-(\d+)$/);
-            if (history && history.replaceState && m) {
-                var ch = m[1], v = m[2];
-                var base = location.origin + location.pathname
-                    .replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, "/") // strip any trailing chapter/verse
-                    .replace(/#.*$/, "");
-                history.replaceState(null, "", base + ch + ":" + v);
-            } else if (history && history.replaceState) {
-                history.replaceState(null, "", "#" + id);
-            }
-        }, {passive:false});
-        // Adjust on hash navigation
-        window.addEventListener("hashchange", function(){
-            var id = location.hash.replace(/^#/, "");
-            var el = document.getElementById(id);
-            if(el) {
-                smoothToEl(el, currentOffset());
-                var m = id.match(/-(\d+)-(\d+)$/);
-                if (history && history.replaceState && m) {
-                    var ch = m[1], v = m[2];
-                    var base = location.origin + location.pathname
-                        .replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, "/");
-                    history.replaceState(null, "", base + ch + ":" + v);
-                }
-            }
-        });
-        setTopOffset();update();})();</script>';
-        if ($append !== '') { $html .= $append; }
 
         return $html;
     }
@@ -385,13 +216,16 @@ class TheBible_Plugin {
     }
 
     public static function enqueue_assets() {
-        // Enqueue styles only on plugin routes
+        // Enqueue styles and scripts only on plugin routes
         $is_bible = ! empty( get_query_var( self::QV_FLAG ) )
             || ! empty( get_query_var( self::QV_BOOK ) )
             || ! empty( get_query_var( self::QV_SLUG ) );
         if ( $is_bible ) {
             $css_url = plugins_url( 'assets/thebible.css', __FILE__ );
             wp_enqueue_style( 'thebible-styles', $css_url, [], '0.1.0' );
+
+            $js_url = plugins_url( 'assets/thebible-frontend.js', __FILE__ );
+            wp_enqueue_script( 'thebible-frontend', $js_url, [], '0.1.0', true );
         }
     }
 
@@ -3061,41 +2895,14 @@ johannes,3,16,18
                 The prefilled text below is written as direct instructions that an AI can follow to emit valid CSV for this importer.
             </p>
 
-            <textarea class="large-text code" rows="16" style="max-width:960px;" name="thebible_import_csv">
-INSTRUCTIONS FOR GENERATING VERSE CSV FOR "THE BIBLE" PLUGIN
-
-1. Output UTF-8 CSV text only, inside a single Markdown code block for easy copy. Use this structure:
-
-```csv
-canonical_book_key,chapter,verse_from,verse_to
-...your data rows here...
-```
-
-2. The first line INSIDE the code block MUST be this exact header (all lowercase, comma-separated):
-   canonical_book_key,chapter,verse_from,verse_to
-
-3. For each verse or verse range, output ONE CSV row with these rules:
-   - canonical_book_key: one of the following canonical keys from book_map.json (exact spelling):
-     genesis, exodus, leviticus, numbers, deuteronomy, josue, judges, ruth,
-     job, psalms, proverbs, ecclesiastes, canticle-of-canticles,
-     isaias, jeremias, lamentations, ezechiel, daniel, osee, joel, amos, abdias,
-     jonas, micheas, nahum, habacuc, sophonias, aggeus, zacharias, malachias,
-     matthew, mark, luke, john, acts, romans, 1-corinthians, 2-corinthians,
-     galatians, ephesians, philippians, colossians, 1-thessalonians, 2-thessalonians,
-     1-timothy, 2-timothy, titus, philemon, hebrews, james, 1-peter, 2-peter,
-     1-john, 2-john, 3-john, jude, apocalypse.
-   - chapter: positive integer chapter number (e.g. 3).
-   - verse_from: positive integer first verse in the range (e.g. 16).
-   - verse_to: last verse in the range (inclusive). If there is no range, leave this field empty.
-
-4. The importer will automatically assign calendar dates from today forward, filling free days one per CSV row. Do NOT try to set dates in the CSV.
-
-5. Example of TWO valid data lines (after the header):
-   john,3,16,
-   johannes,3,16,18
-
-6. Do NOT add extra columns. Every row must have exactly four comma-separated fields matching the header.
-            </textarea>
+            <?php
+                $instructions_file = plugin_dir_path( __FILE__ ) . 'assets/verse-csv-instructions.txt';
+                $instructions      = '';
+                if ( file_exists( $instructions_file ) ) {
+                    $instructions = (string) file_get_contents( $instructions_file );
+                }
+            ?>
+            <textarea class="large-text code" rows="16" style="max-width:960px;" name="thebible_import_csv"><?php echo esc_textarea( $instructions ); ?></textarea>
 
                 <?php submit_button( __( 'Import verses (fill free dates from today)', 'thebible' ) ); ?>
             </form>
