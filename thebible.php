@@ -225,7 +225,44 @@ class TheBible_Plugin {
         }
         function copyToClipboard(txt){ if(navigator.clipboard && navigator.clipboard.writeText){ return navigator.clipboard.writeText(txt); } var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }finally{ document.body.removeChild(ta);} return Promise.resolve(); }
         function verseText(info){ var out=[]; if(!info) return ""; for(var i=0;i<verses.length;i++){ var pid=verses[i].id; var m=pid.match(/-(\d+)-(\d+)$/); if(!m) continue; var ch=parseInt(m[1],10), v=parseInt(m[2],10); var within=(ch>info.sCh || (ch===info.sCh && v>=info.sV)) && (ch<info.eCh || (ch===info.eCh && v<=info.eV)); if(within){ var body=verses[i].querySelector(".verse-body"); out.push(body? body.textContent.trim() : verses[i].textContent.trim()); } } return out.join(" "); }
-        function renderSelectionControls(info){ if(!controls) return; var ref=buildRef(info); var link=buildLink(info); var md="["+ref+"](\n"+link+")"; controls.innerHTML = "copy: <a href=\"#\" data-copy-url>URL</a> <a href=\"#\" data-copy-link>link</a> <a href=\"#\" data-copy-text>verse</a> <a href=\"#\" data-copy-bquote>bquote</a>"; var aUrl=controls.querySelector("[data-copy-url]"); var aLink=controls.querySelector("[data-copy-link]"); var aText=controls.querySelector("[data-copy-text]"); var aBq=controls.querySelector("[data-copy-bquote]"); if(aUrl){ aUrl.addEventListener("click", function(e){ e.preventDefault(); copyToClipboard(link).then(function(){ aUrl.textContent="copied"; setTimeout(function(){aUrl.textContent="URL";},1000); }); }); } if(aLink){ aLink.addEventListener("click", function(e){ e.preventDefault(); copyToClipboard(md).then(function(){ aLink.textContent="copied"; setTimeout(function(){aLink.textContent="link";},1000); }); }); } if(aText){ aText.addEventListener("click", function(e){ e.preventDefault(); var txt=verseText(info); copyToClipboard(txt).then(function(){ aText.textContent="copied"; setTimeout(function(){aText.textContent="verse";},1000); }); }); } if(aBq){ aBq.addEventListener("click", function(e){ e.preventDefault(); var txt=verseText(info); var bq="> "+txt+"\n>\n> – ["+ref+"]("+link+")"; copyToClipboard(bq).then(function(){ aBq.textContent="copied"; setTimeout(function(){aBq.textContent="bquote";},1000); }); }); }
+        function renderSelectionControls(info){
+            if(!controls) return;
+            var ref = buildRef(info);
+            var link = buildLink(info);
+            var txt = verseText(info).trim();
+            // Compose a single shareable line: verse text, then reference and URL
+            var payload = txt + " - " + ref + " " + link;
+
+            controls.innerHTML = "share: <a href=\"#\" data-copy-url>URL</a> <a href=\"#\" data-copy-main>copy</a> <a href=\"#\" data-post-x>post to X</a>";
+            var aUrl = controls.querySelector("[data-copy-url]");
+            var aCopy = controls.querySelector("[data-copy-main]");
+            var aX = controls.querySelector("[data-post-x]");
+
+            if(aUrl){
+                aUrl.addEventListener("click", function(e){
+                    e.preventDefault();
+                    copyToClipboard(link).then(function(){
+                        aUrl.textContent = "copied";
+                        setTimeout(function(){ aUrl.textContent = "URL"; }, 1000);
+                    });
+                });
+            }
+            if(aCopy){
+                aCopy.addEventListener("click", function(e){
+                    e.preventDefault();
+                    copyToClipboard(payload).then(function(){
+                        aCopy.textContent = "copied";
+                        setTimeout(function(){ aCopy.textContent = "copy"; }, 1000);
+                    });
+                });
+            }
+            if(aX){
+                aX.addEventListener("click", function(e){
+                    e.preventDefault();
+                    var url = "https://x.com/intent/tweet?text=" + encodeURIComponent(payload);
+                    window.open(url, "_blank", "noopener");
+                });
+            }
         }
         function ensureStandardControls(){ if(!controls) return; if(controls.innerHTML!==origControlsHtml){ controls.innerHTML=origControlsHtml; bar._bound=false; linkPrev=bar.querySelector("[data-prev]"); linkNext=bar.querySelector("[data-next]"); linkTop=bar.querySelector("[data-top]"); } }
         function update(){if(!heads.length){heads=headsList();} if(!verses.length){verses=versesList();}
