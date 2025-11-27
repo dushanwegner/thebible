@@ -3449,7 +3449,12 @@ class TheBible_VOTD_Widget extends WP_Widget {
             if (!is_string($short_ds) || $short_ds === '') {
                 $heading_label_ds = $label;
             } else {
-                $heading_label_ds = TheBible_Plugin::pretty_label($short_ds);
+                // Special case for German Matthew - display with umlaut but keep URL slug as ASCII
+                if ($ds === 'bibel' && $canonical === 'matthew') {
+                    $heading_label_ds = 'Matthäus';
+                } else {
+                    $heading_label_ds = TheBible_Plugin::pretty_label($short_ds);
+                }
             }
             $citation = $heading_label_ds . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
 
