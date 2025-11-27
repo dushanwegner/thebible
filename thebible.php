@@ -230,39 +230,34 @@ class TheBible_Plugin {
             var ref = buildRef(info);
             var link = buildLink(info);
             var txt = verseText(info).trim();
-            // Compose a single shareable line: verse text, then reference and URL
             var payload = txt + " - " + ref + " " + link;
-
+            
             controls.innerHTML = "share: <a href=\"#\" data-copy-url>URL</a> <a href=\"#\" data-copy-main>copy</a> <a href=\"#\" data-post-x>post to X</a>";
+            
             var aUrl = controls.querySelector("[data-copy-url]");
+            if(aUrl) aUrl.addEventListener("click", function(e){
+                e.preventDefault();
+                copyToClipboard(link).then(function(){
+                    aUrl.textContent = "copied";
+                    setTimeout(function(){ aUrl.textContent = "URL"; }, 1000);
+                });
+            });
+            
             var aCopy = controls.querySelector("[data-copy-main]");
+            if(aCopy) aCopy.addEventListener("click", function(e){
+                e.preventDefault();
+                copyToClipboard(payload).then(function(){
+                    aCopy.textContent = "copied";
+                    setTimeout(function(){ aCopy.textContent = "copy"; }, 1000);
+                });
+            });
+            
             var aX = controls.querySelector("[data-post-x]");
-
-            if(aUrl){
-                aUrl.addEventListener("click", function(e){
-                    e.preventDefault();
-                    copyToClipboard(link).then(function(){
-                        aUrl.textContent = "copied";
-                        setTimeout(function(){ aUrl.textContent = "URL"; }, 1000);
-                    });
-                });
-            }
-            if(aCopy){
-                aCopy.addEventListener("click", function(e){
-                    e.preventDefault();
-                    copyToClipboard(payload).then(function(){
-                        aCopy.textContent = "copied";
-                        setTimeout(function(){ aCopy.textContent = "copy"; }, 1000);
-                    });
-                });
-            }
-            if(aX){
-                aX.addEventListener("click", function(e){
-                    e.preventDefault();
-                    var url = "https://x.com/intent/tweet?text=" + encodeURIComponent(payload);
-                    window.open(url, "_blank", "noopener");
-                });
-            }
+            if(aX) aX.addEventListener("click", function(e){
+                e.preventDefault();
+                var url = "https://x.com/intent/tweet?text=" + encodeURIComponent(payload);
+                window.open(url, "_blank", "noopener");
+            });
         }
         function ensureStandardControls(){ if(!controls) return; if(controls.innerHTML!==origControlsHtml){ controls.innerHTML=origControlsHtml; bar._bound=false; linkPrev=bar.querySelector("[data-prev]"); linkNext=bar.querySelector("[data-next]"); linkTop=bar.querySelector("[data-top]"); } }
         function update(){if(!heads.length){heads=headsList();} if(!verses.length){verses=versesList();}
