@@ -298,6 +298,7 @@
     }
 
     var selTimer = null;
+    var lastSelectionTime = 0;
     function scheduleUpdate(){
         if (selTimer) clearTimeout(selTimer);
         selTimer = setTimeout(update, 50);
@@ -410,10 +411,17 @@
         var info = selectionInfo();
         var elCh = bar.querySelector('[data-ch]');
         if (info && elCh) {
+            // Remember when we last had a non-empty selection so we can
+            // keep the share controls visible briefly after deselection.
+            lastSelectionTime = Date.now();
             elCh.textContent = buildRef(info).replace(/^.*?\s(.*)$/, '$1');
             if (controls) renderSelectionControls(info);
         } else {
-            ensureStandardControls();
+            // If selection was just cleared, keep controls for a short grace period
+            // so that clicking "copy" / "post to X" doesn't immediately hide them.
+            if (!lastSelectionTime || Date.now() - lastSelectionTime > 2000) {
+                ensureStandardControls();
+            }
         }
         var topCut = window.innerHeight * 0.2;
         var current = null;
