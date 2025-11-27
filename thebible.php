@@ -3312,12 +3312,27 @@ class TheBible_VOTD_Widget extends WP_Widget {
             // Choose template per language
             $tpl = ($ds === 'bibel') ? $tpl_de : $tpl_en;
 
+            // Prepare share payloads (mirroring frontend behavior):
+            // cleaned verse text wrapped in guillemets, plus citation and URL.
+            $share_core   = trim((string) $text);
+            $share_ref    = (string) $citation;
+            $share_url    = (string) $url_ds;
+            $share_text   = trim($share_core . ' (' . $share_ref . ') ' . $share_url);
+            $share_text_q = rawurlencode($share_text);
+            $share_url_q  = rawurlencode($share_url);
+
+            // X (Twitter) and Facebook share URLs
+            $share_x  = 'https://x.com/intent/tweet?text=' . $share_text_q;
+            $share_fb = 'https://www.facebook.com/sharer/sharer.php?u=' . $share_url_q . '&quote=' . $share_text_q;
+
             // Prepare placeholder replacements
             $replacements = [
-                '{votd-date}'      => (string) $display_date,
-                '{votd-content}'   => (string) $text,
-                '{votd-citation}'  => (string) $citation,
-                '{votd-link}'      => (string) $url_ds,
+                '{votd-date}'         => (string) $display_date,
+                '{votd-content}'      => (string) $text,
+                '{votd-citation}'     => (string) $citation,
+                '{votd-link}'         => (string) $url_ds,
+                '{post-to-x}'         => (string) $share_x,
+                '{post-to-facebook}'  => (string) $share_fb,
             ];
 
             $rendered = strtr($tpl, $replacements);
@@ -3354,7 +3369,7 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         // Show default templates in the form when empty (same structure for all languages)
         $default_tpl = "<h2 class=\"thebible-votd-heading\">Vers des Tages {votd-date}</h2>\n"
-                     . "<p class=\"thebible-votd-text\">»{votd-content}«</p>\n"
+                     . "<p class=\"thebible-votd-text\">{votd-content}</p>\n"
                      . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen →</a></div>";
 
         if ($tpl_en === '') {
@@ -3436,13 +3451,27 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         echo '<p>';
         echo '<label for="' . esc_attr($tpl_en_id) . '">' . esc_html__('HTML template (English dataset):', 'thebible') . '</label>';
-        echo '<br /><small>' . esc_html__('Placeholders: {votd-date}, {votd-content}, {votd-citation}, {votd-link}', 'thebible') . '</small>';
+        echo '<br /><small>';
+        echo esc_html__('Placeholders:', 'thebible') . ' ';
+        echo '{votd-date}, {votd-content}, {votd-citation}, {votd-link}, {post-to-x}, {post-to-facebook}';
+        echo '<br />';
+        echo esc_html__('Example share links:', 'thebible') . ' ';
+        echo '&lt;a href="{post-to-x}" target="_blank" rel="noopener noreferrer"&gt;Post to X&lt;/a&gt; · ';
+        echo '&lt;a href="{post-to-facebook}" target="_blank" rel="noopener noreferrer"&gt;Post to Facebook&lt;/a&gt;';
+        echo '</small>';
         echo '<textarea class="widefat" rows="6" id="' . esc_attr($tpl_en_id) . '" name="' . esc_attr($tpl_en_name) . '">' . esc_textarea($tpl_en) . '</textarea>';
         echo '</p>';
 
         echo '<p>';
         echo '<label for="' . esc_attr($tpl_de_id) . '">' . esc_html__('HTML template (German dataset):', 'thebible') . '</label>';
-        echo '<br /><small>' . esc_html__('Placeholders: {votd-date}, {votd-content}, {votd-citation}, {votd-link}', 'thebible') . '</small>';
+        echo '<br /><small>';
+        echo esc_html__('Placeholders:', 'thebible') . ' ';
+        echo '{votd-date}, {votd-content}, {votd-citation}, {votd-link}, {post-to-x}, {post-to-facebook}';
+        echo '<br />';
+        echo esc_html__('Example share links:', 'thebible') . ' ';
+        echo '&lt;a href="{post-to-x}" target="_blank" rel="noopener noreferrer"&gt;Post to X&lt;/a&gt; · ';
+        echo '&lt;a href="{post-to-facebook}" target="_blank" rel="noopener noreferrer"&gt;Post to Facebook&lt;/a&gt;';
+        echo '</small>';
         echo '<textarea class="widefat" rows="6" id="' . esc_attr($tpl_de_id) . '" name="' . esc_attr($tpl_de_name) . '">' . esc_textarea($tpl_de) . '</textarea>';
         echo '</p>';
     }
