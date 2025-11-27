@@ -3325,9 +3325,28 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $share_x_url  = 'https://x.com/intent/tweet?text=' . $share_text_q;
             $share_fb_url = 'https://www.facebook.com/sharer/sharer.php?u=' . $share_url_q . '&quote=' . $share_text_q;
 
-            // Full HTML links for convenience in templates
-            $share_x_link  = '<a href="' . esc_url($share_x_url) . '" target="_blank" rel="noopener noreferrer">Post to X</a>';
-            $share_fb_link = '<a href="' . esc_url($share_fb_url) . '" target="_blank" rel="noopener noreferrer">Post to Facebook</a>';
+            // Handle parameterized placeholders first, e.g. {post-to-x linktext="nach X posten"}
+            $tpl = preg_replace_callback(
+                '/\{post-to-x\s+linktext="([^"]*)"\}/',
+                function ( $m ) use ( $share_x_url ) {
+                    $txt = isset( $m[1] ) ? $m[1] : '';
+                    return '<a href="' . esc_url( $share_x_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $txt ) . '</a>';
+                },
+                $tpl
+            );
+
+            $tpl = preg_replace_callback(
+                '/\{post-to-facebook\s+linktext="([^"]*)"\}/',
+                function ( $m ) use ( $share_fb_url ) {
+                    $txt = isset( $m[1] ) ? $m[1] : '';
+                    return '<a href="' . esc_url( $share_fb_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $txt ) . '</a>';
+                },
+                $tpl
+            );
+
+            // Default full HTML links for bare placeholders
+            $share_x_link  = '<a href="' . esc_url( $share_x_url ) . '" target="_blank" rel="noopener noreferrer">Post to X</a>';
+            $share_fb_link = '<a href="' . esc_url( $share_fb_url ) . '" target="_blank" rel="noopener noreferrer">Post to Facebook</a>';
 
             // Prepare placeholder replacements
             $replacements = [
@@ -3460,7 +3479,7 @@ class TheBible_VOTD_Widget extends WP_Widget {
         echo esc_html__('Placeholders:', 'thebible') . ' ';
         echo '{votd-date}, {votd-content}, {votd-citation}, {votd-link}, {post-to-x}, {post-to-facebook}';
         echo '<br />';
-        echo esc_html__('Note: {post-to-x} and {post-to-facebook} render full <a> links.', 'thebible');
+        echo esc_html__('Note: {post-to-x} and {post-to-facebook} render full <a> links. Use {post-to-x linktext="..."} for custom link text.', 'thebible');
         echo '<br />';
         echo esc_html__('Example share block:', 'thebible') . ' ';
         echo '&lt;p class="thebible-votd-share"&gt;{post-to-x} · {post-to-facebook}&lt;/p&gt;';
