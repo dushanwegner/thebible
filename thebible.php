@@ -3322,8 +3322,12 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $share_url_q  = rawurlencode($share_url);
 
             // X (Twitter) and Facebook share URLs
-            $share_x  = 'https://x.com/intent/tweet?text=' . $share_text_q;
-            $share_fb = 'https://www.facebook.com/sharer/sharer.php?u=' . $share_url_q . '&quote=' . $share_text_q;
+            $share_x_url  = 'https://x.com/intent/tweet?text=' . $share_text_q;
+            $share_fb_url = 'https://www.facebook.com/sharer/sharer.php?u=' . $share_url_q . '&quote=' . $share_text_q;
+
+            // Full HTML links for convenience in templates
+            $share_x_link  = '<a href="' . esc_url($share_x_url) . '" target="_blank" rel="noopener noreferrer">Post to X</a>';
+            $share_fb_link = '<a href="' . esc_url($share_fb_url) . '" target="_blank" rel="noopener noreferrer">Post to Facebook</a>';
 
             // Prepare placeholder replacements
             $replacements = [
@@ -3331,8 +3335,9 @@ class TheBible_VOTD_Widget extends WP_Widget {
                 '{votd-content}'      => (string) $text,
                 '{votd-citation}'     => (string) $citation,
                 '{votd-link}'         => (string) $url_ds,
-                '{post-to-x}'         => (string) $share_x,
-                '{post-to-facebook}'  => (string) $share_fb,
+                // These render full <a> elements
+                '{post-to-x}'         => (string) $share_x_link,
+                '{post-to-facebook}'  => (string) $share_fb_link,
             ];
 
             $rendered = strtr($tpl, $replacements);
@@ -3455,9 +3460,10 @@ class TheBible_VOTD_Widget extends WP_Widget {
         echo esc_html__('Placeholders:', 'thebible') . ' ';
         echo '{votd-date}, {votd-content}, {votd-citation}, {votd-link}, {post-to-x}, {post-to-facebook}';
         echo '<br />';
-        echo esc_html__('Example share links:', 'thebible') . ' ';
-        echo '&lt;a href="{post-to-x}" target="_blank" rel="noopener noreferrer"&gt;Post to X&lt;/a&gt; · ';
-        echo '&lt;a href="{post-to-facebook}" target="_blank" rel="noopener noreferrer"&gt;Post to Facebook&lt;/a&gt;';
+        echo esc_html__('Note: {post-to-x} and {post-to-facebook} render full <a> links.', 'thebible');
+        echo '<br />';
+        echo esc_html__('Example share block:', 'thebible') . ' ';
+        echo '&lt;p class="thebible-votd-share"&gt;{post-to-x} · {post-to-facebook}&lt;/p&gt;';
         echo '</small>';
         echo '<textarea class="widefat" rows="6" id="' . esc_attr($tpl_en_id) . '" name="' . esc_attr($tpl_en_name) . '">' . esc_textarea($tpl_en) . '</textarea>';
         echo '</p>';
@@ -3468,9 +3474,10 @@ class TheBible_VOTD_Widget extends WP_Widget {
         echo esc_html__('Placeholders:', 'thebible') . ' ';
         echo '{votd-date}, {votd-content}, {votd-citation}, {votd-link}, {post-to-x}, {post-to-facebook}';
         echo '<br />';
-        echo esc_html__('Example share links:', 'thebible') . ' ';
-        echo '&lt;a href="{post-to-x}" target="_blank" rel="noopener noreferrer"&gt;Post to X&lt;/a&gt; · ';
-        echo '&lt;a href="{post-to-facebook}" target="_blank" rel="noopener noreferrer"&gt;Post to Facebook&lt;/a&gt;';
+        echo esc_html__('Note: {post-to-x} and {post-to-facebook} render full <a> links.', 'thebible');
+        echo '<br />';
+        echo esc_html__('Example share block:', 'thebible') . ' ';
+        echo '&lt;p class="thebible-votd-share"&gt;{post-to-x} · {post-to-facebook}&lt;/p&gt;';
         echo '</small>';
         echo '<textarea class="widefat" rows="6" id="' . esc_attr($tpl_de_id) . '" name="' . esc_attr($tpl_de_name) . '">' . esc_textarea($tpl_de) . '</textarea>';
         echo '</p>';
