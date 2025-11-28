@@ -120,7 +120,11 @@ class TheBible_Plugin {
         }
 
         // Prepend an up-arrow to the first chapters block linking back to /bible/
-        $bible_index = esc_url(trailingslashit(home_url('/bible/')));
+        $slug = get_query_var(self::QV_SLUG);
+        if (!is_string($slug) || $slug === '') {
+            $slug = 'bible';
+        }
+        $bible_index = esc_url(trailingslashit(home_url('/' . $slug . '/')));
         $chap_up = '<a class="thebible-up thebible-up-index" href="' . $bible_index . '" aria-label="Back to Bible">&#8593;</a> ';
         $html = preg_replace(
             '~<p\s+class=(["\"])chapters\1>~',
