@@ -1588,8 +1588,13 @@ class TheBible_Plugin {
         // Normalize surrounding whitespace once more after quote adjustments
         $s = trim($s);
 
-        // (5) If the quote ends with an m- or n-dash, strip that dash and any
-        // trailing spaces. This covers cases like “…«–” or “…«— ” in source text.
+        // (5) If the quote ends with a space + m- or n-dash immediately before
+        // a guillemet (inner or outer), strip the space and dash but keep the
+        // guillemet. This covers cases like "… und der Propheten. –«".
+        $s = preg_replace('/\s*[–—]\s*([«‹»›])\s*$/u', '$1', $s);
+
+        // Also, if the quote ends directly with an m- or n-dash (no closing
+        // guillemet), strip that dash and any trailing spaces.
         $s = preg_replace('/[–—]\s*$/u', '', $s);
         $s = trim($s);
 
