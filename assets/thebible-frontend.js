@@ -90,13 +90,29 @@
             }
         }
 
+        // Normalize surrounding whitespace once more after quote adjustments
         s = s.trim();
-        // Strip trailing m/n dash plus spaces
+
+        // If the quote ends with a space + m- or n-dash immediately before
+        // a guillemet (inner or outer), strip the space and dash but keep the
+        // guillemet. Mirrors the PHP clean_verse_quotes() behavior.
+        s = s.replace(/\s*[\u2013\u2014]\s*([\u00AB\u00BB\u2039\u203A])\s*$/u, '$1');
+
+        // Also strip a trailing m-/n-dash at the very end (no closing
+        // guillemet): "… und der Propheten. –" -> "… und der Propheten.".
         s = s.replace(/[\u2013\u2014]\s*$/u, '').trim();
 
         if (wrapOuter) {
-            // If not already wrapped in outer quotes, wrap now
-            if (!(s.charAt(0) === qL && s.charAt(s.length - 1) === qR)) {
+            var len2 = s.length;
+            // If already wrapped with the requested outer quotes, do not wrap again.
+            if (len2 >= 2 && s.charAt(0) === qL && s.charAt(len2 - 1) === qR) {
+                // no-op
+            }
+            // If wrapped in inner guillemets ›...‹, promote them to the requested outer quotes.
+            else if (len2 >= 2 && s.charAt(0) === '\u203A' && s.charAt(len2 - 1) === '\u2039') {
+                s = qL + s.substring(1, len2 - 1) + qR;
+            } else {
+                // Otherwise, wrap the whole text once using qL/qR.
                 s = qL + s + qR;
             }
         }
