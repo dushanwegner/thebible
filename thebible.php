@@ -119,13 +119,14 @@ class TheBible_Plugin {
             $html = '<a id="thebible-book-top"></a>' . $html;
         }
 
-        // Prepend an up-arrow to the first chapters block linking back to /bible/
+        // Prepend an up-arrow to the first chapters block linking back to the current Bible index
         $slug = get_query_var(self::QV_SLUG);
         if (!is_string($slug) || $slug === '') {
             $slug = 'bible';
         }
         $bible_index = esc_url(trailingslashit(home_url('/' . $slug . '/')));
-        $chap_up = '<a class="thebible-up thebible-up-index" href="' . $bible_index . '" aria-label="Back to Bible">&#8593;</a> ';
+        $aria_label = ($slug === 'bibel') ? __('Back to German Bible', 'thebible') : __('Back to Bible', 'thebible');
+        $chap_up = '<a class="thebible-up thebible-up-index" href="' . $bible_index . '" aria-label="' . esc_attr($aria_label) . '">&#8593;</a> ';
         $html = preg_replace(
             '~<p\s+class=(["\"])chapters\1>~',
             '<p class="chapters">' . $chap_up,
