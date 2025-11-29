@@ -293,4 +293,13 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         echo '<p>';
         echo '<label for="' . esc_attr($lang_mode_id) . '">' . esc_html__('Language(s):', 'thebible') . '</label> ';
-        echo '<select id="' . esc_attr($lang_mode_id) . '
+        echo '<select id="' . esc_attr($lang_mode_id) . '" name="' . esc_attr($lang_mode_name) . '">';
+        echo '<option value="bible"' . selected($lang_mode, 'bible', false) . '>' . esc_html__('English Bible only', 'thebible') . '</option>';
+        echo '<option value="bibel"' . selected($lang_mode, 'bibel', false) . '>' . esc_html__('German Bibel only', 'thebible') . '</option>';
+        echo '<option value="both"' . selected($lang_mode, 'both', false) . '>' . esc_html__('Both (English + German)', 'thebible') . '</option>';
+        echo '</select>';
+        echo '</p>';
+
+    }
+
+}
