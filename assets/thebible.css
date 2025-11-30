@@ -1,12 +1,32 @@
-/* The Bible plugin styles: sticky bar, controls, verse highlight */
+/* The Bible plugin styles: sticky bar, controls, verse highlight, theme support */
+/* Theme variables */
+:root.theme-light, :root:not(.theme-dark) {
+  --thebible-bg-color: #fff;
+  --thebible-text-color: #333;
+  --thebible-border-color: rgba(0,0,0,.1);
+  --thebible-shadow-color: rgba(255,255,255,.85);
+  --thebible-highlight-color: #fff3cd;
+  --thebible-btn-hover-color: #f1f3f5;
+}
+
+:root.theme-dark {
+  --thebible-bg-color: #222;
+  --thebible-text-color: #eee;
+  --thebible-border-color: rgba(255,255,255,.1);
+  --thebible-shadow-color: rgba(0,0,0,.85);
+  --thebible-highlight-color: #3a3000;
+  --thebible-btn-hover-color: #333;
+}
+
 .thebible .thebible-sticky {
   position: -webkit-sticky;
   position: sticky;
   top: env(safe-area-inset-top, 0);
   z-index: 1000;
-  background: #fff;
-  border-bottom: 1px solid rgba(0,0,0,.1);
-  box-shadow: 0 10px 24px rgba(255,255,255,.85);
+  background: var(--thebible-bg-color, #fff);
+  color: var(--thebible-text-color, #333);
+  border-bottom: 1px solid var(--thebible-border-color, rgba(0,0,0,.1));
+  box-shadow: 0 10px 24px var(--thebible-shadow-color, rgba(255,255,255,.85));
   font-size: .9rem;
   padding: .375rem 0 .5rem !important;
   box-sizing: border-box;
@@ -48,8 +68,14 @@
   color: inherit;
   display: inline-block;
 }
-.thebible .thebible-btn:hover { background: #f1f3f5; }
+.thebible .thebible-btn:hover { background: var(--thebible-btn-hover-color, #f1f3f5); }
 
-.thebible .verse-highlight { background: #fff3cd; padding: 0 .2em; border-radius: .15rem; }
+.thebible .verse-highlight { background: var(--thebible-highlight-color, #fff3cd); padding: 0 .2em; border-radius: .15rem; }
 .thebible .thebible-book p.verse, .thebible.thebible-book p.verse { transition: background-color 1.6s ease-out; }
-.thebible .thebible-book p.verse.verse-flash, .thebible.thebible-book p.verse.verse-flash { background: #fff3cd; }
+.thebible .thebible-book p.verse.verse-flash, .thebible.thebible-book p.verse.verse-flash { background: var(--thebible-highlight-color, #fff3cd); }
+
+/* General theme styles */
+.thebible {
+  color: var(--thebible-text-color, #333);
+  background-color: var(--thebible-bg-color, #fff);
+}

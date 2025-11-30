@@ -229,8 +229,13 @@ class TheBible_Plugin {
             || ! empty( get_query_var( self::QV_SLUG ) );
         if ( $is_bible ) {
             $css_url = plugins_url( 'assets/thebible.css', __FILE__ );
-            wp_enqueue_style( 'thebible-styles', $css_url, [], '0.1.0' );
+            wp_enqueue_style( 'thebible-styles', $css_url, [], '0.1.1' );
 
+            // Enqueue theme script first (in the head) to prevent flash of unstyled content
+            $theme_js_url = plugins_url( 'assets/thebible-theme.js', __FILE__ );
+            wp_enqueue_script( 'thebible-theme', $theme_js_url, [], '0.1.0', false );
+            
+            // Main frontend script in the footer
             $js_url = plugins_url( 'assets/thebible-frontend.js', __FILE__ );
             wp_enqueue_script( 'thebible-frontend', $js_url, [], '0.1.0', true );
         }
