@@ -1398,6 +1398,8 @@ class TheBible_Plugin {
 
         $post_id = get_the_ID();
         if (!$post_id) return $content;
+        
+        // (debug removed)
 
         $slug = get_post_meta($post_id, 'thebible_slug', true);
         if (!is_string($slug) || $slug === '') {
@@ -1411,64 +1413,142 @@ class TheBible_Plugin {
         if (empty($abbr)) return $content;
 
         // Book token (group 1): optional leading number ("1.", "2"), then one or more words of letters (incl. umlauts) and dots.
-        // Then space(s), chapter, colon, verse, optional dash and verse.
-        $pattern = '/('
-                 . '(?:[0-9]{1,2}\.?)?\s*'                 // optional leading number like "1." or "2"
-                 . '[A-ZÄÖÜ][A-Za-zÄÖÜäöüß]*'                // first word: starts uppercase (book name)
-                 . '[A-Za-zÄÖÜäöüß\.] *'                     // allow abbreviation with dot and trailing spaces
-                 . '(?:\s+[A-Za-zÄÖÜäöüß\.0-9]+)*'          // optional extra words
-                 . ')\s+(\d+):(\d+)(?:-(\d+))?/u';
+        // Then optional space(s), chapter, colon, verse, optional dash and verse.
+        // Word boundary (?<!\p{L}) ensures we don't match in the middle of words (Unicode-aware).
+        $pattern = '/(?<!\p{L})('
+                 . '(?:[0-9]{1,2}\.?(?:\s|\x{00A0})*)?'   // optional leading number like "1." or "2" with normal or NBSP spaces
+                 . '[\p{L}][\p{L}\p{M}\.]*'              // book name in any language, allows dots
+                 . '(?:(?:\s|\x{00A0})+[\p{L}\p{M}\.0-9!]+)*' // optional extra words (accept NBSP too)
+                 . ')(?:\s|\x{00A0})*(\d+):(\d+)(?:-(\d+))?(?!\p{L})/u'; // accept NBSP before chapter; ensure no letter immediately after
 
-        $content = preg_replace_callback(
-            $pattern,
-            function ($m) use ($slug, $abbr) {
-                if (!isset($m[1], $m[2], $m[3])) return $m[0];
-                $book_raw = $m[1];
-                $ch = (int)$m[2];
-                $vf = (int)$m[3];
-                $vt = isset($m[4]) && $m[4] !== '' ? (int)$m[4] : 0;
-                if ($ch <= 0 || $vf <= 0) return $m[0];
+        // Split content by <a> tags to avoid matching inside existing links
+        $parts = preg_split('/(<a\s[^>]*>.*?<\/a>)/us', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+        if ($parts === false) {
+            return $content;
+        }
 
-                // Normalize book token: strip trailing dot, collapse spaces
-                $norm = preg_replace('/\.\s*$/u', '', $book_raw);
-                $norm = preg_replace('/\s+/u', ' ', trim((string)$norm));
+        $result = '';
+        foreach ($parts as $part) {
+            // If this part is an <a> tag, keep it unchanged
+            if (preg_match('/^<a\s/i', $part)) {
+                $result .= $part;
+            } else {
+                // Process Bible references in this part
+                $result .= preg_replace_callback(
+                    $pattern,
+                    function ($m) use ($slug, $abbr) {
+                        return self::process_bible_ref_match($m, $slug, $abbr);
+                    },
+                    $part
+                );
+            }
+        }
+
+        return $result;
+    }
+
+    private static function process_bible_ref_match($m, $slug, $abbr) {
+        if (!isset($m[1], $m[2], $m[3])) return $m[0];
+        $book_raw = $m[1];
+        $ch = (int)$m[2];
+        $vf = (int)$m[3];
+        $vt = isset($m[4]) && $m[4] !== '' ? (int)$m[4] : 0;
+        if ($ch <= 0 || $vf <= 0) return $m[0];
+
+        // Normalize spaces (also convert NBSP to normal space for matching)
+        $book_clean = str_replace("\xC2\xA0", ' ', (string)$book_raw);
+        // Strip trailing dot, collapse spaces
+        $book_clean = preg_replace('/\.\s*$/u', '', $book_clean);
+        $book_clean = preg_replace('/\s+/u', ' ', trim($book_clean));
+
+        $effective_slug = $slug;
+        $short = null;
+        $resolved_book_text = null; // The exact book text we will show in the link
+        $matched_word_start_index = null; // index in cleaned words where the book starts
+
+        // Strategy: from the right, take the longest suffix that maps to a known book
+        $words = preg_split('/\s+/u', $book_clean);
+        if (is_array($words)) {
+            for ($i = 0; $i < count($words); $i++) {
+                $candidate = implode(' ', array_slice($words, $i));
+                if ($candidate === '') continue;
+
+                // Try exact key in current slug map
+                $norm = preg_replace('/\s+/u', ' ', trim($candidate));
                 $key = mb_strtolower($norm, 'UTF-8');
-
-                // Try exact key
-                $short = null;
-                if ($key !== '' && isset($abbr[$key])) {
+                if (isset($abbr[$key])) {
                     $short = $abbr[$key];
-                } else {
-                    // Fallback: strip a dot directly after a leading number (e.g. "1. Mose" -> "1 Mose")
-                    $alt = preg_replace('/^(\d+)\.\s*/u', '$1 ', $norm);
-                    $alt = preg_replace('/\s+/u', ' ', trim((string)$alt));
-                    $alt_key = mb_strtolower($alt, 'UTF-8');
-                    if ($alt_key !== '' && isset($abbr[$alt_key])) {
-                        $short = $abbr[$alt_key];
+                    $resolved_book_text = $norm;
+                    $matched_word_start_index = $i;
+                    break;
+                }
+
+                // Fallback: strip dot after leading number (e.g., "1. Mose" -> "1 Mose")
+                $alt = preg_replace('/^(\d+)\.\s*/u', '$1 ', $norm);
+                $alt = preg_replace('/\s+/u', ' ', trim($alt));
+                $alt_key = mb_strtolower($alt, 'UTF-8');
+                if (isset($abbr[$alt_key])) {
+                    $short = $abbr[$alt_key];
+                    $resolved_book_text = $alt;
+                    $matched_word_start_index = $i;
+                    break;
+                }
+
+                // Try alternate dataset map ('bible' <-> 'bibel')
+                $other_slug = ($slug === 'bibel') ? 'bible' : 'bibel';
+                $abbr_other = self::get_abbreviation_map($other_slug);
+                if (isset($abbr_other[$key])) {
+                    $short = $abbr_other[$key];
+                    $effective_slug = $other_slug;
+                    $resolved_book_text = $norm;
+                    $matched_word_start_index = $i;
+                    break;
+                }
+                if (isset($abbr_other[$alt_key])) {
+                    $short = $abbr_other[$alt_key];
+                    $effective_slug = $other_slug;
+                    $resolved_book_text = $alt;
+                    $matched_word_start_index = $i;
+                    break;
+                }
+            }
+        }
+
+        if ($short === null) {
+            return $m[0];
+        }
+
+        $book_slug = self::slugify($short);
+        if ($book_slug === '') return $m[0];
+
+        $base = home_url('/' . trim($effective_slug, '/') . '/' . $book_slug . '/');
+        if ($vt && $vt >= $vf) {
+            $url = $base . $ch . ':' . $vf . '-' . $vt;
+        } else {
+            $url = $base . $ch . ':' . $vf;
+        }
+
+        // Build the reference text from the resolved book part + chapter/verse
+        $book_display = $resolved_book_text ?: $book_clean;
+        $ref_text = $book_display . ' ' . $ch . ':' . $vf . ($vt && $vt >= $vf ? '-' . $vt : '');
+
+        // Preserve any prefix words that were included before the actual book name
+        $prefix_raw = '';
+        if ($matched_word_start_index !== null && $matched_word_start_index > 0) {
+            $raw_tokens = preg_split('/\s+/u', (string)$book_raw, -1, PREG_SPLIT_NO_EMPTY);
+            if (is_array($raw_tokens)) {
+                $book_word_count = count($words) - $matched_word_start_index;
+                $prefix_count = max(0, count($raw_tokens) - $book_word_count);
+                if ($prefix_count > 0) {
+                    $prefix_raw = implode(' ', array_slice($raw_tokens, 0, $prefix_count));
+                    if ($prefix_raw !== '') {
+                        $prefix_raw .= ' ';
                     }
                 }
+            }
+        }
 
-                if ($short === null) {
-                    return $m[0];
-                }
-
-                $book_slug = self::slugify($short);
-                if ($book_slug === '') return $m[0];
-
-                $base = home_url('/' . trim($slug, '/') . '/' . $book_slug . '/');
-                if ($vt && $vt >= $vf) {
-                    $url = $base . $ch . ':' . $vf . '-' . $vt;
-                } else {
-                    $url = $base . $ch . ':' . $vf;
-                }
-
-                $ref_text = $m[0];
-                return '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer">' . esc_html($ref_text) . '</a>';
-            },
-            $content
-        );
-
-        return $content;
+        return $prefix_raw . '<a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer">' . esc_html($ref_text) . '</a>';
     }
 
     private static function book_groups() {
