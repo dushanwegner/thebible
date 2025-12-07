@@ -2,7 +2,7 @@
 /**
  * Plugin Name: The Bible
  * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template.
- * Version: 0.1.0
+ * Version: 1.0.0
  * Author: DW
  * License: GPL2+
  */
