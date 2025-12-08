@@ -12,15 +12,18 @@ class TheBible_VOTD_Widget extends WP_Widget {
     }
 
     public function widget($args, $instance) {
-        $title      = isset($instance['title']) ? $instance['title'] : '';
-        $date_mode  = isset($instance['date_mode']) ? $instance['date_mode'] : 'today_fallback';
-        $pick_date  = isset($instance['pick_date']) ? $instance['pick_date'] : '';
-        $lang_mode  = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
-        $custom_css = isset($instance['custom_css']) ? $instance['custom_css'] : '';
-        $tpl_en     = isset($instance['template_en']) ? $instance['template_en'] : '';
-        $tpl_de     = isset($instance['template_de']) ? $instance['template_de'] : '';
+        $title           = isset($instance['title']) ? $instance['title'] : '';
+        $title_tpl       = isset($instance['title_template']) ? $instance['title_template'] : '';
+        $date_mode       = isset($instance['date_mode']) ? $instance['date_mode'] : 'today_fallback';
+        $pick_date       = isset($instance['pick_date']) ? $instance['pick_date'] : '';
+        $lang_mode       = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
+        $custom_css      = isset($instance['custom_css']) ? $instance['custom_css'] : '';
+        $tpl_en          = isset($instance['template_en']) ? $instance['template_en'] : '';
+        $tpl_de          = isset($instance['template_de']) ? $instance['template_de'] : '';
+        $date_fmt_mode   = isset($instance['date_format_mode']) ? $instance['date_format_mode'] : '';
 
         if (!is_string($title)) $title = '';
+        if (!is_string($title_tpl)) $title_tpl = '';
         if (!in_array($date_mode, ['today_fallback', 'random', 'pick_date'], true)) {
             $date_mode = 'today_fallback';
         }
@@ -31,6 +34,10 @@ class TheBible_VOTD_Widget extends WP_Widget {
         if (!is_string($custom_css)) $custom_css = '';
         if (!is_string($tpl_en)) $tpl_en = '';
         if (!is_string($tpl_de)) $tpl_de = '';
+        $allowed_fmt_modes = ['','site_default','en_long','en_short','de_long','de_short','de_numeric'];
+        if (!in_array($date_fmt_mode, $allowed_fmt_modes, true)) {
+            $date_fmt_mode = '';
+        }
 
         // Resolve VOTD entry based on date mode
         $ref = null;
@@ -92,27 +99,63 @@ class TheBible_VOTD_Widget extends WP_Widget {
         if (is_string($date) && $date !== '') {
             $ts = strtotime($date . ' 00:00:00');
             if ($ts) {
-                $display_date = date_i18n(get_option('date_format'), $ts);
+                if ($date_fmt_mode === 'en_long' || $date_fmt_mode === 'en_short') {
+                    // English formats with ordinal day suffix (1st, 2nd, 3rd, 4th, ...), independent of site locale
+                    $day  = (int) gmdate('j', $ts);
+                    $mod100 = $day % 100;
+                    if ($mod100 >= 11 && $mod100 <= 13) {
+                        $suffix = 'th';
+                    } else {
+                        $last = $day % 10;
+                        if ($last === 1) {
+                            $suffix = 'st';
+                        } elseif ($last === 2) {
+                            $suffix = 'nd';
+                        } elseif ($last === 3) {
+                            $suffix = 'rd';
+                        } else {
+                            $suffix = 'th';
+                        }
+                    }
+                    $day_ordinal = $day . $suffix;
+
+                    if ($date_fmt_mode === 'en_long') {
+                        $month = gmdate('F', $ts);
+                        $year  = gmdate('Y', $ts);
+                        $display_date = $month . ' ' . $day_ordinal . ', ' . $year; // e.g. March 4th, 2025
+                    } else { // en_short
+                        $month = gmdate('M', $ts);
+                        $year  = gmdate('Y', $ts);
+                        $display_date = $month . '. ' . $day_ordinal . ', ' . $year; // e.g. Mar. 4th, 2025
+                    }
+                } elseif ($date_fmt_mode === 'de_long') {
+                    $display_date = date_i18n('j. F Y', $ts); // e.g. 4. März 2025
+                } elseif ($date_fmt_mode === 'de_short') {
+                    $display_date = date_i18n('d.m.Y', $ts); // e.g. 04.03.2025
+                } elseif ($date_fmt_mode === 'de_numeric') {
+                    $display_date = date_i18n('j.n.Y', $ts); // e.g. 4.3.2025
+                } else {
+                    $display_date = date_i18n(get_option('date_format'), $ts);
+                }
             }
-        }
-
-        // Default templates if none set (same structure for all languages; date is localized via date_i18n)
-        // Note: {votd-content} already includes cleaned quotation marks from clean_verse_quotes(),
-        // so we do NOT wrap it in additional guillemets here.
-        $default_tpl = "<h2 class=\"thebible-votd-heading\">Vers des Tages {votd-date}</h2>\n"
-                     . "<p class=\"thebible-votd-text\">{votd-content}</p>\n"
-                     . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen </a></div>";
-
-        if ($tpl_en === '') {
-            $tpl_en = $default_tpl;
-        }
-        if ($tpl_de === '') {
-            $tpl_de = $default_tpl;
         }
 
         echo '<div class="thebible-votd-widget thebible-votd-widget-' . esc_attr($lang_mode) . '">';
 
-        // Verse text blocks per language
+        // Title inside widget, above verse
+        if ($title_tpl !== '' || $title !== '') {
+            if ($title_tpl !== '') {
+                $title_rendered = strtr($title_tpl, [
+                    '{date}' => (string) $display_date,
+                ]);
+            } else {
+                $title_rendered = $title;
+            }
+            $title_rendered = apply_filters('widget_title', $title_rendered, $instance, $this->id_base);
+            echo '<div class="thebible-votd-heading">' . esc_html($title_rendered) . '</div>';
+        }
+
+        // Verse text blocks per language, using a fixed layout (no per-language templates)
         $langs_to_show = [];
         if ($lang_mode === 'both') {
             $langs_to_show = ['bible', 'bibel'];
@@ -147,60 +190,11 @@ class TheBible_VOTD_Widget extends WP_Widget {
             }
             $citation = $heading_label_ds . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
 
-            // Choose template per language
-            $tpl = ($ds === 'bibel') ? $tpl_de : $tpl_en;
-
-            // Prepare share payloads (mirroring frontend behavior):
-            // cleaned verse text wrapped in guillemets, plus citation and URL.
-            $share_core   = trim((string) $text);
-            $share_ref    = (string) $citation;
-            $share_url    = (string) $url_ds;
-            $share_text   = trim($share_core . ' (' . $share_ref . ') ' . $share_url);
-            $share_text_q = rawurlencode($share_text);
-            $share_url_q  = rawurlencode($share_url);
-
-            // X (Twitter) and Facebook share URLs
-            $share_x_url  = 'https://x.com/intent/tweet?text=' . $share_text_q;
-            $share_fb_url = 'https://www.facebook.com/sharer/sharer.php?u=' . $share_url_q . '&quote=' . $share_text_q;
-
-            // Handle parameterized placeholders first, e.g. {post-to-x linktext="nach X posten"}
-            $tpl = preg_replace_callback(
-                '/\{post-to-x\s+linktext="([^"]*)"\}/',
-                function ( $m ) use ( $share_x_url ) {
-                    $txt = isset( $m[1] ) ? $m[1] : '';
-                    return '<a href="' . esc_url( $share_x_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $txt ) . '</a>';
-                },
-                $tpl
-            );
-
-            $tpl = preg_replace_callback(
-                '/\{post-to-facebook\s+linktext="([^"]*)"\}/',
-                function ( $m ) use ( $share_fb_url ) {
-                    $txt = isset( $m[1] ) ? $m[1] : '';
-                    return '<a href="' . esc_url( $share_fb_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $txt ) . '</a>';
-                },
-                $tpl
-            );
-
-            // Default full HTML links for bare placeholders
-            $share_x_link  = '<a href="' . esc_url( $share_x_url ) . '" target="_blank" rel="noopener noreferrer">Post to X</a>';
-            $share_fb_link = '<a href="' . esc_url( $share_fb_url ) . '" target="_blank" rel="noopener noreferrer">Post to Facebook</a>';
-
-            // Prepare placeholder replacements
-            $replacements = [
-                '{votd-date}'         => (string) $display_date,
-                '{votd-content}'      => (string) $text,
-                '{votd-citation}'     => (string) $citation,
-                '{votd-link}'         => (string) $url_ds,
-                // These render full <a> elements
-                '{post-to-x}'         => (string) $share_x_link,
-                '{post-to-facebook}'  => (string) $share_fb_link,
-            ];
-
-            $rendered = strtr($tpl, $replacements);
-
             echo '<div class="thebible-votd-lang thebible-votd-lang-' . esc_attr($ds) . '">';
-            echo wp_kses_post($rendered);
+            echo '<p class="thebible-votd-text">' . wp_kses_post($text) . '</p>';
+            echo '<div class="thebible-votd-context">';
+            echo '<a class="thebible-votd-context-link" href="' . esc_url( $url_ds ) . '">' . esc_html( $citation ) . '</a>';
+            echo '</div>';
             echo '</div>';
         }
 
@@ -210,14 +204,17 @@ class TheBible_VOTD_Widget extends WP_Widget {
     }
 
     public function form($instance) {
-        $title      = isset($instance['title']) ? $instance['title'] : '';
-        $date_mode  = isset($instance['date_mode']) ? $instance['date_mode'] : 'today_fallback';
-        $pick_date  = isset($instance['pick_date']) ? $instance['pick_date'] : '';
-        $lang_mode  = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
-        $custom_css = isset($instance['custom_css']) ? $instance['custom_css'] : '';
-        $tpl_en     = isset($instance['template_en']) ? $instance['template_en'] : '';
-        $tpl_de     = isset($instance['template_de']) ? $instance['template_de'] : '';
+        $title        = isset($instance['title']) ? $instance['title'] : '';
+        $title_tpl    = isset($instance['title_template']) ? $instance['title_template'] : '';
+        $date_mode    = isset($instance['date_mode']) ? $instance['date_mode'] : 'today_fallback';
+        $pick_date    = isset($instance['pick_date']) ? $instance['pick_date'] : '';
+        $lang_mode    = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
+        $custom_css   = isset($instance['custom_css']) ? $instance['custom_css'] : '';
+        $tpl_en       = isset($instance['template_en']) ? $instance['template_en'] : '';
+        $tpl_de       = isset($instance['template_de']) ? $instance['template_de'] : '';
+        $date_fmt_mode = isset($instance['date_format_mode']) ? $instance['date_format_mode'] : '';
         if (!is_string($title)) $title = '';
+        if (!is_string($title_tpl)) $title_tpl = '';
         if (!in_array($date_mode, ['today_fallback', 'random', 'pick_date'], true)) {
             $date_mode = 'today_fallback';
         }
@@ -228,11 +225,13 @@ class TheBible_VOTD_Widget extends WP_Widget {
         if (!is_string($custom_css)) $custom_css = '';
         if (!is_string($tpl_en)) $tpl_en = '';
         if (!is_string($tpl_de)) $tpl_de = '';
+        if (!in_array($date_fmt_mode, ['', 'site_default', 'en_long', 'en_short', 'de_long', 'de_short', 'de_numeric'], true)) {
+            $date_fmt_mode = '';
+        }
 
         // Show default templates in the form when empty (same structure for all languages)
-        $default_tpl = "<h2 class=\"thebible-votd-heading\">Vers des Tages {votd-date}</h2>\n"
-                     . "<p class=\"thebible-votd-text\">{votd-content}</p>\n"
-                     . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen </a></div>";
+        $default_tpl = "<p class=\"thebible-votd-text\">{votd-content}</p>\n"
+                     . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen ���</a></div>";
 
         if ($tpl_en === '') {
             $tpl_en = $default_tpl;
@@ -243,6 +242,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         $title_id = $this->get_field_id('title');
         $title_name = $this->get_field_name('title');
+        $title_tpl_id = $this->get_field_id('title_template');
+        $title_tpl_name = $this->get_field_name('title_template');
         $date_mode_id = $this->get_field_id('date_mode');
         $date_mode_name = $this->get_field_name('date_mode');
         $pick_date_id = $this->get_field_id('pick_date');
@@ -255,10 +256,29 @@ class TheBible_VOTD_Widget extends WP_Widget {
         $tpl_en_name = $this->get_field_name('template_en');
         $tpl_de_id = $this->get_field_id('template_de');
         $tpl_de_name = $this->get_field_name('template_de');
+        $date_fmt_mode_id = $this->get_field_id('date_format_mode');
+        $date_fmt_mode_name = $this->get_field_name('date_format_mode');
 
         echo '<p>';
         echo '<label for="' . esc_attr($title_id) . '">' . esc_html__('Title:', 'thebible') . '</label> ';
         echo '<input class="widefat" id="' . esc_attr($title_id) . '" name="' . esc_attr($title_name) . '" type="text" value="' . esc_attr($title) . '" />';
+        echo '</p>';
+
+        echo '<p>';
+        echo '<label for="' . esc_attr($title_tpl_id) . '">' . esc_html__('Title template (use {date}):', 'thebible') . '</label> ';
+        echo '<input class="widefat" id="' . esc_attr($title_tpl_id) . '" name="' . esc_attr($title_tpl_name) . '" type="text" value="' . esc_attr($title_tpl) . '" />';
+        echo '</p>';
+
+        echo '<p>';
+        echo '<label for="' . esc_attr($date_fmt_mode_id) . '">' . esc_html__('Date format:', 'thebible') . '</label> ';
+        echo '<select id="' . esc_attr($date_fmt_mode_id) . '" name="' . esc_attr($date_fmt_mode_name) . '">';
+        echo '<option value=""' . selected($date_fmt_mode, '', false) . '>' . esc_html__('Site default', 'thebible') . '</option>';
+        echo '<option value="en_long"' . selected($date_fmt_mode, 'en_long', false) . '>' . esc_html__('English long (e.g. March 4, 2025)', 'thebible') . '</option>';
+        echo '<option value="en_short"' . selected($date_fmt_mode, 'en_short', false) . '>' . esc_html__('English short (e.g. Mar 4, 2025)', 'thebible') . '</option>';
+        echo '<option value="de_long"' . selected($date_fmt_mode, 'de_long', false) . '>' . esc_html__('German long (e.g. 4. März 2025)', 'thebible') . '</option>';
+        echo '<option value="de_short"' . selected($date_fmt_mode, 'de_short', false) . '>' . esc_html__('German short (e.g. 04.03.2025)', 'thebible') . '</option>';
+        echo '<option value="de_numeric"' . selected($date_fmt_mode, 'de_numeric', false) . '>' . esc_html__('German numeric (e.g. 4.3.2025)', 'thebible') . '</option>';
+        echo '</select>';
         echo '</p>';
 
         echo '<p>';
