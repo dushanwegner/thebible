@@ -1418,8 +1418,8 @@ class TheBible_Plugin {
         $pattern = '/(?<!\p{L})('
                  . '(?:[0-9]{1,2}\.?(?:\s|\x{00A0})*)?'   // optional leading number like "1." or "2" with normal or NBSP spaces
                  . '[\p{L}][\p{L}\p{M}\.]*'              // book name in any language, allows dots
-                 . '(?:(?:\s|\x{00A0})+[\p{L}\p{M}\.0-9!]+)*' // optional extra words (accept NBSP too)
-                 . ')(?:\s|\x{00A0})*(\d+):(\d+)(?:-(\d+))?(?!\p{L})/u'; // accept NBSP before chapter; ensure no letter immediately after
+                 . '(?:(?:\s|\x{00A0})+[\p{L}\p{M}\.]+)*' // optional extra words (accept NBSP too)
+                 . ')(?:\s|\x{00A0})*(\d+)(?:\s|\x{00A0})*[:\x{2236}\x{FE55}\x{FF1A}](?:\s|\x{00A0})*(\d+)(?:-(\d+))?(?!\p{L})/u'; // accept Unicode colon variants; ensure no letter immediately after
 
         // Split content by <a> tags to avoid matching inside existing links
         $parts = preg_split('/(<a\s[^>]*>.*?<\/a>)/us', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -1433,13 +1433,26 @@ class TheBible_Plugin {
             if (preg_match('/^<a\s/i', $part)) {
                 $result .= $part;
             } else {
+                $normalized_part = preg_replace('/&(nbsp|NBSP);/u', "\xC2\xA0", $part);
+                if ($normalized_part !== null) {
+                    $normalized_part = preg_replace('/&#160;|&#x0*a0;/iu', "\xC2\xA0", $normalized_part);
+                    $normalized_part = preg_replace('/&(thinsp|ensp|emsp);/iu', ' ', $normalized_part);
+                    $normalized_part = preg_replace('/&#(8194|8195|8201);|&#x(2002|2003|2009);/iu', ' ', $normalized_part);
+                }
+                if (!is_string($normalized_part)) {
+                    $normalized_part = $part;
+                }
+
+                // Normalize common Unicode whitespace (narrow NBSP, thin space, etc.) and remove zero-width chars
+                $normalized_part = preg_replace('/[\x{202F}\x{2000}-\x{200A}\x{2060}]/u', "\xC2\xA0", $normalized_part);
+                $normalized_part = preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', $normalized_part);
                 // Process Bible references in this part
                 $result .= preg_replace_callback(
                     $pattern,
                     function ($m) use ($slug, $abbr) {
                         return self::process_bible_ref_match($m, $slug, $abbr);
                     },
-                    $part
+                    $normalized_part
                 );
             }
         }
