@@ -2,7 +2,7 @@
 /**
  * Plugin Name: The Bible
  * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template.
- * Version: 1.0.0
+ * Version: 0.1.0
  * Author: DW
  * License: GPL2+
  */
@@ -217,9 +217,10 @@ class TheBible_Plugin {
             // /{slug}/{book}/{chapter}
             add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
         }
-        // Sitemaps: English and German (use unique endpoints to avoid conflicts with other sitemap plugins)
+        // Sitemaps: English, German, Latin (use unique endpoints to avoid conflicts with other sitemap plugins)
         add_rewrite_rule('^bible-sitemap-bible\.xml$', 'index.php?' . self::QV_SITEMAP . '=bible&' . self::QV_SLUG . '=bible', 'top');
         add_rewrite_rule('^bible-sitemap-bibel\.xml$', 'index.php?' . self::QV_SITEMAP . '=bibel&' . self::QV_SLUG . '=bibel', 'top');
+        add_rewrite_rule('^bible-sitemap-latin\.xml$', 'index.php?' . self::QV_SITEMAP . '=latin&' . self::QV_SLUG . '=latin', 'top');
     }
 
     public static function enqueue_assets() {
@@ -1418,8 +1419,8 @@ class TheBible_Plugin {
         $pattern = '/(?<!\p{L})('
                  . '(?:[0-9]{1,2}\.?(?:\s|\x{00A0})*)?'   // optional leading number like "1." or "2" with normal or NBSP spaces
                  . '[\p{L}][\p{L}\p{M}\.]*'              // book name in any language, allows dots
-                 . '(?:(?:\s|\x{00A0})+[\p{L}\p{M}\.]+)*' // optional extra words (accept NBSP too)
-                 . ')(?:\s|\x{00A0})*(\d+)(?:\s|\x{00A0})*[:\x{2236}\x{FE55}\x{FF1A}](?:\s|\x{00A0})*(\d+)(?:-(\d+))?(?!\p{L})/u'; // accept Unicode colon variants; ensure no letter immediately after
+                 . '(?:(?:\s|\x{00A0})+[\p{L}\p{M}\.0-9!]+)*' // optional extra words (accept NBSP too)
+                 . ')(?:\s|\x{00A0})*(\d+):(\d+)(?:-(\d+))?(?!\p{L})/u'; // accept NBSP before chapter; ensure no letter immediately after
 
         // Split content by <a> tags to avoid matching inside existing links
         $parts = preg_split('/(<a\s[^>]*>.*?<\/a>)/us', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -1433,26 +1434,13 @@ class TheBible_Plugin {
             if (preg_match('/^<a\s/i', $part)) {
                 $result .= $part;
             } else {
-                $normalized_part = preg_replace('/&(nbsp|NBSP);/u', "\xC2\xA0", $part);
-                if ($normalized_part !== null) {
-                    $normalized_part = preg_replace('/&#160;|&#x0*a0;/iu', "\xC2\xA0", $normalized_part);
-                    $normalized_part = preg_replace('/&(thinsp|ensp|emsp);/iu', ' ', $normalized_part);
-                    $normalized_part = preg_replace('/&#(8194|8195|8201);|&#x(2002|2003|2009);/iu', ' ', $normalized_part);
-                }
-                if (!is_string($normalized_part)) {
-                    $normalized_part = $part;
-                }
-
-                // Normalize common Unicode whitespace (narrow NBSP, thin space, etc.) and remove zero-width chars
-                $normalized_part = preg_replace('/[\x{202F}\x{2000}-\x{200A}\x{2060}]/u', "\xC2\xA0", $normalized_part);
-                $normalized_part = preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', $normalized_part);
                 // Process Bible references in this part
                 $result .= preg_replace_callback(
                     $pattern,
                     function ($m) use ($slug, $abbr) {
                         return self::process_bible_ref_match($m, $slug, $abbr);
                     },
-                    $normalized_part
+                    $part
                 );
             }
         }
@@ -1594,7 +1582,7 @@ class TheBible_Plugin {
         if (!$map) return;
 
         $slug = get_query_var(self::QV_SLUG);
-        if ($slug !== 'bible' && $slug !== 'bibel') {
+        if ($slug !== 'bible' && $slug !== 'bibel' && $slug !== 'latin') {
             status_header(404);
             exit;
         }
@@ -2445,7 +2433,8 @@ class TheBible_Plugin {
     }
 
     private static function base_slugs() {
-        $list = get_option('thebible_slugs', 'bible,bibel');
+        // Base URL segments for available Bible datasets (default: English, German, Latin)
+        $list = get_option('thebible_slugs', 'bible,bibel,latin');
         if (!is_string($list)) $list = 'bible';
         $parts = array_filter(array_map('trim', explode(',', $list)));
         if (empty($parts)) { $parts = ['bible']; }
