@@ -1,0 +1,101 @@
+/* Interlinear VOTD Widget Styles */
+.thebible-votd-widget-interlinear {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-lang {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    position: relative;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-lang-bible {
+    background-color: #e8eaf6;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-lang-bibel {
+    background-color: #e8f5e9;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-lang-latin {
+    background-color: #fff8e1;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-lang-label {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    color: #fff;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-lang-bible .thebible-votd-lang-label {
+    background-color: #3f51b5;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-lang-bibel .thebible-votd-lang-label {
+    background-color: #4caf50;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-lang-latin .thebible-votd-lang-label {
+    background-color: #ff9800;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-text {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.thebible-votd-widget-interlinear .thebible-votd-context {
+    font-size: 0.875rem;
+    text-align: right;
+}
+
+.thebible-votd-interlinear-link {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.thebible-votd-interlinear-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.thebible-votd-interlinear-button:hover {
+    background-color: #e0e0e0;
+    text-decoration: none;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .thebible-votd-widget-interlinear {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .thebible-votd-widget-interlinear .thebible-votd-heading {
+        width: 100%;
+    }
+    
+    .thebible-votd-widget-interlinear .thebible-votd-lang {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .thebible-votd-interlinear-link {
+        width: 100%;
+    }
+}

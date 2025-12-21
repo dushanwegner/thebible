@@ -39,6 +39,7 @@ class TheBible_Plugin {
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_votd_interlinear_styles']);
         add_action('admin_post_thebible_export_bible', [__CLASS__, 'handle_export_bible_txt']);
         add_action('add_meta_boxes', [__CLASS__, 'add_bible_meta_box']);
         add_action('add_meta_boxes', [__CLASS__, 'add_votd_meta_box']);
@@ -261,6 +262,16 @@ class TheBible_Plugin {
                 wp_enqueue_style( 'thebible-interlinear-styles', $interlinear_css_url, ['thebible-styles'], '0.1.0' );
             }
         }
+    }
+    
+    /**
+     * Enqueue interlinear styles for VOTD widget
+     */
+    public static function enqueue_votd_interlinear_styles() {
+        // Always enqueue the interlinear VOTD widget styles
+        // They will only apply to widgets with the interlinear class
+        $interlinear_votd_css_url = plugins_url( 'assets/thebible-votd-interlinear.css', __FILE__ );
+        wp_enqueue_style( 'thebible-votd-interlinear-styles', $interlinear_votd_css_url, [], '0.1.0' );
     }
 
     public static function votd_register_bulk_actions( $bulk_actions ) {
