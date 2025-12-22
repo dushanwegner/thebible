@@ -45,7 +45,7 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $date_mode = 'today_fallback';
         }
         if (!is_string($pick_date)) $pick_date = '';
-        if (!in_array($lang_mode, ['bible', 'bibel', 'latin', 'both', 'interlinear'], true)) {
+        if (!in_array($lang_mode, ['bible', 'bibel', 'latin', 'both'], true)) {
             $lang_mode = 'bible';
         }
         if (!is_string($custom_css)) $custom_css = '';
@@ -235,14 +235,13 @@ class TheBible_VOTD_Widget extends WP_Widget {
             echo '</div>';
         }
 
-        // Add interlinear link if showing multiple languages or if there are at least 2 languages available
-        if (count($langs_to_show) > 1 || ($lang_mode !== 'interlinear' && count(['bible', 'bibel', 'latin']) >= 2)) {
-            // Build interlinear URL
-            $interlinear_path = '/interlinear/' . trim($book_slug_en, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
-            $interlinear_url = home_url($interlinear_path);
-            
+        // If multiple languages are shown, link to the unified hyphenated bilingual display.
+        if (count($langs_to_show) > 1) {
+            $hybrid_path = '/bible-bibel/' . trim($book_slug_en, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
+            $hybrid_url = home_url($hybrid_path);
+
             echo '<div class="thebible-votd-interlinear-link">';
-            echo '<a href="' . esc_url($interlinear_url) . '" class="thebible-votd-interlinear-button">' . esc_html__('View Interlinear', 'thebible') . '</a>';
+            echo '<a href="' . esc_url($hybrid_url) . '" class="thebible-votd-interlinear-button">' . esc_html__('View Bilingual', 'thebible') . '</a>';
             echo '</div>';
         }
 
@@ -367,45 +366,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
         echo '<option value="bibel"' . selected($lang_mode, 'bibel', false) . '>' . esc_html__('German Bibel only', 'thebible') . '</option>';
         echo '<option value="latin"' . selected($lang_mode, 'latin', false) . '>' . esc_html__('Latin Vulgate only', 'thebible') . '</option>';
         echo '<option value="both"' . selected($lang_mode, 'both', false) . '>' . esc_html__('Multiple languages (stacked)', 'thebible') . '</option>';
-        echo '<option value="interlinear"' . selected($lang_mode, 'interlinear', false) . '>' . esc_html__('Interlinear (side by side)', 'thebible') . '</option>';
         echo '</select>';
         echo '</p>';
-        
-        // Language selection for interlinear mode
-        $interlinear_langs_id = $this->get_field_id('interlinear_langs');
-        $interlinear_langs_name = $this->get_field_name('interlinear_langs');
-        
-        echo '<div class="thebible-votd-interlinear-langs" style="' . ($lang_mode === 'interlinear' ? '' : 'display:none;') . ' padding-left: 15px; margin-bottom: 10px;">';
-        echo '<p>' . esc_html__('Select languages for interlinear display:', 'thebible') . '</p>';
-        
-        $available_langs = [
-            'bible' => __('English', 'thebible'),
-            'bibel' => __('German', 'thebible'),
-            'latin' => __('Latin', 'thebible')
-        ];
-        
-        foreach ($available_langs as $lang_key => $lang_label) {
-            $checked = in_array($lang_key, $interlinear_langs) ? 'checked' : '';
-            echo '<label style="display:block; margin-bottom:5px;">';
-            echo '<input type="checkbox" name="' . esc_attr($interlinear_langs_name) . '[]" value="' . esc_attr($lang_key) . '" ' . $checked . '> ';
-            echo esc_html($lang_label);
-            echo '</label>';
-        }
-        
-        echo '</div>';
-        
-        // Add JavaScript to show/hide interlinear language options
-        echo '<script type="text/javascript">
-            jQuery(document).ready(function($) {
-                $(".thebible-votd-lang-mode").on("change", function() {
-                    if ($(this).val() === "interlinear") {
-                        $(this).closest("form").find(".thebible-votd-interlinear-langs").show();
-                    } else {
-                        $(this).closest("form").find(".thebible-votd-interlinear-langs").hide();
-                    }
-                });
-            });
-        </script>';
 
     }
 

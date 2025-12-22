@@ -25,10 +25,6 @@ class TheBible_Plugin {
     private static $book_map = null;
     private static $verse_map = null;
     private static $current_page_title = '';
-    private static $interlinear_book = '';
-    private static $interlinear_chapter = 0;
-    private static $interlinear_verse = 0;
-    private static $interlinear_verse_to = 0;
     private static $secondary_language = '';
 
     public static function init() {
@@ -225,15 +221,6 @@ class TheBible_Plugin {
         add_rewrite_rule('^bible-bibel/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^bible-bibel/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
         
-        // Interlinear view: /interlinear/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
-        add_rewrite_rule('^interlinear/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?thebible_interlinear=1&thebible_interlinear_book=$matches[1]&thebible_interlinear_chapter=$matches[2]&thebible_interlinear_verse=$matches[3]&thebible_interlinear_verse_to=$matches[4]', 'top');
-        // Interlinear view: /interlinear/{book}/{chapter}
-        add_rewrite_rule('^interlinear/([^/]+)/([0-9]+)/?$', 'index.php?thebible_interlinear=1&thebible_interlinear_book=$matches[1]&thebible_interlinear_chapter=$matches[2]', 'top');
-        // Interlinear view: /interlinear/{book}
-        add_rewrite_rule('^interlinear/([^/]+)/?$', 'index.php?thebible_interlinear=1&thebible_interlinear_book=$matches[1]', 'top');
-        // Interlinear view: /interlinear
-        add_rewrite_rule('^interlinear/?$', 'index.php?thebible_interlinear=1', 'top');
-        
         // Sitemaps: English, German, Latin (use unique endpoints to avoid conflicts with other sitemap plugins)
         add_rewrite_rule('^bible-sitemap-bible\.xml$', 'index.php?' . self::QV_SITEMAP . '=bible&' . self::QV_SLUG . '=bible', 'top');
         add_rewrite_rule('^bible-sitemap-bibel\.xml$', 'index.php?' . self::QV_SITEMAP . '=bibel&' . self::QV_SLUG . '=bibel', 'top');
@@ -245,7 +232,7 @@ class TheBible_Plugin {
         $is_bible = ! empty( get_query_var( self::QV_FLAG ) )
             || ! empty( get_query_var( self::QV_BOOK ) )
             || ! empty( get_query_var( self::QV_SLUG ) )
-            || ! empty( get_query_var( 'thebible_interlinear' ) );
+            || ! empty( get_query_var( 'thebible_secondary_lang' ) );
         if ( $is_bible ) {
             $css_url = plugins_url( 'assets/thebible.css', __FILE__ );
             wp_enqueue_style( 'thebible-styles', $css_url, [], '0.1.1' );
@@ -257,12 +244,9 @@ class TheBible_Plugin {
             // Main frontend script in the footer
             $js_url = plugins_url( 'assets/thebible-frontend.js', __FILE__ );
             wp_enqueue_script( 'thebible-frontend', $js_url, [], '0.1.0', true );
-            
-            // Interlinear-specific styles
-            if ( ! empty( get_query_var( 'thebible_interlinear' ) ) ) {
-                $interlinear_css_url = plugins_url( 'assets/thebible-interlinear.css', __FILE__ );
-                wp_enqueue_style( 'thebible-interlinear-styles', $interlinear_css_url, ['thebible-styles'], '0.1.0' );
-            }
+
+            $interlinear_css_url = plugins_url( 'assets/thebible-interlinear.css', __FILE__ );
+            wp_enqueue_style( 'thebible-interlinear-styles', $interlinear_css_url, ['thebible-styles'], '0.1.0' );
         }
     }
     
@@ -415,11 +399,6 @@ class TheBible_Plugin {
         $vars[] = self::QV_SLUG;
         $vars[] = self::QV_OG;
         $vars[] = 'thebible_secondary_lang';
-        $vars[] = 'thebible_interlinear';
-        $vars[] = 'thebible_interlinear_book';
-        $vars[] = 'thebible_interlinear_chapter';
-        $vars[] = 'thebible_interlinear_verse';
-        $vars[] = 'thebible_interlinear_verse_to';
         $vars[] = self::QV_SITEMAP;
         return $vars;
     }
@@ -570,10 +549,7 @@ class TheBible_Plugin {
         }
         self::$verse_map = $map;
     }
-    
-    /**
-     * Handle interlinear view request.
-     */
+
     /**
      * Handle OG image generation.
      */
@@ -584,107 +560,82 @@ class TheBible_Plugin {
         status_header(404);
         exit;
     }
-
-    /**
-     * Handle interlinear view request.
-     */
-    private static function handle_interlinear() {
-        self::$interlinear_book = get_query_var('thebible_interlinear_book');
-        self::$interlinear_chapter = absint(get_query_var('thebible_interlinear_chapter'));
-        self::$interlinear_verse = absint(get_query_var('thebible_interlinear_verse'));
-        self::$interlinear_verse_to = absint(get_query_var('thebible_interlinear_verse_to'));
-        
-        if (self::$interlinear_verse_to < self::$interlinear_verse) {
-            self::$interlinear_verse_to = self::$interlinear_verse;
-        }
-        
-        // Resolve canonical book key from URL slug
-        $canonical_key = self::canonical_key_from_url_slug(self::$interlinear_book);
-        if (!$canonical_key) {
-            self::render_404();
-            return;
-        }
-        
-        // If no chapter/verse specified, redirect to chapter 1, verse 1
-        if (self::$interlinear_chapter <= 0) {
-            wp_redirect(home_url('/interlinear/' . self::$interlinear_book . '/1:1'));
-            exit;
-        }
-        
-        // If chapter specified but no verse, redirect to verse 1
-        if (self::$interlinear_chapter > 0 && self::$interlinear_verse <= 0) {
-            wp_redirect(home_url('/interlinear/' . self::$interlinear_book . '/' . self::$interlinear_chapter . ':1'));
-            exit;
-        }
-        
-        // Render interlinear view
-        self::render_interlinear($canonical_key);
-    }
     
     /**
-     * Resolve canonical book key from URL slug.
+     * Build unified content.
+     * Single-language is treated as "interlinear without a secondary language".
      */
-    private static function canonical_key_from_url_slug($slug) {
-        if (!is_string($slug) || $slug === '') {
-            return null;
+    private static function build_hybrid_content($canonical_key, $chapter, $primary_lang, $secondary_lang = null, $book_slug_for_ids = '') {
+        $primary_content = self::extract_chapter_content($canonical_key, $chapter, $primary_lang);
+        if (!$primary_content) {
+            return '';
         }
-        
-        // Normalize slug
-        $slug = strtolower(trim($slug));
-        $slug = str_replace('-', '_', $slug);
-        
-        // Load book map
-        self::load_book_map();
-        if (!is_array(self::$book_map) || empty(self::$book_map)) {
-            return null;
+
+        $primary_verses = self::extract_verses_from_html($primary_content);
+        if (!is_array($primary_verses) || empty($primary_verses)) {
+            return '';
         }
-        
-        // Try direct match first
-        if (isset(self::$book_map[$slug])) {
-            return $slug;
-        }
-        
-        // Try matching by short_name in any dataset
-        foreach (self::$book_map as $key => $entry) {
-            foreach (['bible', 'bibel', 'latin'] as $ds) {
-                if (isset($entry[$ds]) && strtolower(str_replace('-', '_', $entry[$ds])) === $slug) {
-                    return $key;
-                }
+
+        $secondary_verses = [];
+        if (is_string($secondary_lang) && $secondary_lang !== '' && $secondary_lang !== $primary_lang) {
+            $secondary_content = self::extract_chapter_content($canonical_key, $chapter, $secondary_lang);
+            if ($secondary_content) {
+                $secondary_verses = self::extract_verses_from_html($secondary_content);
+                if (!is_array($secondary_verses)) { $secondary_verses = []; }
             }
         }
-        
-        return null;
-    }
-    
-    /**
-     * Get verse text for interlinear view.
-     * This is a wrapper around the existing extract_verse_text_from_html function.
-     */
-    private static function get_verse_text_for_interlinear($html, $book_slug, $chapter, $verse) {
-        // Call the existing extract_verse_text_from_html with appropriate parameters
-        return self::extract_verse_text_from_html($html, $book_slug, $chapter, $verse, $verse);
-    }
-    
-    /**
-     * Build hybrid content with secondary language support.
-     */
-    private static function build_hybrid_content($canonical_key, $chapter, $primary_lang, $secondary_lang = null) {
-        // Get primary language content
-        $primary_content = self::extract_chapter_content($canonical_key, $chapter, $primary_lang);
-        
-        if (!$secondary_lang || $secondary_lang === $primary_lang) {
-            return $primary_content;
+
+        $lang_labels = [
+            'bible' => 'EN',
+            'bibel' => 'DE',
+            'latin' => 'LA',
+        ];
+        $primary_label = $lang_labels[$primary_lang] ?? strtoupper((string)$primary_lang);
+        $secondary_label = (is_string($secondary_lang) && $secondary_lang !== '')
+            ? ($lang_labels[$secondary_lang] ?? strtoupper((string)$secondary_lang))
+            : '';
+
+        if (!is_string($book_slug_for_ids) || $book_slug_for_ids === '') {
+            $book_name = self::resolve_book_for_dataset($canonical_key, $primary_lang);
+            $book_slug_for_ids = self::slugify($book_name ? $book_name : $canonical_key);
         }
-        
-        // Get secondary language content
-        $secondary_content = self::extract_chapter_content($canonical_key, $chapter, $secondary_lang);
-        
-        if (!$secondary_content) {
-            return $primary_content;
+
+        // Build highlight/scroll targets from URL like /book/20:2-4 or /book/20
+        $targets = [];
+        $vf = absint( get_query_var( self::QV_VFROM ) );
+        $vt = absint( get_query_var( self::QV_VTO ) );
+        if ( $vf ) {
+            if ( ! $vt || $vt < $vf ) { $vt = $vf; }
+            for ( $i = $vf; $i <= $vt; $i++ ) {
+                $targets[] = $book_slug_for_ids . '-' . $chapter . '-' . $i;
+            }
         }
-        
-        // Merge content into hybrid format
-        return self::merge_language_content($primary_content, $secondary_content, $primary_lang, $secondary_lang);
+        $chapter_scroll_id = $book_slug_for_ids . '-ch-' . $chapter;
+
+        $out = '';
+        $out .= '<h2 id="' . esc_attr($chapter_scroll_id) . '">' . esc_html($chapter) . '</h2>';
+
+        foreach ($primary_verses as $verse_num => $primary_text) {
+            $verse_num = (int) $verse_num;
+            if ($verse_num <= 0) { continue; }
+            $id = $book_slug_for_ids . '-' . $chapter . '-' . $verse_num;
+
+            $out .= '<p id="' . esc_attr($id) . '" class="verse">';
+            $out .= '<span class="verse-num">' . esc_html($verse_num) . '</span> ';
+            $out .= '<span class="verse-body"><span class="thebible-interlinear-verse-lang">' . esc_html($primary_label) . '</span> ' . esc_html($primary_text) . '</span>';
+
+            if ($secondary_label !== '' && isset($secondary_verses[$verse_num]) && is_string($secondary_verses[$verse_num]) && $secondary_verses[$verse_num] !== '') {
+                $out .= '<br><span class="verse-body verse-body-secondary"><span class="thebible-interlinear-verse-lang">' . esc_html($secondary_label) . '</span> ' . esc_html($secondary_verses[$verse_num]) . '</span>';
+            }
+
+            $out .= '</p>';
+        }
+
+        $human = self::resolve_book_for_dataset($canonical_key, $primary_lang);
+        if (!is_string($human) || $human === '') { $human = $canonical_key; }
+
+        $out = self::inject_nav_helpers($out, $targets, $chapter_scroll_id, $human);
+        return '<div class="thebible thebible-book thebible-interlinear">' . $out . '</div>';
     }
     
     /**
@@ -730,55 +681,7 @@ class TheBible_Plugin {
         return null;
     }
     
-    /**
-     * Merge primary and secondary language content.
-     */
-    private static function merge_language_content($primary_html, $secondary_html, $primary_lang, $secondary_lang) {
-        $lang_labels = [
-            'bible' => 'EN',
-            'bibel' => 'DE', 
-            'latin' => 'LA'
-        ];
-        
-        $primary_label = $lang_labels[$primary_lang] ?? 'EN';
-        $secondary_label = $lang_labels[$secondary_lang] ?? 'DE';
-        
-        // Extract verses from both languages
-        $primary_verses = self::extract_verses_from_html($primary_html);
-        $secondary_verses = self::extract_verses_from_html($secondary_html);
-        
-        $merged_html = '<div class="thebible-hybrid">';
-        
-        foreach ($primary_verses as $verse_num => $verse_text) {
-            $secondary_text = $secondary_verses[$verse_num] ?? '';
-            
-            $merged_html .= '<div class="thebible-hybrid-verse" data-verse="' . $verse_num . '">';
-            $merged_html .= '<div class="thebible-hybrid-verse-number">' . $verse_num . '</div>';
-            
-            // Primary language
-            $merged_html .= '<div class="thebible-hybrid-verse-row thebible-hybrid-verse-primary">';
-            $merged_html .= '<div class="thebible-hybrid-verse-label">';
-            $merged_html .= '<span class="thebible-hybrid-verse-lang">' . $primary_label . '</span>';
-            $merged_html .= '</div>';
-            $merged_html .= '<div class="thebible-hybrid-verse-text">' . $verse_text . '</div>';
-            $merged_html .= '</div>';
-            
-            // Secondary language
-            if ($secondary_text) {
-                $merged_html .= '<div class="thebible-hybrid-verse-row thebible-hybrid-verse-secondary">';
-                $merged_html .= '<div class="thebible-hybrid-verse-label">';
-                $merged_html .= '<span class="thebible-hybrid-verse-lang">' . $secondary_label . '</span>';
-                $merged_html .= '</div>';
-                $merged_html .= '<div class="thebible-hybrid-verse-text">' . $secondary_text . '</div>';
-                $merged_html .= '</div>';
-            }
-            
-            $merged_html .= '</div>';
-        }
-        
-        $merged_html .= '</div>';
-        return $merged_html;
-    }
+    
     
     /**
      * Extract verses from HTML content.
@@ -844,224 +747,7 @@ class TheBible_Plugin {
         }
         return '';
     }
-    
-    /**
-     * Render interlinear view.
-     */
-    private static function render_interlinear($canonical_key) {
-        // Get book names for each dataset
-        $book_en = self::resolve_book_for_dataset($canonical_key, 'bible');
-        $book_de = self::resolve_book_for_dataset($canonical_key, 'bibel');
-        $book_la = self::resolve_book_for_dataset($canonical_key, 'latin');
-        
-        if (!$book_en || !$book_de || !$book_la) {
-            self::render_404();
-            return;
-        }
-        
-        // Get pretty labels
-        $label_en = self::pretty_label($book_en);
-        $label_de = self::pretty_label($book_de);
-        $label_la = self::pretty_label($book_la);
-        
-        // Get slugs
-        $slug_en = self::slugify($book_en);
-        $slug_de = self::slugify($book_de);
-        $slug_la = self::slugify($book_la);
-        
-        // Get HTML files - load correct index for each dataset
-        $filename_en = self::find_html_filename_for_dataset($slug_en, 'bible');
-        $filename_de = self::find_html_filename_for_dataset($slug_de, 'bibel');
-        $filename_la = self::find_html_filename_for_dataset($slug_la, 'latin');
-        
-        $html_en = $filename_en ? file_get_contents(plugin_dir_path(__FILE__) . 'data/bible/html/' . $filename_en) : false;
-        $html_de = $filename_de ? file_get_contents(plugin_dir_path(__FILE__) . 'data/bibel/html/' . $filename_de) : false;
-        $html_la = $filename_la ? file_get_contents(plugin_dir_path(__FILE__) . 'data/latin/html/' . $filename_la) : false;
-        
-        if (!$html_en || !$html_de || !$html_la) {
-            self::render_404();
-            return;
-        }
-        
-        // Build interlinear content
-        $verses = [];
-        $from = self::$interlinear_verse;
-        $to = self::$interlinear_verse_to > 0 ? self::$interlinear_verse_to : $from;
-        
-        for ($v = $from; $v <= $to; $v++) {
-            // Resolve dataset-specific verse coordinates
-            $en_coords = self::resolve_verse_for_dataset($canonical_key, self::$interlinear_chapter, $v, 'bible');
-            $de_coords = self::resolve_verse_for_dataset($canonical_key, self::$interlinear_chapter, $v, 'bibel');
-            $la_coords = self::resolve_verse_for_dataset($canonical_key, self::$interlinear_chapter, $v, 'latin');
-            
-            if (!$en_coords || !$de_coords || !$la_coords) {
-                continue;
-            }
-            
-            // Extract verse text
-            $text_en = self::get_verse_text_for_interlinear($html_en, $slug_en, $en_coords['chapter'], $en_coords['verse']);
-            $text_de = self::get_verse_text_for_interlinear($html_de, $slug_de, $de_coords['chapter'], $de_coords['verse']);
-            $text_la = self::get_verse_text_for_interlinear($html_la, $slug_la, $la_coords['chapter'], $la_coords['verse']);
-            
-            $verses[] = [
-                'number' => $v,
-                'en' => [
-                    'chapter' => $en_coords['chapter'],
-                    'verse' => $en_coords['verse'],
-                    'text' => $text_en,
-                ],
-                'de' => [
-                    'chapter' => $de_coords['chapter'],
-                    'verse' => $de_coords['verse'],
-                    'text' => $text_de,
-                ],
-                'la' => [
-                    'chapter' => $la_coords['chapter'],
-                    'verse' => $la_coords['verse'],
-                    'text' => $text_la,
-                ],
-            ];
-        }
-        
-        // Build title
-        $title = sprintf(
-            '%s %d:%d%s',
-            $label_en,
-            self::$interlinear_chapter,
-            $from,
-            $to > $from ? '-' . $to : ''
-        );
-        
-        // Build navigation links
-        $prev_verse = $from > 1 ? $from - 1 : null;
-        $next_verse = $from + 1;
-        $prev_chapter = self::$interlinear_chapter > 1 ? self::$interlinear_chapter - 1 : null;
-        $next_chapter = self::$interlinear_chapter + 1;
-        
-        $prev_verse_url = $prev_verse ? home_url('/interlinear/' . self::$interlinear_book . '/' . self::$interlinear_chapter . ':' . $prev_verse) : null;
-        $next_verse_url = home_url('/interlinear/' . self::$interlinear_book . '/' . self::$interlinear_chapter . ':' . $next_verse);
-        $prev_chapter_url = $prev_chapter ? home_url('/interlinear/' . self::$interlinear_book . '/' . $prev_chapter . ':1') : null;
-        $next_chapter_url = home_url('/interlinear/' . self::$interlinear_book . '/' . $next_chapter . ':1');
-        
-        // Build content
-        $content = self::build_interlinear_html($title, $verses, [
-            'book' => self::$interlinear_book,
-            'chapter' => self::$interlinear_chapter,
-            'from' => $from,
-            'to' => $to,
-            'prev_verse_url' => $prev_verse_url,
-            'next_verse_url' => $next_verse_url,
-            'prev_chapter_url' => $prev_chapter_url,
-            'next_chapter_url' => $next_chapter_url,
-            'book_en' => $book_en,
-            'book_de' => $book_de,
-            'book_la' => $book_la,
-            'label_en' => $label_en,
-            'label_de' => $label_de,
-            'label_la' => $label_la,
-        ]);
-        
-        self::output_with_theme($title, $content, 'interlinear');
-    }
-    
-    /**
-     * Build interlinear HTML content.
-     */
-    private static function build_interlinear_html($title, $verses, $nav) {
-        ob_start();
-        ?>
-        <div class="thebible-interlinear">
-            <h1><?php echo esc_html($title); ?></h1>
-            
-            <div class="thebible-interlinear-nav">
-                <div class="thebible-interlinear-nav-chapter">
-                    <?php if ($nav['prev_chapter_url']): ?>
-                        <a href="<?php echo esc_url($nav['prev_chapter_url']); ?>" class="thebible-interlinear-nav-prev">&laquo; <?php echo esc_html__('Previous Chapter', 'thebible'); ?></a>
-                    <?php endif; ?>
-                    <span class="thebible-interlinear-nav-chapter-current"><?php echo esc_html__('Chapter', 'thebible'); ?> <?php echo esc_html($nav['chapter']); ?></span>
-                    <a href="<?php echo esc_url($nav['next_chapter_url']); ?>" class="thebible-interlinear-nav-next"><?php echo esc_html__('Next Chapter', 'thebible'); ?> &raquo;</a>
-                </div>
-                
-                <div class="thebible-interlinear-nav-verse">
-                    <?php if ($nav['prev_verse_url']): ?>
-                        <a href="<?php echo esc_url($nav['prev_verse_url']); ?>" class="thebible-interlinear-nav-prev">&laquo; <?php echo esc_html__('Previous Verse', 'thebible'); ?></a>
-                    <?php endif; ?>
-                    <span class="thebible-interlinear-nav-verse-current"><?php echo esc_html__('Verse', 'thebible'); ?> <?php echo esc_html($nav['from']); ?><?php echo $nav['to'] > $nav['from'] ? '-' . esc_html($nav['to']) : ''; ?></span>
-                    <a href="<?php echo esc_url($nav['next_verse_url']); ?>" class="thebible-interlinear-nav-next"><?php echo esc_html__('Next Verse', 'thebible'); ?> &raquo;</a>
-                </div>
-            </div>
-            
-            <div class="thebible-interlinear-links">
-                <div class="thebible-interlinear-link">
-                    <a href="<?php echo esc_url(home_url('/bible/' . $nav['book_en'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-en">
-                        <?php echo esc_html__('View in English', 'thebible'); ?>
-                    </a>
-                </div>
-                <div class="thebible-interlinear-link">
-                    <a href="<?php echo esc_url(home_url('/bibel/' . $nav['book_de'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-de">
-                        <?php echo esc_html__('View in German', 'thebible'); ?>
-                    </a>
-                </div>
-                <div class="thebible-interlinear-link">
-                    <a href="<?php echo esc_url(home_url('/latin/' . $nav['book_la'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-la">
-                        <?php echo esc_html__('View in Latin', 'thebible'); ?>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="thebible-interlinear-verses">
-                <?php foreach ($verses as $verse): ?>
-                <div class="thebible-interlinear-verse" id="verse-<?php echo esc_attr($verse['number']); ?>">
-                    <div class="thebible-interlinear-verse-number"><?php echo esc_html($verse['number']); ?></div>
-                    
-                    <div class="thebible-interlinear-verse-row thebible-interlinear-verse-row-la">
-                        <div class="thebible-interlinear-verse-label">
-                            <span class="thebible-interlinear-verse-lang">LA</span>
-                            <span class="thebible-interlinear-verse-ref"><?php echo esc_html($nav['label_la']); ?> <?php echo esc_html($verse['la']['chapter']); ?>:<?php echo esc_html($verse['la']['verse']); ?></span>
-                        </div>
-                        <div class="thebible-interlinear-verse-text"><?php echo wp_kses_post($verse['la']['text']); ?></div>
-                    </div>
-                    
-                    <div class="thebible-interlinear-verse-row thebible-interlinear-verse-row-en">
-                        <div class="thebible-interlinear-verse-label">
-                            <span class="thebible-interlinear-verse-lang">EN</span>
-                            <span class="thebible-interlinear-verse-ref"><?php echo esc_html($nav['label_en']); ?> <?php echo esc_html($verse['en']['chapter']); ?>:<?php echo esc_html($verse['en']['verse']); ?></span>
-                        </div>
-                        <div class="thebible-interlinear-verse-text"><?php echo wp_kses_post($verse['en']['text']); ?></div>
-                    </div>
-                    
-                    <div class="thebible-interlinear-verse-row thebible-interlinear-verse-row-de">
-                        <div class="thebible-interlinear-verse-label">
-                            <span class="thebible-interlinear-verse-lang">DE</span>
-                            <span class="thebible-interlinear-verse-ref"><?php echo esc_html($nav['label_de']); ?> <?php echo esc_html($verse['de']['chapter']); ?>:<?php echo esc_html($verse['de']['verse']); ?></span>
-                        </div>
-                        <div class="thebible-interlinear-verse-text"><?php echo wp_kses_post($verse['de']['text']); ?></div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            
-            <div class="thebible-interlinear-nav thebible-interlinear-nav-bottom">
-                <div class="thebible-interlinear-nav-chapter">
-                    <?php if ($nav['prev_chapter_url']): ?>
-                        <a href="<?php echo esc_url($nav['prev_chapter_url']); ?>" class="thebible-interlinear-nav-prev">&laquo; <?php echo esc_html__('Previous Chapter', 'thebible'); ?></a>
-                    <?php endif; ?>
-                    <span class="thebible-interlinear-nav-chapter-current"><?php echo esc_html__('Chapter', 'thebible'); ?> <?php echo esc_html($nav['chapter']); ?></span>
-                    <a href="<?php echo esc_url($nav['next_chapter_url']); ?>" class="thebible-interlinear-nav-next"><?php echo esc_html__('Next Chapter', 'thebible'); ?> &raquo;</a>
-                </div>
-                
-                <div class="thebible-interlinear-nav-verse">
-                    <?php if ($nav['prev_verse_url']): ?>
-                        <a href="<?php echo esc_url($nav['prev_verse_url']); ?>" class="thebible-interlinear-nav-prev">&laquo; <?php echo esc_html__('Previous Verse', 'thebible'); ?></a>
-                    <?php endif; ?>
-                    <span class="thebible-interlinear-nav-verse-current"><?php echo esc_html__('Verse', 'thebible'); ?> <?php echo esc_html($nav['from']); ?><?php echo $nav['to'] > $nav['from'] ? '-' . esc_html($nav['to']) : ''; ?></span>
-                    <a href="<?php echo esc_url($nav['next_verse_url']); ?>" class="thebible-interlinear-nav-next"><?php echo esc_html__('Next Verse', 'thebible'); ?> &raquo;</a>
-                </div>
-            </div>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
+
 
     /**
      * Resolve dataset-specific verse coordinates for a canonical book/chapter/verse.
@@ -2284,11 +1970,6 @@ class TheBible_Plugin {
             self::handle_og_image();
             return;
         }
-        // Handle interlinear view
-        if (get_query_var('thebible_interlinear')) {
-            self::handle_interlinear();
-            return;
-        }
         // Handle normal Bible routes (including hybrid language URLs)
         if (!get_query_var(self::QV_FLAG)) {
             return;
@@ -2985,40 +2666,42 @@ class TheBible_Plugin {
             self::render_404();
             return;
         }
-        
-        // Check for hybrid language support
+
         $secondary_lang = self::$secondary_language;
         $primary_lang = get_query_var(self::QV_SLUG);
         if (!is_string($primary_lang) || $primary_lang === '') { $primary_lang = 'bible'; }
-        
-        if ($secondary_lang && $secondary_lang !== $primary_lang) {
-            // Use hybrid content builder
-            $ch = absint( get_query_var( self::QV_CHAPTER ) );
-            $chapter = $ch > 0 ? $ch : 1;
-            
+
+        // Unified renderer: always render chapter/verse requests in the interlinear-style layout.
+        $ch = absint( get_query_var( self::QV_CHAPTER ) );
+        if ( $ch > 0 ) {
             $canonical_key = self::canonical_book_slug_from_url($slug, $primary_lang);
             if ($canonical_key) {
-                $hybrid_content = self::build_hybrid_content($canonical_key, $chapter, $primary_lang, $secondary_lang);
-                if ($hybrid_content) {
-                    $base_title = isset($entry['display_name']) && $entry['display_name'] !== ''
-                        ? $entry['display_name']
-                        : self::pretty_label( $entry['short_name'] );
-                    
-                    // Add language indicators to title
+                $base_title = isset($entry['display_name']) && $entry['display_name'] !== ''
+                    ? $entry['display_name']
+                    : self::pretty_label( $entry['short_name'] );
+
+                $vf = absint( get_query_var( self::QV_VFROM ) );
+                $vt = absint( get_query_var( self::QV_VTO ) );
+                if ( $vf ) {
+                    if ( ! $vt || $vt < $vf ) { $vt = $vf; }
+                    $title = $base_title . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt));
+                } else {
+                    $title = $base_title . ' ' . $ch;
+                }
+
+                if (is_string($secondary_lang) && $secondary_lang !== '' && $secondary_lang !== $primary_lang) {
                     $lang_names = [
                         'bible' => 'English',
                         'bibel' => 'German',
-                        'latin' => 'Latin'
+                        'latin' => 'Latin',
                     ];
-                    $primary_name = $lang_names[$primary_lang] ?? 'English';
-                    $secondary_name = $lang_names[$secondary_lang] ?? 'German';
-                    $title = $base_title . ' (' . $primary_name . ' + ' . $secondary_name . ')';
-                    
-                    if ($chapter > 1) {
-                        $title .= ' - Chapter ' . $chapter;
-                    }
-                    
-                    $content = '<div class="thebible thebible-hybrid-book">' . $hybrid_content . '</div>';
+                    $primary_name = $lang_names[$primary_lang] ?? strtoupper((string)$primary_lang);
+                    $secondary_name = $lang_names[$secondary_lang] ?? strtoupper((string)$secondary_lang);
+                    $title = $base_title . ' (' . $primary_name . ' + ' . $secondary_name . ') ' . ($vf ? ($ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt))) : $ch);
+                }
+                $hybrid_content = self::build_hybrid_content($canonical_key, $ch, $primary_lang, $secondary_lang);
+                if (is_string($hybrid_content) && $hybrid_content !== '') {
+                    $content = $hybrid_content;
                     $footer = self::render_footer_html();
                     if ($footer !== '') { $content .= $footer; }
                     self::output_with_theme($title, $content, 'book');
