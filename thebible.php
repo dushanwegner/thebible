@@ -241,11 +241,36 @@ class TheBible_Plugin {
         add_rewrite_rule('^bible-bibel/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^bible-bibel/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^bible-bibel/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
+
+        // Latin hybrid combinations
+        add_rewrite_rule('^latin-bible/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
+        add_rewrite_rule('^latin-bible/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
+        add_rewrite_rule('^latin-bible/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
+
+        add_rewrite_rule('^bible-latin/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
+        add_rewrite_rule('^bible-latin/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
+        add_rewrite_rule('^bible-latin/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
+
+        add_rewrite_rule('^bibel-latin/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
+        add_rewrite_rule('^bibel-latin/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
+        add_rewrite_rule('^bibel-latin/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
+
+        add_rewrite_rule('^latin-bibel/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
+        add_rewrite_rule('^latin-bibel/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
+        add_rewrite_rule('^latin-bibel/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
         
         // Sitemaps: English, German, Latin (use unique endpoints to avoid conflicts with other sitemap plugins)
         add_rewrite_rule('^bible-sitemap-bible\.xml$', 'index.php?' . self::QV_SITEMAP . '=bible&' . self::QV_SLUG . '=bible', 'top');
         add_rewrite_rule('^bible-sitemap-bibel\.xml$', 'index.php?' . self::QV_SITEMAP . '=bibel&' . self::QV_SLUG . '=bibel', 'top');
         add_rewrite_rule('^bible-sitemap-latin\.xml$', 'index.php?' . self::QV_SITEMAP . '=latin&' . self::QV_SLUG . '=latin', 'top');
+
+        // One-time flush after rewrite changes (avoids manual Permalinks save).
+        $ver = '0.1.0-hybrid-latin-1';
+        $flushed = get_option('thebible_flushed_rules', '');
+        if ($flushed !== $ver) {
+            flush_rewrite_rules(false);
+            update_option('thebible_flushed_rules', $ver);
+        }
     }
 
     public static function enqueue_assets() {
@@ -614,8 +639,9 @@ class TheBible_Plugin {
             : '';
 
         if (!is_string($book_slug_for_ids) || $book_slug_for_ids === '') {
-            $book_name = self::resolve_book_for_dataset($canonical_key, $primary_lang);
-            $book_slug_for_ids = self::slugify($book_name ? $book_name : $canonical_key);
+            // IDs and navigation must be stable across languages and match the URL slug.
+            // So we always base them on the canonical key (e.g. "matthew", "2-machabees").
+            $book_slug_for_ids = self::slugify($canonical_key);
         }
 
         // Build highlight/scroll targets from URL like /book/20:2-4 or /book/20
@@ -633,7 +659,7 @@ class TheBible_Plugin {
         $human = self::resolve_book_for_dataset($canonical_key, $primary_lang);
         if (!is_string($human) || $human === '') { $human = $canonical_key; }
 
-        $entry = self::get_book_entry_by_slug($book_slug_for_ids);
+        $entry = self::resolve_index_entry_for_canonical_book($book_slug_for_ids, $primary_lang);
         $nav = [
             'book' => $book_slug_for_ids,
             'chapter' => (int)$chapter,
@@ -652,8 +678,14 @@ class TheBible_Plugin {
                 $next_idx = ($idx + 1) % $count;
                 $prev_entry = self::$books[$prev_idx] ?? null;
                 $next_entry = self::$books[$next_idx] ?? null;
-                $nav['prev_book'] = is_array($prev_entry) ? self::slugify($prev_entry['short_name'] ?? '') : '';
-                $nav['next_book'] = is_array($next_entry) ? self::slugify($next_entry['short_name'] ?? '') : '';
+                if (is_array($prev_entry) && isset($prev_entry['short_name'])) {
+                    $prev_canon = self::canonical_key_for_dataset_short_name($primary_lang, (string)$prev_entry['short_name']);
+                    $nav['prev_book'] = $prev_canon !== '' ? self::slugify($prev_canon) : self::slugify((string)$prev_entry['short_name']);
+                }
+                if (is_array($next_entry) && isset($next_entry['short_name'])) {
+                    $next_canon = self::canonical_key_for_dataset_short_name($primary_lang, (string)$next_entry['short_name']);
+                    $nav['next_book'] = $next_canon !== '' ? self::slugify($next_canon) : self::slugify((string)$next_entry['short_name']);
+                }
             }
         }
 
@@ -695,14 +727,14 @@ class TheBible_Plugin {
         if (!is_string($book_slug) || $book_slug === '') return 0;
         if (!is_string($dataset_slug) || $dataset_slug === '') return 0;
 
-        self::load_index();
-        $entry = self::get_book_entry_by_slug($book_slug);
-        if (!is_array($entry)) return 0;
+        // Accept canonical slugs (e.g. "2-machabees") and map them to dataset HTML.
+        $entry = self::resolve_index_entry_for_canonical_book($book_slug, $dataset_slug);
 
-        // Use the index short_name as canonical key (book_map.json keys are lowercase)
-        $canonical_key = is_string($entry['short_name'] ?? '') ? strtolower($entry['short_name']) : '';
-        if ($canonical_key === '') { $canonical_key = strtolower($book_slug); }
-        if (!is_string($canonical_key) || $canonical_key === '') return 0;
+        $canonical_key = self::slugify($book_slug);
+        if ($canonical_key === '') {
+            $canonical_key = is_array($entry) && is_string($entry['short_name'] ?? '') ? self::slugify((string)$entry['short_name']) : '';
+        }
+        if ($canonical_key === '') return 0;
 
         $book_name = self::resolve_book_for_dataset($canonical_key, $dataset_slug);
         if (!is_string($book_name) || $book_name === '') { $book_name = $entry['short_name'] ?? ''; }
@@ -783,8 +815,8 @@ class TheBible_Plugin {
     private static function extract_verses_from_html($html) {
         $verses = [];
         
-        // Pattern to match verse elements
-        $pattern = '/<p[^>]*id="[^-]*-(\d+)-(\d+)"[^>]*>(.*?)<\/p>/s';
+        // Pattern to match verse elements (book slug may contain hyphens; we capture the trailing -CH-V)
+        $pattern = '/<p[^>]*id="[^"]*-(\d+)-(\d+)"[^>]*>(.*?)<\/p>/s';
         if (preg_match_all($pattern, $html, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
                 $verse_num = $match[2];
@@ -957,11 +989,9 @@ class TheBible_Plugin {
 
     private static function canonical_book_slug_from_url($raw_book, $slug) {
         if (!is_string($raw_book) || $raw_book === '') return null;
-        if ($slug !== 'bible' && $slug !== 'bibel') {
+        if ($slug !== 'bible' && $slug !== 'bibel' && $slug !== 'latin') {
             $slug = 'bible';
         }
-        $abbr = self::get_abbreviation_map($slug);
-        if (empty($abbr)) return null;
 
         $book = str_replace('-', ' ', $raw_book);
         $book = urldecode($book);
@@ -969,6 +999,21 @@ class TheBible_Plugin {
 \s*$/u', '', $book);
         $norm = preg_replace('/\s+/u', ' ', trim((string)$norm));
         $key = mb_strtolower($norm, 'UTF-8');
+
+        // (A) If URL already uses canonical key slugs (e.g. "2-machabees"), accept them.
+        $canon_candidate = self::slugify($key);
+        if ($canon_candidate !== '') {
+            self::load_book_map();
+            if (is_array(self::$book_map) && isset(self::$book_map[$canon_candidate])) {
+                return $canon_candidate;
+            }
+        }
+
+        // (B) Otherwise try abbreviation maps (bible/bibel). Latin may not have an abbreviations file.
+        $abbr = self::get_abbreviation_map($slug);
+        if (empty($abbr)) {
+            return null;
+        }
 
         $short = null;
         if ($key !== '' && isset($abbr[$key])) {
@@ -985,6 +1030,45 @@ class TheBible_Plugin {
         if ($short === null) return null;
         $book_slug = self::slugify($short);
         return $book_slug !== '' ? $book_slug : null;
+    }
+
+    private static function canonical_key_for_dataset_short_name($dataset_slug, $dataset_short_name) {
+        if (!is_string($dataset_slug) || $dataset_slug === '') return '';
+        if (!is_string($dataset_short_name) || $dataset_short_name === '') return '';
+        self::load_book_map();
+        if (!is_array(self::$book_map) || empty(self::$book_map)) return '';
+
+        $needle = self::slugify($dataset_short_name);
+        if ($needle === '') return '';
+
+        foreach (self::$book_map as $canon => $entry) {
+            if (!is_string($canon) || $canon === '' || !is_array($entry)) continue;
+            if (!isset($entry[$dataset_slug]) || !is_string($entry[$dataset_slug]) || $entry[$dataset_slug] === '') continue;
+            if (self::slugify($entry[$dataset_slug]) === $needle) {
+                return (string)$canon;
+            }
+        }
+        return '';
+    }
+
+    private static function resolve_index_entry_for_canonical_book($canonical_book_slug, $dataset_slug) {
+        if (!is_string($canonical_book_slug) || $canonical_book_slug === '') return null;
+        if (!is_string($dataset_slug) || $dataset_slug === '') return null;
+
+        self::load_index();
+        $norm = self::slugify($canonical_book_slug);
+        if ($norm !== '' && isset(self::$slug_map[$norm])) {
+            return self::$slug_map[$norm];
+        }
+
+        // Map canonical key -> dataset book name -> dataset slug -> index entry
+        $book_name = self::resolve_book_for_dataset($canonical_book_slug, $dataset_slug);
+        if (!is_string($book_name) || $book_name === '') {
+            return null;
+        }
+        $dataset_book_slug = self::slugify($book_name);
+        if ($dataset_book_slug === '') return null;
+        return self::$slug_map[$dataset_book_slug] ?? null;
     }
 
     public static function pretty_label($short_name) {
@@ -2756,6 +2840,11 @@ class TheBible_Plugin {
         // Normalize incoming slug to match index keys (case-insensitive URLs)
         $norm = self::slugify($slug);
         $entry = ($norm !== '' && isset(self::$slug_map[$norm])) ? self::$slug_map[$norm] : null;
+        if (!$entry) {
+            $primary_lang = get_query_var(self::QV_SLUG);
+            if (!is_string($primary_lang) || $primary_lang === '') { $primary_lang = 'bible'; }
+            $entry = self::resolve_index_entry_for_canonical_book($slug, $primary_lang);
+        }
         if (!$entry) {
             self::render_404();
             return;
