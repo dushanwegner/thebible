@@ -127,7 +127,15 @@ class TheBible_Plugin {
         if (is_string(self::$secondary_language) && self::$secondary_language !== '') {
             $base_slug .= '-' . self::$secondary_language;
         }
-        $bible_index = esc_url(trailingslashit(home_url('/' . $base_slug . '/')));
+        $bible_index_raw = trailingslashit(home_url('/' . $base_slug . '/'));
+        $open_book = '';
+        if (is_array($nav) && isset($nav['book']) && is_string($nav['book']) && $nav['book'] !== '') {
+            $open_book = $nav['book'];
+        }
+        if ($open_book !== '') {
+            $bible_index_raw = add_query_arg('thebible_open', $open_book, $bible_index_raw);
+        }
+        $bible_index = esc_url($bible_index_raw);
         $aria_label = ($slug === 'bibel') ? __('Back to German Bible', 'thebible') : __('Back to Bible', 'thebible');
         $chap_up = '<a class="thebible-up thebible-up-index" href="' . $bible_index . '" aria-label="' . esc_attr($aria_label) . '">&#8593;</a> ';
         $html = preg_replace(
@@ -197,7 +205,11 @@ class TheBible_Plugin {
         }
 
         // (re-)use base slug including optional secondary language for the sticky index link
-        $index_url = esc_url(trailingslashit(home_url('/' . $base_slug . '/')));
+        $index_url_raw = trailingslashit(home_url('/' . $base_slug . '/'));
+        if ($open_book !== '') {
+            $index_url_raw = add_query_arg('thebible_open', $open_book, $index_url_raw);
+        }
+        $index_url = esc_url($index_url_raw);
 
         $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"' . $data_attrs . '>'
                 . '<div class="thebible-sticky__left">'
@@ -3009,7 +3021,8 @@ class TheBible_Plugin {
             }
             $url = trailingslashit($home) . $book_slug . '/';
             $max_ch = (int) self::max_chapter_for_book_slug($book_slug, $base);
-            $out .= '<li class="thebible-index-book"><details>';
+            $details_id = 'thebible-index-book-' . self::slugify($book_slug);
+            $out .= '<li class="thebible-index-book"><details id="' . esc_attr($details_id) . '">';
             $out .= '<summary>' . esc_html($label) . '</summary>';
             $out .= '<ul class="thebible-index-chapters">';
             if ($max_ch > 0) {
@@ -3033,7 +3046,8 @@ class TheBible_Plugin {
             }
             $url = trailingslashit($home) . $book_slug . '/';
             $max_ch = (int) self::max_chapter_for_book_slug($book_slug, $base);
-            $out .= '<li class="thebible-index-book"><details>';
+            $details_id = 'thebible-index-book-' . self::slugify($book_slug);
+            $out .= '<li class="thebible-index-book"><details id="' . esc_attr($details_id) . '">';
             $out .= '<summary>' . esc_html($label) . '</summary>';
             $out .= '<ul class="thebible-index-chapters">';
             if ($max_ch > 0) {

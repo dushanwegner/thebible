@@ -1,4 +1,49 @@
 (function(){
+    function getQueryParam(name) {
+        try {
+            if (window.URLSearchParams) {
+                return new URLSearchParams(window.location.search).get(name) || '';
+            }
+        } catch (e) {}
+        // Fallback parser
+        var s = window.location.search || '';
+        if (!s || s.length < 2) return '';
+        s = s.substring(1);
+        var parts = s.split('&');
+        for (var i = 0; i < parts.length; i++) {
+            var kv = parts[i].split('=');
+            if (!kv || kv.length < 1) continue;
+            var k = decodeURIComponent(kv[0] || '');
+            if (k === name) return decodeURIComponent(kv.slice(1).join('=') || '');
+        }
+        return '';
+    }
+
+    function openIndexBookFromQuery() {
+        var key = getQueryParam('thebible_open');
+        if (!key) return;
+        key = String(key).toLowerCase();
+        // Keep only safe characters (matches PHP slugify-ish output)
+        key = key.replace(/[^a-z0-9\-]+/g, '');
+        if (!key) return;
+        var id = 'thebible-index-book-' + key;
+        var det = document.getElementById(id);
+        if (!det || det.tagName.toLowerCase() !== 'details') return;
+        det.open = true;
+        try {
+            det.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (e) {
+            det.scrollIntoView(true);
+        }
+    }
+
+    // Run on index pages as well (no sticky bar there)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', openIndexBookFromQuery);
+    } else {
+        openIndexBookFromQuery();
+    }
+
     // Main sticky bar and verse navigation logic for The Bible frontend
     var bar = document.querySelector('.thebible-sticky');
     if (!bar) return;
