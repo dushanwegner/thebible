@@ -663,6 +663,40 @@ class TheBible_Plugin {
     }
     
     /**
+     * Find HTML filename for a book slug in a specific dataset.
+     */
+    private static function find_html_filename_for_dataset($slug, $dataset) {
+        $index_file = plugin_dir_path(__FILE__) . 'data/' . $dataset . '/html/index.csv';
+        if (!file_exists($index_file)) {
+            return '';
+        }
+        
+        $slug_map = [];
+        if (($fh = fopen($index_file, 'r')) !== false) {
+            // skip header
+            $header = fgetcsv($fh);
+            while (($row = fgetcsv($fh)) !== false) {
+                if (count($row) < 3) continue;
+                $short = $row[1];
+                $filename = '';
+                // New format: order, short_name, display_name, filename, ...
+                if (count($row) >= 4) {
+                    $filename = $row[3];
+                }
+                if ($short && $filename) {
+                    $slug_map[self::slugify($short)] = ['filename' => $filename];
+                }
+            }
+            fclose($fh);
+        }
+        
+        if (isset($slug_map[$slug])) {
+            return $slug_map[$slug]['filename'];
+        }
+        return '';
+    }
+
+    /**
      * Find HTML filename for a book slug.
      */
     private static function find_html_filename($slug) {
@@ -697,10 +731,14 @@ class TheBible_Plugin {
         $slug_de = self::slugify($book_de);
         $slug_la = self::slugify($book_la);
         
-        // Get HTML files
-        $html_en = file_get_contents(plugin_dir_path(__FILE__) . 'data/bible/html/' . self::find_html_filename($slug_en));
-        $html_de = file_get_contents(plugin_dir_path(__FILE__) . 'data/bibel/html/' . self::find_html_filename($slug_de));
-        $html_la = file_get_contents(plugin_dir_path(__FILE__) . 'data/latin/html/' . self::find_html_filename($slug_la));
+        // Get HTML files - load correct index for each dataset
+        $filename_en = self::find_html_filename_for_dataset($slug_en, 'bible');
+        $filename_de = self::find_html_filename_for_dataset($slug_de, 'bibel');
+        $filename_la = self::find_html_filename_for_dataset($slug_la, 'latin');
+        
+        $html_en = $filename_en ? file_get_contents(plugin_dir_path(__FILE__) . 'data/bible/html/' . $filename_en) : false;
+        $html_de = $filename_de ? file_get_contents(plugin_dir_path(__FILE__) . 'data/bibel/html/' . $filename_de) : false;
+        $html_la = $filename_la ? file_get_contents(plugin_dir_path(__FILE__) . 'data/latin/html/' . $filename_la) : false;
         
         if (!$html_en || !$html_de || !$html_la) {
             self::render_404();
