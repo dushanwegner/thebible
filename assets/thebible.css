@@ -194,6 +194,49 @@
     flex-direction: column;
 }
 
+.thebible-index .thebible-index-book details > summary {
+  cursor: pointer;
+  user-select: none;
+  padding: .25rem 0;
+}
+
+.thebible-index .thebible-index-book details > summary::-webkit-details-marker {
+  color: inherit;
+}
+
+.thebible-index .thebible-index-book details[open] > summary {
+  font-weight: 600;
+}
+
+.thebible-index .thebible-index-chapters {
+  margin: .25rem 0 .75rem;
+  padding-left: 1rem;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .5rem;
+}
+
+.thebible-index .thebible-index-chapters > li {
+  margin: 0;
+  padding: 0;
+}
+
+.thebible-index .thebible-index-chapters a {
+  display: inline-block;
+  min-width: 2rem;
+  text-align: center;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: .25rem;
+  padding: .1rem .35rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.thebible-index .thebible-index-chapters a:hover {
+  background: #f1f3f5;
+}
+
 .thebible-interlinear-verse-lang {
     font-weight: bold;
     font-size: 0.875rem;

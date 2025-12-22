@@ -123,7 +123,11 @@ class TheBible_Plugin {
         if (!is_string($slug) || $slug === '') {
             $slug = 'bible';
         }
-        $bible_index = esc_url(trailingslashit(home_url('/' . $slug . '/')));
+        $base_slug = trim($slug, '/');
+        if (is_string(self::$secondary_language) && self::$secondary_language !== '') {
+            $base_slug .= '-' . self::$secondary_language;
+        }
+        $bible_index = esc_url(trailingslashit(home_url('/' . $base_slug . '/')));
         $aria_label = ($slug === 'bibel') ? __('Back to German Bible', 'thebible') : __('Back to Bible', 'thebible');
         $chap_up = '<a class="thebible-up thebible-up-index" href="' . $bible_index . '" aria-label="' . esc_attr($aria_label) . '">&#8593;</a> ';
         $html = preg_replace(
@@ -192,6 +196,9 @@ class TheBible_Plugin {
             }
         }
 
+        // (re-)use base slug including optional secondary language for the sticky index link
+        $index_url = esc_url(trailingslashit(home_url('/' . $base_slug . '/')));
+
         $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"' . $data_attrs . '>'
                 . '<div class="thebible-sticky__left">'
                 . '<span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> '
@@ -200,7 +207,7 @@ class TheBible_Plugin {
                 . '</div>'
                 . '<div class="thebible-sticky__controls">'
                 . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous">&#8592;</a>'
-                . '<a href="#thebible-book-top" class="thebible-ctl thebible-ctl-top" data-top aria-label="Top">&#8593;</a>'
+                . '<a href="' . $index_url . '" class="thebible-ctl thebible-ctl-top" aria-label="All books">&#8593;</a>'
                 . '<a href="#" class="thebible-ctl thebible-ctl-next" data-next aria-label="Next">&#8594;</a>'
                 . '</div>'
                 . '</div>';
@@ -236,25 +243,30 @@ class TheBible_Plugin {
             add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
         }
         
-        // Hybrid language URLs: /{primary}-{secondary}/{book}/{chapter}:{verse}
+        // Hybrid language URLs: /{primary}-{secondary}/...
         // Use a simpler approach that works with WordPress's existing routing
+        add_rewrite_rule('^bible-bibel/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^bible-bibel/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^bible-bibel/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^bible-bibel/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
 
         // Latin hybrid combinations
+        add_rewrite_rule('^latin-bible/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
         add_rewrite_rule('^latin-bible/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
         add_rewrite_rule('^latin-bible/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
         add_rewrite_rule('^latin-bible/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
 
+        add_rewrite_rule('^bible-latin/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
         add_rewrite_rule('^bible-latin/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
         add_rewrite_rule('^bible-latin/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
         add_rewrite_rule('^bible-latin/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
 
+        add_rewrite_rule('^bibel-latin/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
         add_rewrite_rule('^bibel-latin/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
         add_rewrite_rule('^bibel-latin/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
         add_rewrite_rule('^bibel-latin/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
 
+        add_rewrite_rule('^latin-bibel/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^latin-bibel/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^latin-bibel/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
         add_rewrite_rule('^latin-bibel/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
@@ -265,7 +277,7 @@ class TheBible_Plugin {
         add_rewrite_rule('^bible-sitemap-latin\.xml$', 'index.php?' . self::QV_SITEMAP . '=latin&' . self::QV_SLUG . '=latin', 'top');
 
         // One-time flush after rewrite changes (avoids manual Permalinks save).
-        $ver = '0.1.0-hybrid-latin-1';
+        $ver = '0.1.0-hybrid-latin-2';
         $flushed = get_option('thebible_flushed_rules', '');
         if ($flushed !== $ver) {
             flush_rewrite_rules(false);
@@ -2979,25 +2991,61 @@ class TheBible_Plugin {
         list($ot, $nt) = self::book_groups();
         $base = get_query_var(self::QV_SLUG);
         if (!is_string($base) || $base === '') { $base = 'bible'; }
-        $home = home_url('/' . $base . '/');
+        $base_slug = trim($base, '/');
+        if (is_string(self::$secondary_language) && self::$secondary_language !== '') {
+            $base_slug .= '-' . self::$secondary_language;
+        }
+        $home = home_url('/' . $base_slug . '/');
         $out = '<div class="thebible thebible-index">';
         $out .= '<div class="thebible-groups">';
         $ot_label = ($base === 'bibel') ? 'Altes Testament' : 'Old Testament';
         $nt_label = ($base === 'bibel') ? 'Neues Testament' : 'New Testament';
         $out .= '<section class="thebible-group thebible-ot"><h2>' . esc_html($ot_label) . '</h2><ul>';
         foreach ($ot as $b) {
-            $slug = self::slugify($b['short_name']);
-            $url = trailingslashit($home) . $slug . '/';
             $label = !empty($b['display_name']) ? $b['display_name'] : self::pretty_label($b['short_name']);
-            $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($label) . '</a></li>';
+            $book_slug = self::canonical_key_for_dataset_short_name($base, (string)$b['short_name']);
+            if (!is_string($book_slug) || $book_slug === '') {
+                $book_slug = self::slugify($b['short_name']);
+            }
+            $url = trailingslashit($home) . $book_slug . '/';
+            $max_ch = (int) self::max_chapter_for_book_slug($book_slug, $base);
+            $out .= '<li class="thebible-index-book"><details>';
+            $out .= '<summary>' . esc_html($label) . '</summary>';
+            $out .= '<ul class="thebible-index-chapters">';
+            if ($max_ch > 0) {
+                for ($i = 1; $i <= $max_ch; $i++) {
+                    $ch_url = trailingslashit($url) . $i . '/';
+                    $out .= '<li><a href="' . esc_url($ch_url) . '">' . esc_html((string)$i) . '</a></li>';
+                }
+            } else {
+                $out .= '<li><a href="' . esc_url($url) . '">1</a></li>';
+            }
+            $out .= '</ul>';
+            $out .= '</details></li>';
         }
         $out .= '</ul></section>';
         $out .= '<section class="thebible-group thebible-nt"><h2>' . esc_html($nt_label) . '</h2><ul>';
         foreach ($nt as $b) {
-            $slug = self::slugify($b['short_name']);
-            $url = trailingslashit($home) . $slug . '/';
             $label = !empty($b['display_name']) ? $b['display_name'] : self::pretty_label($b['short_name']);
-            $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($label) . '</a></li>';
+            $book_slug = self::canonical_key_for_dataset_short_name($base, (string)$b['short_name']);
+            if (!is_string($book_slug) || $book_slug === '') {
+                $book_slug = self::slugify($b['short_name']);
+            }
+            $url = trailingslashit($home) . $book_slug . '/';
+            $max_ch = (int) self::max_chapter_for_book_slug($book_slug, $base);
+            $out .= '<li class="thebible-index-book"><details>';
+            $out .= '<summary>' . esc_html($label) . '</summary>';
+            $out .= '<ul class="thebible-index-chapters">';
+            if ($max_ch > 0) {
+                for ($i = 1; $i <= $max_ch; $i++) {
+                    $ch_url = trailingslashit($url) . $i . '/';
+                    $out .= '<li><a href="' . esc_url($ch_url) . '">' . esc_html((string)$i) . '</a></li>';
+                }
+            } else {
+                $out .= '<li><a href="' . esc_url($url) . '">1</a></li>';
+            }
+            $out .= '</ul>';
+            $out .= '</details></li>';
         }
         $out .= '</ul></section>';
         $out .= '</div>';
