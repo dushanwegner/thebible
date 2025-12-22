@@ -110,7 +110,7 @@ class TheBible_Plugin {
         return [ $min_font_size, ($add_prefix ? $prefix : '') . $best_body . ($add_suffix ? $suffix : '') ];
     }
 
-    private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null, $book_label = '') {
+    private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null, $book_label = '', $nav = []) {
         if (!is_string($html) || $html === '') return $html;
 
         // Ensure a stable anchor at the very top of the book content
@@ -171,6 +171,27 @@ class TheBible_Plugin {
             $data_attrs .= ' data-chapter-scroll-id="' . esc_attr( $chapter_scroll_id ) . '"';
         }
 
+        if (is_array($nav) && !empty($nav)) {
+            $fields = [
+                'book' => 'data-book',
+                'chapter' => 'data-current-ch',
+                'max_ch' => 'data-max-ch',
+                'prev_book' => 'data-prev-book',
+                'prev_max_ch' => 'data-prev-max-ch',
+                'next_book' => 'data-next-book',
+                'next_max_ch' => 'data-next-max-ch',
+            ];
+            foreach ($fields as $k => $attr) {
+                if (!isset($nav[$k])) continue;
+                $v = $nav[$k];
+                if (is_int($v) || is_float($v)) {
+                    $data_attrs .= ' ' . $attr . '="' . esc_attr((string)$v) . '"';
+                } elseif (is_string($v) && $v !== '') {
+                    $data_attrs .= ' ' . $attr . '="' . esc_attr($v) . '"';
+                }
+            }
+        }
+
         $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"' . $data_attrs . '>'
                 . '<div class="thebible-sticky__left">'
                 . '<span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> '
@@ -178,9 +199,9 @@ class TheBible_Plugin {
                 . '<span class="thebible-sticky__chapter" data-ch>1</span>'
                 . '</div>'
                 . '<div class="thebible-sticky__controls">'
-                . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous chapter"><span class="thebible-ctl__icon" aria-hidden="true">&#8249;</span><span class="thebible-ctl__text">Prev</span></a>'
-                . '<a href="#thebible-book-top" class="thebible-ctl thebible-ctl-top" data-top aria-label="Top of book"><span class="thebible-ctl__icon" aria-hidden="true">&#8963;</span><span class="thebible-ctl__text">Top</span></a>'
-                . '<a href="#" class="thebible-ctl thebible-ctl-next" data-next aria-label="Next chapter"><span class="thebible-ctl__text">Next</span><span class="thebible-ctl__icon" aria-hidden="true">&#8250;</span></a>'
+                . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous">&#8592;</a>'
+                . '<a href="#thebible-book-top" class="thebible-ctl thebible-ctl-top" data-top aria-label="Top">&#8593;</a>'
+                . '<a href="#" class="thebible-ctl thebible-ctl-next" data-next aria-label="Next">&#8594;</a>'
                 . '</div>'
                 . '</div>';
         $html = $sticky . $html;
@@ -612,6 +633,38 @@ class TheBible_Plugin {
         $human = self::resolve_book_for_dataset($canonical_key, $primary_lang);
         if (!is_string($human) || $human === '') { $human = $canonical_key; }
 
+        $entry = self::get_book_entry_by_slug($book_slug_for_ids);
+        $nav = [
+            'book' => $book_slug_for_ids,
+            'chapter' => (int)$chapter,
+            'max_ch' => 0,
+            'prev_book' => '',
+            'prev_max_ch' => 0,
+            'next_book' => '',
+            'next_max_ch' => 0,
+        ];
+        if (is_array($entry) && isset($entry['order'])) {
+            self::load_index();
+            $idx = ((int)$entry['order']) - 1;
+            $count = is_array(self::$books) ? count(self::$books) : 0;
+            if ($count > 0 && $idx >= 0 && $idx < $count) {
+                $prev_idx = ($idx - 1 + $count) % $count;
+                $next_idx = ($idx + 1) % $count;
+                $prev_entry = self::$books[$prev_idx] ?? null;
+                $next_entry = self::$books[$next_idx] ?? null;
+                $nav['prev_book'] = is_array($prev_entry) ? self::slugify($prev_entry['short_name'] ?? '') : '';
+                $nav['next_book'] = is_array($next_entry) ? self::slugify($next_entry['short_name'] ?? '') : '';
+            }
+        }
+
+        $nav['max_ch'] = (int) self::max_chapter_for_book_slug($book_slug_for_ids, $primary_lang);
+        if (is_string($nav['prev_book']) && $nav['prev_book'] !== '') {
+            $nav['prev_max_ch'] = (int) self::max_chapter_for_book_slug($nav['prev_book'], $primary_lang);
+        }
+        if (is_string($nav['next_book']) && $nav['next_book'] !== '') {
+            $nav['next_max_ch'] = (int) self::max_chapter_for_book_slug($nav['next_book'], $primary_lang);
+        }
+
         $out = '';
         $out .= '<h2 id="' . esc_attr($chapter_scroll_id) . '">'
             . '<span class="thebible-chapter-book">' . esc_html($human) . '</span>'
@@ -634,8 +687,49 @@ class TheBible_Plugin {
             $out .= '</p>';
         }
 
-        $out = self::inject_nav_helpers($out, $targets, $chapter_scroll_id, $human);
+        $out = self::inject_nav_helpers($out, $targets, $chapter_scroll_id, $human, $nav);
         return '<div class="thebible thebible-book thebible-interlinear">' . $out . '</div>';
+    }
+
+    private static function max_chapter_for_book_slug($book_slug, $dataset_slug) {
+        if (!is_string($book_slug) || $book_slug === '') return 0;
+        if (!is_string($dataset_slug) || $dataset_slug === '') return 0;
+
+        self::load_index();
+        $entry = self::get_book_entry_by_slug($book_slug);
+        if (!is_array($entry)) return 0;
+
+        // Use the index short_name as canonical key (book_map.json keys are lowercase)
+        $canonical_key = is_string($entry['short_name'] ?? '') ? strtolower($entry['short_name']) : '';
+        if ($canonical_key === '') { $canonical_key = strtolower($book_slug); }
+        if (!is_string($canonical_key) || $canonical_key === '') return 0;
+
+        $book_name = self::resolve_book_for_dataset($canonical_key, $dataset_slug);
+        if (!is_string($book_name) || $book_name === '') { $book_name = $entry['short_name'] ?? ''; }
+        $dataset_book_slug = self::slugify($book_name);
+        if ($dataset_book_slug === '') { $dataset_book_slug = $book_slug; }
+
+        $fname = self::find_html_filename_for_dataset($dataset_book_slug, $dataset_slug);
+        if (!is_string($fname) || $fname === '') return 0;
+        $path = plugin_dir_path(__FILE__) . 'data/' . $dataset_slug . '/html/' . $fname;
+        if (!file_exists($path)) return 0;
+        $html = file_get_contents($path);
+        if (!is_string($html) || $html === '') return 0;
+
+        $max = 0;
+        if (preg_match_all('/data-chapter="([0-9]+)"/i', $html, $m)) {
+            foreach ($m[1] as $n) {
+                $v = (int) $n;
+                if ($v > $max) { $max = $v; }
+            }
+        }
+        if ($max <= 0 && preg_match_all('/-ch-([0-9]+)\b/i', $html, $m2)) {
+            foreach ($m2[1] as $n2) {
+                $v2 = (int) $n2;
+                if ($v2 > $max) { $max = $v2; }
+            }
+        }
+        return $max;
     }
     
     /**

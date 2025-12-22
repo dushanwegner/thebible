@@ -189,6 +189,53 @@
     var linkNext = bar.querySelector('[data-next]');
     var linkTop = bar.querySelector('[data-top]');
 
+    function intAttr(name, fallback){
+        var v = bar.getAttribute(name);
+        if (v == null || v === '') return (typeof fallback === 'number' ? fallback : 0);
+        var n = parseInt(v, 10);
+        return isFinite(n) ? n : (typeof fallback === 'number' ? fallback : 0);
+    }
+    function strAttr(name, fallback){
+        var v = bar.getAttribute(name);
+        if (typeof v === 'string' && v !== '') return v;
+        return (typeof fallback === 'string' ? fallback : '');
+    }
+
+    function hasNavData(){
+        return !!(bar.getAttribute('data-book') && bar.getAttribute('data-current-ch'));
+    }
+
+    function buildBookChapterUrl(bookSlug, chapterNum){
+        var path = location.pathname;
+        // Strip trailing /{chapter} or /{chapter}:{verse} segments.
+        path = path.replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, '/');
+        // Ensure path ends with /{book}/
+        path = path.replace(/\/[^\/]+\/?$/, '/' + bookSlug + '/');
+        return location.origin + path + String(chapterNum) + '/';
+    }
+
+    function navTarget(delta){
+        // delta: -1 for prev, +1 for next
+        var book = strAttr('data-book', '');
+        var ch = intAttr('data-current-ch', 1);
+        var maxCh = intAttr('data-max-ch', 0);
+        var prevBook = strAttr('data-prev-book', '');
+        var prevMax = intAttr('data-prev-max-ch', 0);
+        var nextBook = strAttr('data-next-book', '');
+        var nextMax = intAttr('data-next-max-ch', 0);
+
+        if (!book || !ch) return null;
+
+        if (delta < 0) {
+            if (ch > 1) return { book: book, ch: ch - 1 };
+            if (prevBook) return { book: prevBook, ch: (prevMax > 0 ? prevMax : 1) };
+            return null;
+        }
+        if (maxCh > 0 && ch < maxCh) return { book: book, ch: ch + 1 };
+        if (nextBook) return { book: nextBook, ch: 1 };
+        return null;
+    }
+
     function setTopOffset(){
         var ab = document.getElementById('wpadminbar');
         var off = (document.body.classList.contains('admin-bar') && ab) ? ab.offsetHeight : 0;
@@ -473,17 +520,26 @@
         }
         var off = currentOffset();
         if (currentIdx <= 0) {
-            disable(linkPrev, true);
-            disable(linkTop, true);
-            if (linkPrev) linkPrev.href = '#';
+            if (hasNavData()) {
+                disable(linkPrev, false);
+                disable(linkTop, true);
+            } else {
+                disable(linkPrev, true);
+                disable(linkTop, true);
+                if (linkPrev) linkPrev.href = '#';
+            }
         } else {
             disable(linkPrev, false);
             disable(linkTop, false);
             if (linkPrev) linkPrev.href = '#' + heads[currentIdx - 1].id;
         }
         if (currentIdx >= heads.length - 1) {
-            disable(linkNext, true);
-            if (linkNext) linkNext.href = '#';
+            if (hasNavData()) {
+                disable(linkNext, false);
+            } else {
+                disable(linkNext, true);
+                if (linkNext) linkNext.href = '#';
+            }
         } else {
             disable(linkNext, false);
             if (linkNext) linkNext.href = '#' + heads[currentIdx + 1].id;
@@ -492,6 +548,12 @@
             bar._bound = true;
             if (linkPrev) linkPrev.addEventListener('click', function(e){
                 if (this.classList.contains('is-disabled')) return;
+                if (hasNavData()) {
+                    e.preventDefault();
+                    var tgt = navTarget(-1);
+                    if (tgt) window.location.href = buildBookChapterUrl(tgt.book, tgt.ch);
+                    return;
+                }
                 var hash = this.getAttribute('href') || '';
                 if (!hash || hash === '#') return;
                 e.preventDefault();
@@ -501,6 +563,12 @@
             });
             if (linkNext) linkNext.addEventListener('click', function(e){
                 if (this.classList.contains('is-disabled')) return;
+                if (hasNavData()) {
+                    e.preventDefault();
+                    var tgt = navTarget(1);
+                    if (tgt) window.location.href = buildBookChapterUrl(tgt.book, tgt.ch);
+                    return;
+                }
                 var hash = this.getAttribute('href') || '';
                 if (!hash || hash === '#') return;
                 e.preventDefault();

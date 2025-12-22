@@ -35,14 +35,6 @@
   border-radius: .25rem;
   border: 1px solid rgba(0,0,0,.15);
 }
-.thebible .thebible-ctl {
-  gap: .35rem;
-  padding: 0 .45rem;
-  width: auto;
-  min-width: 2.1rem;
-}
-.thebible .thebible-ctl__icon { font-size: 1.2rem; line-height: 1; }
-.thebible .thebible-ctl__text { font-size: .8rem; line-height: 1; }
 .thebible .thebible-ctl:hover { background: #f1f3f5; }
 .thebible .thebible-ctl:is(.is-disabled) {
   opacity: .35;
