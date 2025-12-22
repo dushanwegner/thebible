@@ -244,9 +244,6 @@ class TheBible_Plugin {
             // Main frontend script in the footer
             $js_url = plugins_url( 'assets/thebible-frontend.js', __FILE__ );
             wp_enqueue_script( 'thebible-frontend', $js_url, [], '0.1.0', true );
-
-            $interlinear_css_url = plugins_url( 'assets/thebible-interlinear.css', __FILE__ );
-            wp_enqueue_style( 'thebible-interlinear-styles', $interlinear_css_url, ['thebible-styles'], '0.1.0' );
         }
     }
     
