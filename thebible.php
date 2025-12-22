@@ -178,9 +178,9 @@ class TheBible_Plugin {
                 . '<span class="thebible-sticky__chapter" data-ch>1</span>'
                 . '</div>'
                 . '<div class="thebible-sticky__controls">'
-                . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous chapter">&#8592;</a>'
-                . '<a href="#thebible-book-top" class="thebible-ctl thebible-ctl-top" data-top aria-label="Top of book">&#8593;</a>'
-                . '<a href="#" class="thebible-ctl thebible-ctl-next" data-next aria-label="Next chapter">&#8594;</a>'
+                . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous chapter"><span class="thebible-ctl__icon" aria-hidden="true">&#8249;</span><span class="thebible-ctl__text">Prev</span></a>'
+                . '<a href="#thebible-book-top" class="thebible-ctl thebible-ctl-top" data-top aria-label="Top of book"><span class="thebible-ctl__icon" aria-hidden="true">&#8963;</span><span class="thebible-ctl__text">Top</span></a>'
+                . '<a href="#" class="thebible-ctl thebible-ctl-next" data-next aria-label="Next chapter"><span class="thebible-ctl__text">Next</span><span class="thebible-ctl__icon" aria-hidden="true">&#8250;</span></a>'
                 . '</div>'
                 . '</div>';
         $html = $sticky . $html;
@@ -609,8 +609,14 @@ class TheBible_Plugin {
         }
         $chapter_scroll_id = $book_slug_for_ids . '-ch-' . $chapter;
 
+        $human = self::resolve_book_for_dataset($canonical_key, $primary_lang);
+        if (!is_string($human) || $human === '') { $human = $canonical_key; }
+
         $out = '';
-        $out .= '<h2 id="' . esc_attr($chapter_scroll_id) . '">' . esc_html($chapter) . '</h2>';
+        $out .= '<h2 id="' . esc_attr($chapter_scroll_id) . '">'
+            . '<span class="thebible-chapter-book">' . esc_html($human) . '</span>'
+            . ' <span class="thebible-chapter-num">' . esc_html($chapter) . '</span>'
+            . '</h2>';
 
         foreach ($primary_verses as $verse_num => $primary_text) {
             $verse_num = (int) $verse_num;
@@ -627,9 +633,6 @@ class TheBible_Plugin {
 
             $out .= '</p>';
         }
-
-        $human = self::resolve_book_for_dataset($canonical_key, $primary_lang);
-        if (!is_string($human) || $human === '') { $human = $canonical_key; }
 
         $out = self::inject_nav_helpers($out, $targets, $chapter_scroll_id, $human);
         return '<div class="thebible thebible-book thebible-interlinear">' . $out . '</div>';

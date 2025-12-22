@@ -382,14 +382,17 @@
         var cleanedTxt = cleanVerseTextForOutput(rawTxt, true); // mirror PHP behavior and wrap in » «
         var payload = cleanedTxt + ' (' + ref + ') ' + link;
 
-        controls.innerHTML = 'share: <a href="#" data-copy-url>URL</a> <a href="#" data-copy-main>copy</a> <a href="#" data-post-x>post to X</a>';
+        controls.innerHTML = '<span class="thebible-share-label">Selection</span>'
+            + '<a class="thebible-btn" href="#" data-copy-url>Copy URL</a>'
+            + '<a class="thebible-btn" href="#" data-copy-main>Copy Text</a>'
+            + '<a class="thebible-btn" href="#" data-post-x>Post</a>';
 
         var aUrl = controls.querySelector('[data-copy-url]');
         if (aUrl) aUrl.addEventListener('click', function(e){
             e.preventDefault();
             copyToClipboard(link).then(function(){
-                aUrl.textContent = 'copied';
-                setTimeout(function(){ aUrl.textContent = 'URL'; }, 1000);
+                aUrl.textContent = 'Copied';
+                setTimeout(function(){ aUrl.textContent = 'Copy URL'; }, 1000);
             });
         });
 
@@ -397,8 +400,8 @@
         if (aCopy) aCopy.addEventListener('click', function(e){
             e.preventDefault();
             copyToClipboard(payload).then(function(){
-                aCopy.textContent = 'copied';
-                setTimeout(function(){ aCopy.textContent = 'copy'; }, 1000);
+                aCopy.textContent = 'Copied';
+                setTimeout(function(){ aCopy.textContent = 'Copy Text'; }, 1000);
             });
         });
 
