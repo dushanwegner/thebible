@@ -855,17 +855,17 @@ class TheBible_Plugin {
             
             <div class="thebible-interlinear-links">
                 <div class="thebible-interlinear-link">
-                    <a href="<?php echo esc_url(home_url('/bible/' . $nav['book'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-en">
+                    <a href="<?php echo esc_url(home_url('/bible/' . $nav['book_en'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-en">
                         <?php echo esc_html__('View in English', 'thebible'); ?>
                     </a>
                 </div>
                 <div class="thebible-interlinear-link">
-                    <a href="<?php echo esc_url(home_url('/bibel/' . $nav['book'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-de">
+                    <a href="<?php echo esc_url(home_url('/bibel/' . $nav['book_de'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-de">
                         <?php echo esc_html__('View in German', 'thebible'); ?>
                     </a>
                 </div>
                 <div class="thebible-interlinear-link">
-                    <a href="<?php echo esc_url(home_url('/latin/' . $nav['book'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-la">
+                    <a href="<?php echo esc_url(home_url('/latin/' . $nav['book_la'] . '/' . $nav['chapter'] . ':' . $nav['from'] . ($nav['to'] > $nav['from'] ? '-' . $nav['to'] : ''))); ?>" class="thebible-interlinear-link-la">
                         <?php echo esc_html__('View in Latin', 'thebible'); ?>
                     </a>
                 </div>
@@ -3026,7 +3026,7 @@ class TheBible_Plugin {
         if (function_exists('get_header')) get_header();
         echo '<main id="primary" class="site-main container mt-2">';
         echo '<article class="thebible-article">';
-        echo '<header class="entry-header mb-3"><h1 class="entry-title">' . esc_html($title) . '</h1></header>';
+        // echo '<header class="entry-header mb-3"><h1 class="entry-title">' . esc_html($title) . '</h1></header>';
         echo '<div class="entry-content">' . $content_html . '</div>';
         echo '</article>';
         echo '</main>';
