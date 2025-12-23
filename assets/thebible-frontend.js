@@ -422,6 +422,14 @@
         return book + ' ' + info.sCh + ':' + info.sV + '-' + info.eCh + ':' + info.eV;
     }
 
+    function buildRefTail(info){
+        if (!info) return '';
+        if (info.sCh === info.eCh) {
+            return String(info.sCh) + ':' + (info.sV === info.eV ? String(info.sV) : (String(info.sV) + '-' + String(info.eV)));
+        }
+        return String(info.sCh) + ':' + String(info.sV) + '-' + String(info.eCh) + ':' + String(info.eV);
+    }
+
     function buildLink(info){
         var base = location.origin + location.pathname
             .replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, '/')
@@ -521,17 +529,30 @@
         if (!verses.length) { verses = versesList(); }
         var info = selectionInfo();
         var elCh = bar.querySelector('[data-ch]');
+        var elSep = bar.querySelector('.thebible-sticky__sep');
         if (info && elCh) {
             // Remember when we last had a non-empty selection so we can
             // keep the share controls visible briefly after deselection.
             lastSelectionTime = Date.now();
-            elCh.textContent = buildRef(info).replace(/^.*?\s(.*)$/, '$1');
+            if (elSep) {
+                elSep.style.display = '';
+                elSep.textContent = ' ';
+            }
+            elCh.style.display = '';
+            elCh.textContent = buildRefTail(info);
             if (controls) renderSelectionControls(info);
         } else {
             // If selection was just cleared, keep controls for a short grace period
             // so that clicking "copy" / "post to X" doesn't immediately hide them.
             if (!lastSelectionTime || Date.now() - lastSelectionTime > 2000) {
                 ensureStandardControls();
+            }
+            if (elSep) {
+                elSep.style.display = 'none';
+            }
+            if (elCh) {
+                elCh.style.display = 'none';
+                elCh.textContent = '';
             }
         }
         var topCut = window.innerHeight * 0.2;
@@ -551,18 +572,7 @@
             current = heads[0] || null;
             currentIdx = 0;
         }
-        if (!info) {
-            var ch = 1;
-            if (current) {
-                var m = current.id.match(/-ch-(\d+)$/);
-                if (m) {
-                    ch = parseInt(m[1], 10) || 1;
-                }
-            }
-            if (elCh) {
-                elCh.textContent = String(ch);
-            }
-        }
+        // When there is no selection, the sticky bar intentionally shows only the book label.
         var off = currentOffset();
         if (currentIdx <= 0) {
             if (hasNavData()) {
