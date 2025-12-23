@@ -1010,16 +1010,18 @@ class TheBible_Plugin {
         return $map;
     }
 
-    private static function canonical_book_slug_from_url($raw_book, $slug) {
+    private static function canonical_book_slug_from_url($raw_book, $slug, $secondary_slug = null, $hybrid_mode = false) {
         if (!is_string($raw_book) || $raw_book === '') return null;
         if ($slug !== 'bible' && $slug !== 'bibel' && $slug !== 'latin') {
             $slug = 'bible';
         }
+        if ($secondary_slug !== null && (!is_string($secondary_slug) || !in_array($secondary_slug, ['bible', 'bibel', 'latin'], true))) {
+            $secondary_slug = null;
+        }
 
         $book = str_replace('-', ' ', $raw_book);
         $book = urldecode($book);
-        $norm = preg_replace('/\.
-\s*$/u', '', $book);
+        $norm = preg_replace('/\.\s*$/u', '', $book);
         $norm = preg_replace('/\s+/u', ' ', trim((string)$norm));
         $key = mb_strtolower($norm, 'UTF-8');
 
@@ -1032,27 +1034,69 @@ class TheBible_Plugin {
             }
         }
 
-        // (B) Otherwise try abbreviation maps (bible/bibel). Latin may not have an abbreviations file.
-        $abbr = self::get_abbreviation_map($slug);
-        if (empty($abbr)) {
-            return null;
-        }
-
-        $short = null;
-        if ($key !== '' && isset($abbr[$key])) {
-            $short = $abbr[$key];
-        } else {
-            $alt = preg_replace('/^(\d+)\.\s*/u', '$1 ', $norm);
-            $alt = preg_replace('/\s+/u', ' ', trim((string)$alt));
-            $alt_key = mb_strtolower($alt, 'UTF-8');
-            if ($alt_key !== '' && isset($abbr[$alt_key])) {
-                $short = $abbr[$alt_key];
+        // (A2) For hybrid URLs, also accept dataset book slugs (e.g. /bible-bibel/matthaeus/...)
+        // and normalize them to canonical key slugs.
+        if ($hybrid_mode) {
+            $try_slugs = [ $slug ];
+            if ($secondary_slug !== null && $secondary_slug !== $slug) {
+                $try_slugs[] = $secondary_slug;
+            }
+            foreach ($try_slugs as $try_slug) {
+                $canon = self::canonical_key_for_dataset_short_name($try_slug, $canon_candidate);
+                if (is_string($canon) && $canon !== '') {
+                    $canon_slug = self::slugify($canon);
+                    if ($canon_slug !== '') {
+                        return $canon_slug;
+                    }
+                }
             }
         }
 
-        if ($short === null) return null;
-        $book_slug = self::slugify($short);
-        return $book_slug !== '' ? $book_slug : null;
+        // (B) Otherwise try abbreviation maps (bible/bibel). Latin may not have an abbreviations file.
+        $try_slugs = [ $slug ];
+        if ($secondary_slug !== null && $secondary_slug !== $slug) {
+            $try_slugs[] = $secondary_slug;
+        }
+
+        foreach ($try_slugs as $try_slug) {
+            $abbr = self::get_abbreviation_map($try_slug);
+            if (empty($abbr)) {
+                continue;
+            }
+
+            $short = null;
+            if ($key !== '' && isset($abbr[$key])) {
+                $short = $abbr[$key];
+            } else {
+                $alt = preg_replace('/^(\d+)\.\s*/u', '$1 ', $norm);
+                $alt = preg_replace('/\s+/u', ' ', trim((string)$alt));
+                $alt_key = mb_strtolower($alt, 'UTF-8');
+                if ($alt_key !== '' && isset($abbr[$alt_key])) {
+                    $short = $abbr[$alt_key];
+                }
+            }
+
+            if ($short === null) {
+                continue;
+            }
+
+            // For hybrid URLs, normalize to a canonical key slug when possible.
+            // This makes /bible-bibel/john and /bible-bibel/johannes converge.
+            if ($hybrid_mode) {
+                $canon = self::canonical_key_for_dataset_short_name($try_slug, (string) $short);
+                if (is_string($canon) && $canon !== '') {
+                    $canon_slug = self::slugify($canon);
+                    if ($canon_slug !== '') {
+                        return $canon_slug;
+                    }
+                }
+            }
+
+            $book_slug = self::slugify($short);
+            return $book_slug !== '' ? $book_slug : null;
+        }
+
+        return null;
     }
 
     private static function canonical_key_for_dataset_short_name($dataset_slug, $dataset_short_name) {
@@ -2212,7 +2256,12 @@ class TheBible_Plugin {
             $slug = get_query_var(self::QV_SLUG);
             if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
 
-            $canonical = self::canonical_book_slug_from_url($book_slug, $slug);
+            $canonical = self::canonical_book_slug_from_url(
+                $book_slug,
+                $slug,
+                (is_string(self::$secondary_language) && self::$secondary_language !== '') ? self::$secondary_language : null,
+                (is_string(self::$secondary_language) && self::$secondary_language !== '')
+            );
             if ($canonical !== null) {
                 $ch = get_query_var(self::QV_CHAPTER);
                 $vf = get_query_var(self::QV_VFROM);
