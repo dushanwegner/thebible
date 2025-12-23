@@ -108,7 +108,9 @@ class TheBible_VOTD_Widget extends WP_Widget {
         echo isset($args['before_widget']) ? $args['before_widget'] : '';
 
         if ($custom_css !== '') {
-            echo '<style class="thebible-votd-widget-css">' . $custom_css . '</style>';
+            $safe_css = (string) wp_strip_all_tags($custom_css);
+            $safe_css = str_ireplace(['</style', '<style'], '', $safe_css);
+            echo '<style class="thebible-votd-widget-css">' . $safe_css . '</style>';
         }
 
         // Localized, pretty date (shared for all languages)

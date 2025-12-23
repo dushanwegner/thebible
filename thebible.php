@@ -29,34 +29,43 @@ class TheBible_Plugin {
 
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
-        add_action('init', [__CLASS__, 'register_votd_cpt']);
+        add_action('init', ['TheBible_VOTD', 'register_votd_cpt']);
         add_filter('query_vars', [__CLASS__, 'add_query_vars']);
         add_action('template_redirect', [__CLASS__, 'handle_sitemap'], 5);
         add_action('template_redirect', [__CLASS__, 'handle_template_redirect']);
-        add_action('admin_menu', [__CLASS__, 'admin_menu']);
-        add_action('admin_init', [__CLASS__, 'register_settings']);
-        add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
+        add_action('admin_menu', ['TheBible_Admin', 'admin_menu']);
+        add_action('admin_init', ['TheBible_Admin', 'register_settings']);
+        add_action('admin_enqueue_scripts', ['TheBible_Admin', 'admin_enqueue']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'frontend_enqueue']);
         add_filter('upload_mimes', [__CLASS__, 'allow_font_uploads']);
         add_filter('wp_check_filetype_and_ext', [__CLASS__, 'allow_font_filetype'], 10, 5);
         add_action('wp_head', [__CLASS__, 'print_custom_css']);
         add_action('wp_head', [__CLASS__, 'print_og_meta']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
-        add_action('customize_register', [__CLASS__, 'customize_register']);
+        add_action('customize_register', ['TheBible_Admin', 'customize_register']);
         add_filter('the_content', [__CLASS__, 'filter_content_auto_link_bible_refs'], 20);
         add_filter('pre_get_document_title', [__CLASS__, 'filter_document_title'], 100);
         add_filter('document_title_parts', [__CLASS__, 'filter_document_title_parts'], 100);
         add_action('widgets_init', [__CLASS__, 'register_widgets']);
+
+        // Post meta boxes
+        add_action('add_meta_boxes', [__CLASS__, 'add_bible_meta_box']);
+        add_action('save_post', [__CLASS__, 'save_bible_meta'], 10, 2);
+
+        add_action('add_meta_boxes', ['TheBible_VOTD', 'add_votd_meta_box']);
+        add_action('save_post', ['TheBible_VOTD', 'save_votd_meta'], 10, 2);
+
         // Admin list enhancements for Verse of the Day CPT
-        add_filter('manage_edit-thebible_votd_columns', [__CLASS__, 'votd_columns']);
-        add_filter('manage_edit-thebible_votd_sortable_columns', [__CLASS__, 'votd_sortable_columns']);
-        add_action('manage_thebible_votd_posts_custom_column', [__CLASS__, 'render_votd_column'], 10, 2);
-        add_action('restrict_manage_posts', [__CLASS__, 'votd_date_filter']);
-        add_action('pre_get_posts', [__CLASS__, 'apply_votd_date_filter']);
-        add_filter('bulk_actions-edit-thebible_votd', [__CLASS__, 'votd_register_bulk_actions']);
-        add_filter('handle_bulk_actions-edit-thebible_votd', [__CLASS__, 'votd_handle_bulk_actions'], 10, 3);
-        add_action('load-edit.php', [__CLASS__, 'handle_votd_condense_request']);
-        add_action('admin_notices', [__CLASS__, 'votd_condense_notice']);
+        add_filter('manage_edit-thebible_votd_columns', ['TheBible_VOTD', 'votd_columns']);
+        add_filter('manage_edit-thebible_votd_sortable_columns', ['TheBible_VOTD', 'votd_sortable_columns']);
+        add_action('manage_thebible_votd_posts_custom_column', ['TheBible_VOTD', 'render_votd_column'], 10, 2);
+        add_action('restrict_manage_posts', ['TheBible_VOTD', 'votd_date_filter']);
+        add_action('pre_get_posts', ['TheBible_VOTD', 'apply_votd_date_filter']);
+        add_filter('bulk_actions-edit-thebible_votd', ['TheBible_VOTD', 'votd_register_bulk_actions']);
+        add_filter('handle_bulk_actions-edit-thebible_votd', ['TheBible_VOTD', 'votd_handle_bulk_actions'], 10, 3);
+        add_action('load-edit.php', ['TheBible_VOTD', 'handle_votd_condense_request']);
+        add_action('admin_notices', ['TheBible_VOTD', 'votd_condense_notice']);
+        add_action('admin_post_thebible_export_bible', ['TheBible_Admin', 'handle_export_bible_txt']);
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
@@ -3598,6 +3607,7 @@ class TheBible_Plugin {
             <h1>The Bible</h1>
 
             <?php if ( $page === 'thebible' ) : ?>
+
             <form method="post" action="options.php">
                 <?php settings_fields( 'thebible_options' ); ?>
                 <table class="form-table" role="presentation">
@@ -3619,10 +3629,6 @@ class TheBible_Plugin {
                         <tr>
                             <th scope="row"><label>Sitemaps</label></th>
                             <td>
-                                <form method="post" style="display:inline;">
-                                    <?php wp_nonce_field('thebible_regen_sitemaps','thebible_regen_sitemaps_nonce'); ?>
-                                    <button type="submit" class="button">Refresh Bible sitemaps</button>
-                                </form>
                                 <?php
                                 $active_slugs = $active;
                                 $links = [];
@@ -3636,27 +3642,34 @@ class TheBible_Plugin {
                                 <p class="description">Triggers regeneration of per-verse Bible sitemaps for active bibles by requesting their sitemap URLs on the server. <?php if (!empty($links)) { echo 'View: ' . implode(' | ', $links); } ?></p>
                             </td>
                         </tr>
-                        <tr>
-                            <th scope="row"><label for="thebible_export_bible_slug">Export Bible as .txt</label></th>
-                            <td>
-                                <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
-                                    <?php wp_nonce_field('thebible_export_bible','thebible_export_bible_nonce'); ?>
-                                    <input type="hidden" name="action" value="thebible_export_bible">
-                                    <label for="thebible_export_bible_slug">Bible:</label>
-                                    <select name="thebible_export_bible_slug" id="thebible_export_bible_slug">
-                                        <?php foreach ($known as $slug => $label): ?>
-                                            <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($label); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <button type="submit" class="button">Download .txt</button>
-                                    <p class="description">Downloads a plain-text file with one verse per line in a machine-friendly format.</p>
-                                </form>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
                 <?php submit_button(); ?>
             </form>
+
+            <h2>Actions</h2>
+
+            <p>
+                <form method="post" style="display:inline;">
+                    <?php wp_nonce_field('thebible_regen_sitemaps','thebible_regen_sitemaps_nonce'); ?>
+                    <button type="submit" class="button">Refresh Bible sitemaps</button>
+                </form>
+            </p>
+
+            <p>
+                <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
+                    <?php wp_nonce_field('thebible_export_bible','thebible_export_bible_nonce'); ?>
+                    <input type="hidden" name="action" value="thebible_export_bible">
+                    <label for="thebible_export_bible_slug">Bible:</label>
+                    <select name="thebible_export_bible_slug" id="thebible_export_bible_slug">
+                        <?php foreach ($known as $slug => $label): ?>
+                            <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($label); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="submit" class="button">Download .txt</button>
+                    <span class="description">Downloads a plain-text file with one verse per line in a machine-friendly format.</span>
+                </form>
+            </p>
 
             <?php elseif ( $page === 'thebible_og' ) : ?>
             <form method="post" action="options.php">
@@ -4145,7 +4158,8 @@ johannes,3,16,18
     }
 }
 
-TheBible_Plugin::init();
-
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd-widget.php';
 
+TheBible_Plugin::init();
