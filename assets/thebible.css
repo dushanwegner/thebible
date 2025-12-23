@@ -219,7 +219,7 @@
 .thebible-index .thebible-index-book details[open] > summary {
   font-weight: 600;
 }
-.thebible-index .thebible-index-chapters {
+.thebible .thebible-index-chapters {
   margin: 0.25rem 0 0.75rem;
   padding-left: 1rem;
   list-style: none;
@@ -227,11 +227,11 @@
   flex-wrap: wrap;
   gap: 0.35rem 0.5rem;
 }
-.thebible-index .thebible-index-chapters > li {
+.thebible .thebible-index-chapters > li {
   margin: 0;
   padding: 0;
 }
-.thebible-index .thebible-index-chapters a {
+.thebible .thebible-index-chapters a {
   display: inline-block;
   min-width: 2rem;
   text-align: center;
@@ -241,7 +241,7 @@
   text-decoration: none;
   color: inherit;
 }
-.thebible-index .thebible-index-chapters a:hover {
+.thebible .thebible-index-chapters a:hover {
   background: #f1f3f5;
 }
 
