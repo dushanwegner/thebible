@@ -188,6 +188,19 @@ class TheBible_Plugin {
             $sticky_ch = max(1, (int) $nav['chapter']);
         }
 
+        $primary_lang = get_query_var(self::QV_SLUG);
+        if (!is_string($primary_lang) || $primary_lang === '') {
+            $primary_lang = 'bible';
+        }
+        $nav_book = (is_array($nav) && isset($nav['book']) && is_string($nav['book'])) ? $nav['book'] : '';
+        $is_psalms = (self::slugify($nav_book) === 'psalms') || (self::slugify($book_label) === 'psalms') || (self::slugify($book_label) === 'psalmen');
+        if ($is_psalms) {
+            $default_ch_label = 'Psalm ' . $sticky_ch;
+        } else {
+            $default_ch_label = (string) $sticky_ch;
+        }
+        $default_sep = ' ';
+
         // Prepare data attributes for frontend JS (highlight targets / chapter scroll)
         $data_attrs = '';
         if ( is_array( $highlight_ids ) && ! empty( $highlight_ids ) ) {
@@ -225,11 +238,11 @@ class TheBible_Plugin {
         }
         $index_url = esc_url($index_url_raw);
 
-        $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"' . $data_attrs . '>'
+        $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '" data-lang="' . esc_attr($primary_lang) . '" data-default-sep="' . esc_attr($default_sep) . '" data-default-ch="' . esc_attr($default_ch_label) . '"' . $data_attrs . '>'
                 . '<div class="thebible-sticky__left">'
                 . '<span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> '
-                . '<span class="thebible-sticky__sep">—</span> '
-                . '<span class="thebible-sticky__chapter" data-ch>' . esc_html((string)$sticky_ch) . '</span>'
+                . '<span class="thebible-sticky__sep">' . esc_html($default_sep) . '</span> '
+                . '<span class="thebible-sticky__chapter" data-ch>' . esc_html($default_ch_label) . '</span>'
                 . '</div>'
                 . '<div class="thebible-sticky__controls">'
                 . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous">&#8592;</a>'
@@ -2951,8 +2964,53 @@ class TheBible_Plugin {
         $primary_lang = get_query_var(self::QV_SLUG);
         if (!is_string($primary_lang) || $primary_lang === '') { $primary_lang = 'bible'; }
 
-        // Unified renderer: always render chapter/verse requests in the interlinear-style layout.
+        // If no chapter is specified, show a simple chapter list instead of rendering the entire book.
         $ch = absint( get_query_var( self::QV_CHAPTER ) );
+        if ( $ch <= 0 ) {
+            status_header(200);
+            nocache_headers();
+
+            $base_title = isset($entry['display_name']) && $entry['display_name'] !== ''
+                ? $entry['display_name']
+                : self::pretty_label( $entry['short_name'] );
+
+            $base_slug = trim($primary_lang, '/');
+            if (is_string(self::$secondary_language) && self::$secondary_language !== '') {
+                $base_slug .= '-' . self::$secondary_language;
+            }
+            $home = home_url('/' . $base_slug . '/');
+            $book_url = trailingslashit($home) . self::slugify($slug) . '/';
+
+            $max_ch = (int) self::max_chapter_for_book_slug($slug, $primary_lang);
+            if ($max_ch <= 0) { $max_ch = 1; }
+
+            $canon_book = self::canonical_book_slug_from_url(
+                $slug,
+                $primary_lang,
+                (is_string(self::$secondary_language) && self::$secondary_language !== '') ? self::$secondary_language : null,
+                (is_string(self::$secondary_language) && self::$secondary_language !== '')
+            );
+            $is_psalms = (is_string($canon_book) && $canon_book === 'psalms');
+            $chap_heading_map = [
+                'bibel' => 'Kapitel',
+                'latin' => 'Capitula',
+                'bible' => 'Chapters',
+            ];
+            $chap_heading = $chap_heading_map[$primary_lang] ?? 'Chapters';
+
+            $content = '<div class="thebible thebible-book thebible-book-index">';
+            $content .= '<h1>' . esc_html($base_title) . '</h1>';
+            $content .= '<h2>' . esc_html($chap_heading) . '</h2>';
+            $content .= self::render_chapter_boxes($book_url, $max_ch, $is_psalms);
+            $content .= '</div>';
+
+            $footer = self::render_footer_html();
+            if ($footer !== '') { $content .= $footer; }
+            self::output_with_theme($base_title, $content, 'book');
+            return;
+        }
+
+        // Unified renderer: always render chapter/verse requests in the interlinear-style layout.
         if ( $ch > 0 ) {
             $canonical_key = self::canonical_book_slug_from_url($slug, $primary_lang);
             if ($canonical_key) {
@@ -3097,16 +3155,8 @@ class TheBible_Plugin {
             $details_id = 'thebible-index-book-' . self::slugify($book_slug);
             $out .= '<li class="thebible-index-book"><details id="' . esc_attr($details_id) . '">';
             $out .= '<summary>' . esc_html($label) . '</summary>';
-            $out .= '<ul class="thebible-index-chapters">';
-            if ($max_ch > 0) {
-                for ($i = 1; $i <= $max_ch; $i++) {
-                    $ch_url = trailingslashit($url) . $i . '/';
-                    $out .= '<li><a href="' . esc_url($ch_url) . '">' . esc_html((string)$i) . '</a></li>';
-                }
-            } else {
-                $out .= '<li><a href="' . esc_url($url) . '">1</a></li>';
-            }
-            $out .= '</ul>';
+            $is_psalms = (is_string($book_slug) && self::slugify($book_slug) === 'psalms');
+            $out .= self::render_chapter_boxes($url, $max_ch > 0 ? $max_ch : 1, $is_psalms);
             $out .= '</details></li>';
         }
         $out .= '</ul></section>';
@@ -3122,21 +3172,29 @@ class TheBible_Plugin {
             $details_id = 'thebible-index-book-' . self::slugify($book_slug);
             $out .= '<li class="thebible-index-book"><details id="' . esc_attr($details_id) . '">';
             $out .= '<summary>' . esc_html($label) . '</summary>';
-            $out .= '<ul class="thebible-index-chapters">';
-            if ($max_ch > 0) {
-                for ($i = 1; $i <= $max_ch; $i++) {
-                    $ch_url = trailingslashit($url) . $i . '/';
-                    $out .= '<li><a href="' . esc_url($ch_url) . '">' . esc_html((string)$i) . '</a></li>';
-                }
-            } else {
-                $out .= '<li><a href="' . esc_url($url) . '">1</a></li>';
-            }
-            $out .= '</ul>';
+            $is_psalms = (is_string($book_slug) && self::slugify($book_slug) === 'psalms');
+            $out .= self::render_chapter_boxes($url, $max_ch > 0 ? $max_ch : 1, $is_psalms);
             $out .= '</details></li>';
         }
         $out .= '</ul></section>';
         $out .= '</div>';
         $out .= '</div>';
+        return $out;
+    }
+
+    private static function render_chapter_boxes($book_url, $max_ch, $is_psalms = false) {
+        $book_url = is_string($book_url) ? $book_url : '';
+        $max_ch = (int) $max_ch;
+        if ($book_url === '' || $max_ch <= 0) {
+            return '<ul class="thebible-index-chapters"></ul>';
+        }
+        $out = '<ul class="thebible-index-chapters">';
+        for ($i = 1; $i <= $max_ch; $i++) {
+            $ch_url = trailingslashit($book_url) . $i . '/';
+            $label = $is_psalms ? ('Psalm ' . $i) : (string) $i;
+            $out .= '<li><a href="' . esc_url($ch_url) . '">' . esc_html($label) . '</a></li>';
+        }
+        $out .= '</ul>';
         return $out;
     }
 

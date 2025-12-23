@@ -234,6 +234,9 @@
     var linkNext = bar.querySelector('[data-next]');
     var linkTop = bar.querySelector('[data-top]');
 
+    var defaultSep = bar.getAttribute('data-default-sep') || '—';
+    var defaultChLabel = bar.getAttribute('data-default-ch') || '';
+
     function intAttr(name, fallback){
         var v = bar.getAttribute(name);
         if (v == null || v === '') return (typeof fallback === 'number' ? fallback : 0);
@@ -547,12 +550,23 @@
             if (!lastSelectionTime || Date.now() - lastSelectionTime > 2000) {
                 ensureStandardControls();
             }
-            if (elSep) {
-                elSep.style.display = 'none';
-            }
-            if (elCh) {
-                elCh.style.display = 'none';
-                elCh.textContent = '';
+            if (defaultChLabel) {
+                if (elSep) {
+                    elSep.style.display = '';
+                    elSep.textContent = defaultSep;
+                }
+                if (elCh) {
+                    elCh.style.display = '';
+                    elCh.textContent = defaultChLabel;
+                }
+            } else {
+                if (elSep) {
+                    elSep.style.display = 'none';
+                }
+                if (elCh) {
+                    elCh.style.display = 'none';
+                    elCh.textContent = '';
+                }
             }
         }
         var topCut = window.innerHeight * 0.2;
