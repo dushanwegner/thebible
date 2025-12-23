@@ -220,9 +220,9 @@
     function headsList(){
         var list = [];
         if (container) {
-            list = Array.prototype.slice.call(container.querySelectorAll('h2[id]'));
+            list = Array.prototype.slice.call(container.querySelectorAll('[id]'));
         } else {
-            list = Array.prototype.slice.call(document.querySelectorAll('.thebible .thebible-book h2[id]'));
+            list = Array.prototype.slice.call(document.querySelectorAll('.thebible .thebible-book [id]'));
         }
         return list.filter(function(h){ return /-ch-\d+$/.test(h.id); });
     }

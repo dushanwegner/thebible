@@ -40,7 +40,7 @@ class TheBible_Plugin {
         add_filter('upload_mimes', [__CLASS__, 'allow_font_uploads']);
         add_filter('wp_check_filetype_and_ext', [__CLASS__, 'allow_font_filetype'], 10, 5);
         add_action('wp_head', [__CLASS__, 'print_custom_css']);
-        add_action('wp_head', [__CLASS__, 'print_og_meta']);
+        add_action('wp_head', ['TheBible_OG', 'print_og_meta']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
         add_action('customize_register', ['TheBible_Admin', 'customize_register']);
         add_filter('the_content', [__CLASS__, 'filter_content_auto_link_bible_refs'], 20);
@@ -183,6 +183,11 @@ class TheBible_Plugin {
         $book_slug_js = esc_js( self::slugify( $book_label ) );
         $book_label_html = esc_html( $book_label );
 
+        $sticky_ch = 1;
+        if (is_array($nav) && isset($nav['chapter'])) {
+            $sticky_ch = max(1, (int) $nav['chapter']);
+        }
+
         // Prepare data attributes for frontend JS (highlight targets / chapter scroll)
         $data_attrs = '';
         if ( is_array( $highlight_ids ) && ! empty( $highlight_ids ) ) {
@@ -224,7 +229,7 @@ class TheBible_Plugin {
                 . '<div class="thebible-sticky__left">'
                 . '<span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> '
                 . '<span class="thebible-sticky__sep">—</span> '
-                . '<span class="thebible-sticky__chapter" data-ch>1</span>'
+                . '<span class="thebible-sticky__chapter" data-ch>' . esc_html((string)$sticky_ch) . '</span>'
                 . '</div>'
                 . '<div class="thebible-sticky__controls">'
                 . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous">&#8592;</a>'
@@ -619,7 +624,7 @@ class TheBible_Plugin {
     /**
      * Handle OG image generation.
      */
-    private static function handle_og_image() {
+    public static function handle_og_image() {
         // This is a placeholder for the OG image generation method
         // It's referenced in handle_template_redirect but not implemented yet
         // We'll add a basic implementation to avoid the lint error
@@ -721,10 +726,7 @@ class TheBible_Plugin {
         }
 
         $out = '';
-        $out .= '<h2 id="' . esc_attr($chapter_scroll_id) . '">'
-            . '<span class="thebible-chapter-book">' . esc_html($human) . '</span>'
-            . ' <span class="thebible-chapter-num">' . esc_html($chapter) . '</span>'
-            . '</h2>';
+        $out .= '<a id="' . esc_attr($chapter_scroll_id) . '"></a>';
 
         foreach ($primary_verses as $verse_num => $primary_text) {
             $verse_num = (int) $verse_num;
@@ -2235,7 +2237,7 @@ class TheBible_Plugin {
     public static function handle_template_redirect() {
         // Handle OG image generation
         if (get_query_var(self::QV_OG)) {
-            self::handle_og_image();
+            TheBible_OG::handle_og_image();
             return;
         }
         // Handle normal Bible routes (including hybrid language URLs)
@@ -4211,6 +4213,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-renderer.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-og.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd-widget.php';
 
 TheBible_Plugin::init();
