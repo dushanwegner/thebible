@@ -369,15 +369,10 @@ class TheBible_Plugin {
                     if ( $post_obj && $post_obj->post_type === 'thebible_votd' ) {
                         $norm = self::normalize_votd_entry( $post_obj );
                         if ( is_array( $norm ) ) {
-                            $book_key = $norm['book_slug'];
-                            $short    = self::resolve_book_for_dataset( $book_key, 'bible' );
-                            if ( ! is_string( $short ) || $short === '' ) {
-                                $label = ucwords( str_replace( '-', ' ', (string) $book_key ) );
-                            } else {
-                                $label = self::pretty_label( $short );
+                            $title = self::build_votd_post_title( $norm['book_slug'], $norm['chapter'], $norm['vfrom'], $norm['vto'], $new_date );
+                            if ( ! is_string( $title ) || $title === '' ) {
+                                continue;
                             }
-                            $ref   = $label . ' ' . $norm['chapter'] . ':' . ( $norm['vfrom'] === $norm['vto'] ? $norm['vfrom'] : ( $norm['vfrom'] . '-' . $norm['vto'] ) );
-                            $title = $ref . ' (' . $new_date . ')';
 
                             wp_update_post( [
                                 'ID'         => $pid,
@@ -428,15 +423,10 @@ class TheBible_Plugin {
                         if ( $post_obj && $post_obj->post_type === 'thebible_votd' ) {
                             $norm = self::normalize_votd_entry( $post_obj );
                             if ( is_array( $norm ) ) {
-                                $book_key = $norm['book_slug'];
-                                $short    = self::resolve_book_for_dataset( $book_key, 'bible' );
-                                if ( ! is_string( $short ) || $short === '' ) {
-                                    $label = ucwords( str_replace( '-', ' ', (string) $book_key ) );
-                                } else {
-                                    $label = self::pretty_label( $short );
+                                $title = self::build_votd_post_title( $norm['book_slug'], $norm['chapter'], $norm['vfrom'], $norm['vto'], $new_date );
+                                if ( ! is_string( $title ) || $title === '' ) {
+                                    continue;
                                 }
-                                $ref   = $label . ' ' . $norm['chapter'] . ':' . ( $norm['vfrom'] === $norm['vto'] ? $norm['vfrom'] : ( $norm['vfrom'] . '-' . $norm['vto'] ) );
-                                $title = $ref . ' (' . $new_date . ')';
 
                                 wp_update_post( [
                                     'ID'         => $pid,
@@ -1692,15 +1682,10 @@ class TheBible_Plugin {
         // Auto-generate post title from reference and date
         $entry = self::normalize_votd_entry(get_post($post_id));
         if (is_array($entry)) {
-            $book_key = $entry['book_slug'];
-            $short = self::resolve_book_for_dataset($book_key, 'bible');
-            if (!is_string($short) || $short === '') {
-                $label = ucwords(str_replace('-', ' ', (string) $book_key));
-            } else {
-                $label = self::pretty_label($short);
+            $title = self::build_votd_post_title($entry['book_slug'], $entry['chapter'], $entry['vfrom'], $entry['vto'], $entry['date']);
+            if (!is_string($title) || $title === '') {
+                return;
             }
-            $ref = $label . ' ' . $entry['chapter'] . ':' . ($entry['vfrom'] === $entry['vto'] ? $entry['vfrom'] : ($entry['vfrom'] . '-' . $entry['vto']));
-            $title = $ref . ' (' . $entry['date'] . ')';
 
             // Avoid infinite recursion when updating the post inside save_post
             remove_action('save_post', [__CLASS__, 'save_votd_meta'], 10);
@@ -1771,6 +1756,34 @@ class TheBible_Plugin {
             'vto'       => $vto,
             'date'      => $date,
         ];
+    }
+
+    private static function build_votd_post_title($book_key, $chapter, $vfrom, $vto, $date) {
+        $book_key = is_string($book_key) ? $book_key : '';
+        $chapter  = (int) $chapter;
+        $vfrom    = (int) $vfrom;
+        $vto      = (int) $vto;
+        $date     = is_string($date) ? $date : '';
+
+        if ($book_key === '' || $chapter <= 0 || $vfrom <= 0) {
+            return '';
+        }
+        if ($vto <= 0 || $vto < $vfrom) {
+            $vto = $vfrom;
+        }
+
+        $short = self::resolve_book_for_dataset($book_key, 'bible');
+        if (!is_string($short) || $short === '') {
+            $label = ucwords(str_replace('-', ' ', (string) $book_key));
+        } else {
+            $label = self::pretty_label($short);
+        }
+
+        $ref = $label . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
+        if ($date !== '') {
+            return $ref . ' (' . $date . ')';
+        }
+        return $ref;
     }
 
     public static function get_votd_for_date($date = null) {
@@ -3557,15 +3570,10 @@ class TheBible_Plugin {
                             // Generate a title like save_votd_meta() does
                             $entry = self::normalize_votd_entry(get_post($post_id));
                             if (is_array($entry)) {
-                                $book_key_norm = $entry['book_slug'];
-                                $short = self::resolve_book_for_dataset($book_key_norm, 'bible');
-                                if (!is_string($short) || $short === '') {
-                                    $label = ucwords(str_replace('-', ' ', (string) $book_key_norm));
-                                } else {
-                                    $label = self::pretty_label($short);
+                                $title = self::build_votd_post_title($entry['book_slug'], $entry['chapter'], $entry['vfrom'], $entry['vto'], $entry['date']);
+                                if (!is_string($title) || $title === '') {
+                                    continue;
                                 }
-                                $ref = $label . ' ' . $entry['chapter'] . ':' . ($entry['vfrom'] === $entry['vto'] ? $entry['vfrom'] : ($entry['vfrom'] . '-' . $entry['vto']));
-                                $title = $ref . ' (' . $entry['date'] . ')';
                                 wp_update_post([
                                     'ID'         => $post_id,
                                     'post_title' => $title,
