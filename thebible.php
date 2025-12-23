@@ -28,11 +28,11 @@ class TheBible_Plugin {
     private static $secondary_language = '';
 
     public static function init() {
-        add_action('init', [__CLASS__, 'add_rewrite_rules']);
+        add_action('init', ['TheBible_Router', 'add_rewrite_rules']);
         add_action('init', ['TheBible_VOTD', 'register_votd_cpt']);
-        add_filter('query_vars', [__CLASS__, 'add_query_vars']);
-        add_action('template_redirect', [__CLASS__, 'handle_sitemap'], 5);
-        add_action('template_redirect', [__CLASS__, 'handle_template_redirect']);
+        add_filter('query_vars', ['TheBible_Router', 'add_query_vars']);
+        add_action('template_redirect', ['TheBible_Router', 'handle_sitemap'], 5);
+        add_action('template_redirect', ['TheBible_Router', 'handle_template_redirect']);
         add_action('admin_menu', ['TheBible_Admin', 'admin_menu']);
         add_action('admin_init', ['TheBible_Admin', 'register_settings']);
         add_action('admin_enqueue_scripts', ['TheBible_Admin', 'admin_enqueue']);
@@ -2293,9 +2293,9 @@ class TheBible_Plugin {
                 set_query_var(self::QV_BOOK, $book_slug);
             }
 
-            self::render_book($book_slug);
+            TheBible_Renderer::render_book($book_slug);
         } else {
-            self::render_index();
+            TheBible_Renderer::render_index();
         }
         exit; // prevent WP from continuing
     }
@@ -2917,7 +2917,7 @@ class TheBible_Plugin {
         exit;
     }
 
-    private static function render_index() {
+    public static function render_index() {
         self::load_index();
         status_header(200);
         nocache_headers();
@@ -2930,7 +2930,7 @@ class TheBible_Plugin {
         self::output_with_theme($title, $content, 'index');
     }
 
-    private static function render_book($slug) {
+    public static function render_book($slug) {
         self::load_index();
         // Normalize incoming slug to match index keys (case-insensitive URLs)
         $norm = self::slugify($slug);
@@ -3189,7 +3189,7 @@ class TheBible_Plugin {
         return $parts;
     }
 
-    private static function output_with_theme($title, $content_html, $context = '') {
+    public static function output_with_theme($title, $content_html, $context = '') {
         // Allow theme override templates (e.g., dwtheme/thebible/...).
         // If a template is found, it is responsible for calling get_header/get_footer and echoing content.
         self::$current_page_title = is_string($title) ? $title : '';
@@ -3729,7 +3729,7 @@ class TheBible_Plugin {
                         <tr>
                             <th scope="row"><label>Quotation marks</label></th>
                             <td>
-                                <p><strong>OG images and widgets always use fixed outer guillemets:</strong> opening  bb and closing  ab. These marks are not configurable.</p>
+                                <p><strong>OG images and widgets always use fixed outer guillemets:</strong> opening » and closing «. These marks are not configurable.</p>
                             </td>
                         </tr>
                         <tr>
@@ -4207,8 +4207,10 @@ johannes,3,16,18
     }
 }
 
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-renderer.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd-widget.php';
 
 TheBible_Plugin::init();
