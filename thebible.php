@@ -1362,6 +1362,24 @@ class TheBible_Plugin {
 
         // Check for secondary language (hybrid URLs)
         $secondary_lang = get_query_var('thebible_secondary_lang');
+        if ((!$secondary_lang || !is_string($secondary_lang) || $secondary_lang === '') && isset($_SERVER['REQUEST_URI']) && is_string($_SERVER['REQUEST_URI'])) {
+            $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            if (is_string($path) && $path !== '') {
+                if (preg_match('~^/(bible|bibel|latin)-(bible|bibel|latin)(?:/|$)~', $path, $m)) {
+                    $primary_from_path = $m[1];
+                    $secondary_from_path = $m[2];
+                    $primary_qv = get_query_var(self::QV_SLUG);
+                    if (!is_string($primary_qv) || $primary_qv === '') {
+                        $primary_qv = $primary_from_path;
+                        set_query_var(self::QV_SLUG, $primary_qv);
+                    }
+                    if ($secondary_from_path !== $primary_qv) {
+                        $secondary_lang = $secondary_from_path;
+                        set_query_var('thebible_secondary_lang', $secondary_lang);
+                    }
+                }
+            }
+        }
         
         if ($secondary_lang && in_array($secondary_lang, ['bible', 'bibel', 'latin'])) {
             self::$secondary_language = $secondary_lang;
