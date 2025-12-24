@@ -72,7 +72,7 @@
 
 1:35 habitavitque in monte Hares quod interpretatur testaceo in Ahilon et Salabim et adgravata est manus domus Ioseph factusque est ei tributarius
 
-1:36 fuit autem terminus Amorrei ab ascensu Scorpionis Petra et superiora loca __________________________________________________________________
+1:36 fuit autem terminus Amorrei ab ascensu Scorpionis Petra et superiora loca
 
 ## Chapter 2
 
@@ -120,7 +120,7 @@
 
 2:22 ut in ipsis experiar Israhel utrum custodiant viam Domini et ambulent in ea sicut custodierunt patres eorum an non
 
-2:23 dimisit ergo Dominus omnes has nationes et cito subvertere noluit nec tradidit in manibus Iosue __________________________________________________________________
+2:23 dimisit ergo Dominus omnes has nationes et cito subvertere noluit nec tradidit in manibus Iosue
 
 ## Chapter 3
 
@@ -184,7 +184,7 @@
 
 3:30 humiliatusque est Moab die illo sub manu Israhel et quievit terra octoginta annis
 
-3:31 post hunc fuit Samgar filius Anath qui percussit de Philisthim sescentos viros vomere et ipse quoque defendit Israhel __________________________________________________________________
+3:31 post hunc fuit Samgar filius Anath qui percussit de Philisthim sescentos viros vomere et ipse quoque defendit Israhel
 
 ## Chapter 4
 
@@ -234,7 +234,7 @@
 
 4:23 humiliavit ergo Deus in die illo Iabin regem Chanaan coram filiis Israhel
 
-4:24 qui crescebant cotidie et forti manu opprimebant Iabin regem Chanaan donec delerent eum __________________________________________________________________
+4:24 qui crescebant cotidie et forti manu opprimebant Iabin regem Chanaan donec delerent eum
 
 ## Chapter 5
 
@@ -300,7 +300,7 @@
 
 5:31 sic pereant omnes inimici tui Domine qui autem diligunt te sicut sol in ortu suo splendet ita rutilent
 
-5:32 quievitque terra per quadraginta annos __________________________________________________________________
+5:32 quievitque terra per quadraginta annos
 
 ## Chapter 6
 
@@ -382,7 +382,7 @@
 
 6:39 dixitque rursus ad Dominum ne irascatur furor tuus contra me si adhuc semel temptavero signum quaerens in vellere oro ut solum vellus siccum sit et omnis terra rore madens
 
-6:40 fecitque Dominus nocte illa ut postulaverat et fuit siccitas in solo vellere et ros in omni terra __________________________________________________________________
+6:40 fecitque Dominus nocte illa ut postulaverat et fuit siccitas in solo vellere et ros in omni terra
 
 ## Chapter 7
 
@@ -434,7 +434,7 @@
 
 7:24 misitque Gedeon nuntios in omnem montem Ephraim dicens descendite in occursum Madian et occupate aquas usque Bethbera atque Iordanem clamavitque omnis Ephraim et praeoccupavit aquas atque Iordanem usque Bethbera
 
-7:25 adprehensosque duos viros Madian Oreb et Zeb interfecit Oreb in petra Oreb Zeb vero in torculari Zeb et persecuti sunt Madian capita Oreb et Zeb portantes ad Gedeon trans fluenta Iordanis __________________________________________________________________
+7:25 adprehensosque duos viros Madian Oreb et Zeb interfecit Oreb in petra Oreb Zeb vero in torculari Zeb et persecuti sunt Madian capita Oreb et Zeb portantes ad Gedeon trans fluenta Iordanis
 
 ## Chapter 8
 
@@ -506,7 +506,7 @@
 
 8:34 nec recordati sunt Domini Dei sui qui eruit eos de manu omnium inimicorum suorum per circuitum
 
-8:35 nec fecerunt misericordiam cum domo Hierobbaal Gedeon iuxta omnia bona quae fecerat Israheli __________________________________________________________________
+8:35 nec fecerunt misericordiam cum domo Hierobbaal Gedeon iuxta omnia bona quae fecerat Israheli
 
 ## Chapter 9
 
@@ -622,7 +622,7 @@
 
 9:56 et reddidit Deus malum quod fecerat Abimelech contra patrem suum interfectis septuaginta fratribus suis
 
-9:57 Sycimitis quoque quod operati erant retributum est et venit super eos maledictio Ioatham filii Hierobbaal __________________________________________________________________
+9:57 Sycimitis quoque quod operati erant retributum est et venit super eos maledictio Ioatham filii Hierobbaal
 
 ## Chapter 10
 
@@ -660,7 +660,7 @@
 
 10:17 itaque filii Ammon conclamantes in Galaad fixere tentoria contra quos congregati filii Israhel in Maspha castrametati sunt
 
-10:18 dixeruntque principes Galaad singuli ad proximos suos qui primus e nobis contra filios Ammon coeperit dimicare erit dux populi Galaad __________________________________________________________________
+10:18 dixeruntque principes Galaad singuli ad proximos suos qui primus e nobis contra filios Ammon coeperit dimicare erit dux populi Galaad
 
 ## Chapter 11
 
@@ -742,7 +742,7 @@
 
 11:39 expletisque duobus mensibus reversa est ad patrem suum et fecit ei sicut voverat quae ignorabat virum exinde mos increbuit in Israhel et consuetudo servata est
 
-11:40 ut post anni circulum conveniant in unum filiae Israhel et plangant filiam Iepthae Galaaditae diebus quattuor __________________________________________________________________
+11:40 ut post anni circulum conveniant in unum filiae Israhel et plangant filiam Iepthae Galaaditae diebus quattuor
 
 ## Chapter 12
 
@@ -774,7 +774,7 @@
 
 12:14 qui habuit quadraginta filios et triginta ex eis nepotes ascendentes super septuaginta pullos asinarum et iudicavit in Israhel octo annis
 
-12:15 mortuusque est ac sepultus in Farathon terrae Ephraim in monte Amalech __________________________________________________________________
+12:15 mortuusque est ac sepultus in Farathon terrae Ephraim in monte Amalech
 
 ## Chapter 13
 
@@ -826,7 +826,7 @@
 
 13:24 peperit itaque filium et vocavit nomen eius Samson crevitque puer et benedixit ei Dominus
 
-13:25 coepitque spiritus Domini esse cum eo in castris Dan inter Saraa et Esthaol __________________________________________________________________
+13:25 coepitque spiritus Domini esse cum eo in castris Dan inter Saraa et Esthaol
 
 ## Chapter 14
 
@@ -868,7 +868,7 @@
 
 14:19 inruit itaque in eo spiritus Domini descenditque Ascalonem et percussit ibi triginta viros quorum ablatas vestes dedit his qui problema solverant iratusque nimis ascendit in domum patris sui
 
-14:20 uxor autem eius accepit maritum unum de amicis eius et pronubis __________________________________________________________________
+14:20 uxor autem eius accepit maritum unum de amicis eius et pronubis
 
 ## Chapter 15
 
@@ -910,7 +910,7 @@
 
 15:19 aperuit itaque Dominus molarem dentem in maxilla asini et egressae sunt ex eo aquae quibus haustis refocilavit spiritum et vires recepit idcirco appellatum est nomen loci illius Fons invocantis de maxilla usque in praesentem diem
 
-15:20 iudicavitque Israhel in diebus Philisthim viginti annis __________________________________________________________________
+15:20 iudicavitque Israhel in diebus Philisthim viginti annis
 
 ## Chapter 16
 
@@ -974,7 +974,7 @@
 
 16:30 ait moriatur anima mea cum Philisthim concussisque fortiter columnis cecidit domus super omnes principes et ceteram multitudinem quae ibi erat multoque plures interfecit moriens quam ante vivus occiderat
 
-16:31 descendentes autem fratres eius et universa cognatio tulerunt corpus eius et sepelierunt inter Saraa et Esthaol in sepulchro patris Manue iudicavitque Israhel viginti annis __________________________________________________________________
+16:31 descendentes autem fratres eius et universa cognatio tulerunt corpus eius et sepelierunt inter Saraa et Esthaol in sepulchro patris Manue iudicavitque Israhel viginti annis
 
 ## Chapter 17
 
@@ -1002,7 +1002,7 @@
 
 17:12 implevitque Micha manum eius et habuit apud se puerum sacerdotem
 
-17:13 nunc scio dicens quod bene mihi faciat Deus habenti levitici generis sacerdotem __________________________________________________________________
+17:13 nunc scio dicens quod bene mihi faciat Deus habenti levitici generis sacerdotem
 
 ## Chapter 18
 
@@ -1066,7 +1066,7 @@
 
 18:30 posueruntque sibi sculptile et Ionathan filium Gersan filii Mosi ac filios eius sacerdotes in tribu Dan usque ad diem captivitatis suae
 
-18:31 mansitque apud eos idolum Michae omni tempore quo fuit domus Dei in Silo in diebus illis non erat rex in Israhel __________________________________________________________________
+18:31 mansitque apud eos idolum Michae omni tempore quo fuit domus Dei in Silo in diebus illis non erat rex in Israhel
 
 ## Chapter 19
 
@@ -1128,7 +1128,7 @@
 
 19:29 quam cum esset ingressus arripuit gladium et cadaver uxoris cum ossibus suis in duodecim partes ac frusta concidens misit in omnes terminos Israhel
 
-19:30 quod cum vidissent singuli conclamabant numquam res talis facta est in Israhel ex eo die quo ascenderunt patres nostri de Aegypto usque in praesens tempus ferte sententiam et in commune decernite quid facto opus sit __________________________________________________________________
+19:30 quod cum vidissent singuli conclamabant numquam res talis facta est in Israhel ex eo die quo ascenderunt patres nostri de Aegypto usque in praesens tempus ferte sententiam et in commune decernite quid facto opus sit
 
 ## Chapter 20
 
@@ -1226,7 +1226,7 @@
 
 20:47 remanserunt itaque de omni numero Beniamin qui evadere potuerant et fugere in solitudinem sescenti viri sederuntque in petra Remmon mensibus quattuor
 
-20:48 regressi autem filii Israhel omnes reliquias civitatis a viris usque ad iumenta gladio percusserunt cunctasque urbes et viculos Beniamin vorax flamma consumpsit __________________________________________________________________
+20:48 regressi autem filii Israhel omnes reliquias civitatis a viris usque ad iumenta gladio percusserunt cunctasque urbes et viculos Beniamin vorax flamma consumpsit
 
 ## Chapter 21
 
@@ -1274,4 +1274,4 @@
 
 21:22 cumque venerint patres earum ac fratres et adversum vos queri coeperint atque iurgari dicemus eis miseremini eorum non enim rapuerunt eas iure bellantium atque victorum sed rogantibus ut acciperent non dedistis et a vestra parte peccatum est
 
-21:23 feceruntque filii Beniamin ut sibi fuerat imperatum et iuxta numerum suum rapuerunt sibi de his quae ducebant choros uxores singulas abieruntque in possessionem suam aedificantes urbes et habitantes in eis __________________________________________________________________
+21:23 feceruntque filii Beniamin ut sibi fuerat imperatum et iuxta numerum suum rapuerunt sibi de his quae ducebant choros uxores singulas abieruntque in possessionem suam aedificantes urbes et habitantes in eis

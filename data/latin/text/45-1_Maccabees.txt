@@ -134,7 +134,7 @@
 
 1:66 et noluerunt infringere legem Dei sanctam et trucidati sunt
 
-1:67 et facta est ira magna super populum valde __________________________________________________________________
+1:67 et facta est ira magna super populum valde
 
 ## Chapter 2
 
@@ -276,7 +276,7 @@
 
 2:69 et benedixit eos et adpositus est ad patres suos
 
-2:70 et defunctus est centesimo et quadragesimo et sexto anno et sepultus est a filiis suis in sepulchris patrum suorum in Modin et planxerunt eum omnis Israhel planctu magno __________________________________________________________________
+2:70 et defunctus est centesimo et quadragesimo et sexto anno et sepultus est a filiis suis in sepulchris patrum suorum in Modin et planxerunt eum omnis Israhel planctu magno
 
 ## Chapter 3
 
@@ -398,7 +398,7 @@
 
 3:59 quoniam melius est nos mori in bello quam videre mala gentis nostrae et sanctorum
 
-3:60 sicut autem fuerit voluntas in caelo sic fiat __________________________________________________________________
+3:60 sicut autem fuerit voluntas in caelo sic fiat
 
 ## Chapter 4
 
@@ -522,7 +522,7 @@
 
 4:60 et aedificaverunt in tempore illo montem Sion et per circuitum muros altos et turres firmas nequando venirent gentes et conculcarent eam sicut antea fecerunt
 
-4:61 et conlocavit illic exercitum ut servarent eam et munivit eam ad custodiendam Bethsuram ut haberet populus munitionem contra faciem Idumeae __________________________________________________________________
+4:61 et conlocavit illic exercitum ut servarent eam et munivit eam ad custodiendam Bethsuram ut haberet populus munitionem contra faciem Idumeae
 
 ## Chapter 5
 
@@ -660,7 +660,7 @@
 
 5:67 in illa die ceciderunt sacerdotes in bello dum vult fortiter facere dum sine consilio exiit in proelium
 
-5:68 et declinavit Iudas in Azotum in terra alienigenarum et vidit aras eorum et spolia deorum ipsorum succendit igni et cepit spolia civitatum et regressus est in terram Iuda __________________________________________________________________
+5:68 et declinavit Iudas in Azotum in terra alienigenarum et vidit aras eorum et spolia deorum ipsorum succendit igni et cepit spolia civitatum et regressus est in terram Iuda
 
 ## Chapter 6
 
@@ -788,7 +788,7 @@
 
 6:62 et intravit rex montem Sion et vidit munitionem loci et rupit ius iuramenti quod iuravit et mandavit destruere murum in gyro
 
-6:63 et discessit festinanter et reversus est Antiochiam et invenit Philippum dominantem civitati et pugnavit adversus eum et occupavit civitatem __________________________________________________________________
+6:63 et discessit festinanter et reversus est Antiochiam et invenit Philippum dominantem civitati et pugnavit adversus eum et occupavit civitatem
 
 ## Chapter 7
 
@@ -890,7 +890,7 @@
 
 7:49 et constituit agi omnibus annis diem istam tertiadecima die mensis adar
 
-7:50 et siluit terra Iuda dies paucos __________________________________________________________________
+7:50 et siluit terra Iuda dies paucos
 
 ## Chapter 8
 
@@ -956,7 +956,7 @@
 
 8:31 sed et de malis quae Demetrius rex fecit in eos scripsimus ei dicentes quare gravasti iugum tuum super amicos nostros et socios Iudaeos
 
-8:32 si ergo iterum adierint nos adversum te faciemus illis iudicium et pugnabimus tecum mari terraque __________________________________________________________________
+8:32 si ergo iterum adierint nos adversum te faciemus illis iudicium et pugnabimus tecum mari terraque
 
 ## Chapter 9
 
@@ -1104,7 +1104,7 @@
 
 9:72 et reddidit ei captivitatem quam prius erat praedatus de terra Iuda et conversus abiit in terram suam et non adposuit amplius venire in fines eius
 
-9:73 et cessavit gladius ex Israhel et habitavit Ionathas in Machemas et coepit Ionathas ibi iudicare populum et exterminavit impios ex Israhel __________________________________________________________________
+9:73 et cessavit gladius ex Israhel et habitavit Ionathas in Machemas et coepit Ionathas ibi iudicare populum et exterminavit impios ex Israhel
 
 ## Chapter 10
 
@@ -1284,7 +1284,7 @@
 
 10:88 et factum est ut audivit Alexander rex sermones istos addidit adhuc glorificare Ionathan
 
-10:89 et misit ei fibulam auream sicuti est consuetudo dari cognatis regum et dedit ei Accaron et omnes fines eius in possessionem __________________________________________________________________
+10:89 et misit ei fibulam auream sicuti est consuetudo dari cognatis regum et dedit ei Accaron et omnes fines eius in possessionem
 
 ## Chapter 11
 
@@ -1434,7 +1434,7 @@
 
 11:73 et viderunt qui fugiebant partis illius et reversi sunt ad eum et insequebantur cum eo usque Cades ad castra sua et pervenerunt usque illuc
 
-11:74 et ceciderunt de alienigenis in die illa tria milia virorum et regressus est Ionatha in Hierusalem __________________________________________________________________
+11:74 et ceciderunt de alienigenis in die illa tria milia virorum et regressus est Ionatha in Hierusalem
 
 ## Chapter 12
 
@@ -1544,7 +1544,7 @@
 
 12:53 et quaesierunt omnes gentes quae erant in circuitu eorum perdere eos dixerunt enim
 
-12:54 non habent principem et adiuvantem nunc ergo expugnemus illos et tollamus de hominibus memoriam eorum __________________________________________________________________
+12:54 non habent principem et adiuvantem nunc ergo expugnemus illos et tollamus de hominibus memoriam eorum
 
 ## Chapter 13
 
@@ -1654,7 +1654,7 @@
 
 13:53 et munivit montem templi qui erat secus arcem et habitavit ibi ipse et qui cum eo erant
 
-13:54 et vidit Simon Iohannem filium suum quod vir esset et posuit eum ducem virtutum universarum et habitavit Gazaris __________________________________________________________________
+13:54 et vidit Simon Iohannem filium suum quod vir esset et posuit eum ducem virtutum universarum et habitavit Gazaris
 
 ## Chapter 14
 
@@ -1754,7 +1754,7 @@
 
 14:48 et scripturam istam dixerunt ponere in tabulis aereis et ponere eas in peribolo sanctorum in loco celebri
 
-14:49 exemplum autem eorum ponere in aerario ut habeat Simon et filii eius __________________________________________________________________
+14:49 exemplum autem eorum ponere in aerario ut habeat Simon et filii eius
 
 ## Chapter 15
 
@@ -1838,7 +1838,7 @@
 
 15:40 et pervenit Cendebeus Iamniam et coepit inritare plebem et conculcare Iudaeam et captivare populum et interficere et aedificare Caedronem
 
-15:41 et conlocavit illic equites et exercitum ut egressi perambularent viam Iudaeae sicut constituit ei rex __________________________________________________________________
+15:41 et conlocavit illic equites et exercitum ut egressi perambularent viam Iudaeae sicut constituit ei rex
 
 ## Chapter 16
 
@@ -1886,4 +1886,4 @@
 
 16:22 ut audivit autem vehementer expavit et conprehendit viros qui venerant perdere eum et occidit eos cognovit enim quia quaerebant eum perdere
 
-16:23 et cetera sermonum Iohannis et bellorum eius et bonarum virtutum quibus fortiter gessit et aedificii murorum quos struxit et rerum gestarum eius __________________________________________________________________
+16:23 et cetera sermonum Iohannis et bellorum eius et bonarum virtutum quibus fortiter gessit et aedificii murorum quos struxit et rerum gestarum eius

@@ -36,7 +36,7 @@
 
 1:17 mortuus est ergo iuxta sermonem Domini quem locutus est Helias et regnavit Ioram frater eius pro eo anno secundo Ioram filii Iosaphat regis Iudae non enim habebat filium
 
-1:18 reliqua autem verborum Ohoziae quae operatus est nonne haec scripta sunt in libro sermonum dierum regum Israhel __________________________________________________________________
+1:18 reliqua autem verborum Ohoziae quae operatus est nonne haec scripta sunt in libro sermonum dierum regum Israhel
 
 ## Chapter 2
 
@@ -88,7 +88,7 @@
 
 2:24 qui cum se respexisset vidit eos et maledixit eis in nomine Domini egressique sunt duo ursi de saltu et laceraverunt ex eis quadraginta duos pueros
 
-2:25 abiit autem inde in montem Carmeli et inde reversus est Samariam __________________________________________________________________
+2:25 abiit autem inde in montem Carmeli et inde reversus est Samariam
 
 ## Chapter 3
 
@@ -144,7 +144,7 @@
 
 3:26 quod cum vidisset rex Moab praevaluisse scilicet hostes tulit secum septingentos viros educentes gladium ut inrumperet ad regem Edom et non potuerunt
 
-3:27 arripiensque filium suum primogenitum qui regnaturus erat pro eo obtulit holocaustum super murum et facta est indignatio magna in Israhel statimque recesserunt ab eo et reversi sunt in terram suam __________________________________________________________________
+3:27 arripiensque filium suum primogenitum qui regnaturus erat pro eo obtulit holocaustum super murum et facta est indignatio magna in Israhel statimque recesserunt ab eo et reversi sunt in terram suam
 
 ## Chapter 4
 
@@ -234,7 +234,7 @@
 
 4:43 responditque ei minister eius quantum est hoc ut adponam coram centum viris rursum ille da ait populo ut comedat haec enim dicit Dominus comedent et supererit
 
-4:44 posuit itaque coram eis qui comederunt et superfuit iuxta verbum Domini __________________________________________________________________
+4:44 posuit itaque coram eis qui comederunt et superfuit iuxta verbum Domini
 
 ## Chapter 5
 
@@ -290,7 +290,7 @@
 
 5:26 at ille nonne ait cor meum in praesenti erat quando reversus est homo de curru suo in occursum tui nunc igitur accepisti argentum et accepisti vestes ut emas oliveta et vineta et oves et boves et servos et ancillas
 
-5:27 sed et lepra Naaman adherebit tibi et semini tuo in sempiternum et egressus est ab eo leprosus quasi nix __________________________________________________________________
+5:27 sed et lepra Naaman adherebit tibi et semini tuo in sempiternum et egressus est ab eo leprosus quasi nix
 
 ## Chapter 6
 
@@ -358,7 +358,7 @@
 
 6:32 Heliseus autem sedebat in domo sua et senes sedebant cum eo praemisit itaque virum et antequam veniret nuntius ille dixit ad senes numquid scitis quod miserit filius homicidae hic ut praecidatur caput meum videte ergo cum venerit nuntius cludite ostium et non sinatis eum introire ecce enim sonitus pedum domini eius post eum est
 
-6:33 et adhuc illo loquente eis apparuit nuntius qui veniebat ad eum et ait ecce tantum malum a Domino est quid amplius expectabo a Domino __________________________________________________________________
+6:33 et adhuc illo loquente eis apparuit nuntius qui veniebat ad eum et ait ecce tantum malum a Domino est quid amplius expectabo a Domino
 
 ## Chapter 7
 
@@ -400,7 +400,7 @@
 
 7:19 quando responderat dux ille viro Dei et dixerat etiam si Dominus fecerit cataractas in caelo numquid fieri poterit quod loqueris et dixit ei videbis oculis tuis et inde non comedes
 
-7:20 evenit ergo ei sicut praedictum erat et conculcavit eum populus in porta et mortuus est __________________________________________________________________
+7:20 evenit ergo ei sicut praedictum erat et conculcavit eum populus in porta et mortuus est
 
 ## Chapter 8
 
@@ -460,7 +460,7 @@
 
 8:28 abiit quoque cum Ioram filio Ahab ad proeliandum contra Azahel regem Syriae in Ramoth Galaad et vulneraverunt Syri Ioram
 
-8:29 qui reversus est ut curaretur in Hiezrahel quia vulneraverant eum Syri in Rama proeliantem contra Azahel regem Syriae porro Ahazias filius Ioram rex Iuda descendit invisere Ioram filium Ahab in Hiezrahel quia aegrotabat __________________________________________________________________
+8:29 qui reversus est ut curaretur in Hiezrahel quia vulneraverant eum Syri in Rama proeliantem contra Azahel regem Syriae porro Ahazias filius Ioram rex Iuda descendit invisere Ioram filium Ahab in Hiezrahel quia aegrotabat
 
 ## Chapter 9
 
@@ -536,7 +536,7 @@
 
 9:36 reversique nuntiaverunt ei et ait Hieu sermo Domini est quem locutus est per servum suum Heliam Thesbiten dicens in agro Hiezrahel comedent canes carnes Hiezabel
 
-9:37 et erunt carnes Hiezabel sicut stercus super faciem terrae in agro Hiezrahel ita ut praetereuntes dicant haecine est illa Hiezabel __________________________________________________________________
+9:37 et erunt carnes Hiezabel sicut stercus super faciem terrae in agro Hiezrahel ita ut praetereuntes dicant haecine est illa Hiezabel
 
 ## Chapter 10
 
@@ -610,7 +610,7 @@
 
 10:35 et dormivit Hieu cum patribus suis sepelieruntque eum in Samaria et regnavit Ioachaz filius eius pro eo
 
-10:36 dies autem quos regnavit Hieu super Israhel viginti et octo anni sunt in Samaria __________________________________________________________________
+10:36 dies autem quos regnavit Hieu super Israhel viginti et octo anni sunt in Samaria
 
 ## Chapter 11
 
@@ -654,7 +654,7 @@
 
 11:20 laetatusque est omnis populus terrae et civitas conquievit Athalia autem occisa est gladio in domo regis
 
-11:21 septemque annorum erat Ioas cum regnare coepisset __________________________________________________________________
+11:21 septemque annorum erat Ioas cum regnare coepisset
 
 ## Chapter 12
 
@@ -698,7 +698,7 @@
 
 12:20 surrexerunt autem servi eius et coniuraverunt inter se percusseruntque Ioas in domo Mello in descensu Sela
 
-12:21 Iozachar namque filius Semath et Iozabad filius Somer servi eius percusserunt eum et mortuus est et sepelierunt eum cum patribus suis in civitate David regnavitque Amasias filius eius pro eo __________________________________________________________________
+12:21 Iozachar namque filius Semath et Iozabad filius Somer servi eius percusserunt eum et mortuus est et sepelierunt eum cum patribus suis in civitate David regnavitque Amasias filius eius pro eo
 
 ## Chapter 13
 
@@ -750,7 +750,7 @@
 
 13:24 mortuus est autem Azahel rex Syriae et regnavit Benadad filius eius pro eo
 
-13:25 porro Ioas filius Ioachaz tulit urbes de manu Benadad filii Azahel quas tulerat de manu Ioachaz patris sui iure proelii tribus vicibus percussit eum Ioas et reddidit civitates Israheli __________________________________________________________________
+13:25 porro Ioas filius Ioachaz tulit urbes de manu Benadad filii Azahel quas tulerat de manu Ioachaz patris sui iure proelii tribus vicibus percussit eum Ioas et reddidit civitates Israheli
 
 ## Chapter 14
 
@@ -810,7 +810,7 @@
 
 14:28 reliqua autem sermonum Hieroboam et universa quae fecit et fortitudo eius qua proeliatus est et quomodo restituit Damascum et Emath Iudae in Israhel nonne haec scripta sunt in libro sermonum dierum regum Israhel
 
-14:29 dormivitque Hieroboam cum patribus suis regibus Israhel et regnavit Zaccharias filius eius pro eo __________________________________________________________________
+14:29 dormivitque Hieroboam cum patribus suis regibus Israhel et regnavit Zaccharias filius eius pro eo
 
 ## Chapter 15
 
@@ -888,7 +888,7 @@
 
 15:37 in diebus illis coepit Dominus mittere in Iudam Rasin regem Syriae et Phacee filium Romeliae
 
-15:38 et dormivit Ioatham cum patribus suis sepultusque est cum eis in civitate David patris sui et regnavit Ahaz filius eius pro eo __________________________________________________________________
+15:38 et dormivit Ioatham cum patribus suis sepultusque est cum eis in civitate David patris sui et regnavit Ahaz filius eius pro eo
 
 ## Chapter 16
 
@@ -930,7 +930,7 @@
 
 16:19 reliqua autem verborum Ahaz quae fecit nonne haec scripta sunt in libro sermonum dierum regum Iuda
 
-16:20 dormivitque Ahaz cum patribus suis et sepultus est cum eis in civitate David et regnavit Ezechias filius eius pro eo __________________________________________________________________
+16:20 dormivitque Ahaz cum patribus suis et sepultus est cum eis in civitate David et regnavit Ezechias filius eius pro eo
 
 ## Chapter 17
 
@@ -1014,7 +1014,7 @@
 
 17:40 illi vero non audierunt sed iuxta consuetudinem suam pristinam perpetrabant
 
-17:41 fuerunt igitur gentes istae timentes quidem Dominum sed nihilominus et idolis suis servientes nam et filii eorum et nepotes sicut fecerunt parentes sui ita faciunt usque in praesentem diem __________________________________________________________________
+17:41 fuerunt igitur gentes istae timentes quidem Dominum sed nihilominus et idolis suis servientes nam et filii eorum et nepotes sicut fecerunt parentes sui ita faciunt usque in praesentem diem
 
 ## Chapter 18
 
@@ -1090,7 +1090,7 @@
 
 18:36 tacuit itaque populus et non respondit ei quicquam siquidem praeceptum regis acceperant ut non responderent ei
 
-18:37 venitque Eliachim filius Helciae praepositus domus et Sobna scriba et Ioahe filius Asaph a commentariis ad Ezechiam scissis vestibus et nuntiaverunt ei verba Rabsacis __________________________________________________________________
+18:37 venitque Eliachim filius Helciae praepositus domus et Sobna scriba et Ioahe filius Asaph a commentariis ad Ezechiam scissis vestibus et nuntiaverunt ei verba Rabsacis
 
 ## Chapter 19
 
@@ -1166,7 +1166,7 @@
 
 19:36 et reversus est Sennacherib rex Assyriorum et mansit in Nineve
 
-19:37 cumque adoraret in templo Neserach deum suum Adramelech et Sarasar filii eius percusserunt eum gladio fugeruntque in terram Armeniorum et regnavit Eseraddon filius eius pro eo __________________________________________________________________
+19:37 cumque adoraret in templo Neserach deum suum Adramelech et Sarasar filii eius percusserunt eum gladio fugeruntque in terram Armeniorum et regnavit Eseraddon filius eius pro eo
 
 ## Chapter 20
 
@@ -1210,7 +1210,7 @@
 
 20:20 reliqua autem sermonum Ezechiae et omnis fortitudo eius et quomodo fecerit piscinam et aquaeductum et introduxerit aquas in civitatem nonne haec scripta sunt in libro sermonum dierum regum Iuda
 
-20:21 dormivitque Ezechias cum patribus suis et regnavit Manasses filius eius pro eo __________________________________________________________________
+20:21 dormivitque Ezechias cum patribus suis et regnavit Manasses filius eius pro eo
 
 ## Chapter 21
 
@@ -1264,7 +1264,7 @@
 
 21:25 reliqua autem sermonum Amon quae fecit nonne haec scripta sunt in libro sermonum dierum regum Iuda
 
-21:26 sepelieruntque eum in sepulchro suo in horto Aza et regnavit Iosias filius eius pro eo __________________________________________________________________
+21:26 sepelieruntque eum in sepulchro suo in horto Aza et regnavit Iosias filius eius pro eo
 
 ## Chapter 22
 
@@ -1306,7 +1306,7 @@
 
 22:19 et perterritum est cor tuum et humiliatus es coram Domino auditis sermonibus contra locum istum et habitatores eius quo videlicet fierent in stuporem et in maledictum et scidisti vestimenta tua et flevisti coram me et ego audivi ait Dominus
 
-22:20 idcirco colligam te ad patres tuos et colligeris ad sepulchrum tuum in pace ut non videant oculi tui omnia mala quae inducturus sum super locum istum __________________________________________________________________
+22:20 idcirco colligam te ad patres tuos et colligeris ad sepulchrum tuum in pace ut non videant oculi tui omnia mala quae inducturus sum super locum istum
 
 ## Chapter 23
 
@@ -1382,7 +1382,7 @@
 
 23:36 viginti quinque annorum erat Ioiachim cum regnare coepisset et undecim annis regnavit in Hierusalem nomen matris eius Zebida filia Phadaia de Ruma
 
-23:37 et fecit malum coram Domino iuxta omnia quae fecerant patres eius __________________________________________________________________
+23:37 et fecit malum coram Domino iuxta omnia quae fecerant patres eius
 
 ## Chapter 24
 
@@ -1424,7 +1424,7 @@
 
 24:19 et fecit malum coram Domino iuxta omnia quae fecerat Ioiachim
 
-24:20 irascebatur enim Dominus contra Hierusalem et contra Iudam donec proiceret eos a facie sua recessitque Sedecias a rege Babylonis __________________________________________________________________
+24:20 irascebatur enim Dominus contra Hierusalem et contra Iudam donec proiceret eos a facie sua recessitque Sedecias a rege Babylonis
 
 ## Chapter 25
 
@@ -1484,4 +1484,4 @@
 
 25:28 et locutus est ei benigna et posuit thronum eius super thronum regum qui erant cum eo in Babylone
 
-25:29 et mutavit vestes eius quas habuerat in carcere et comedebat panem semper in conspectu eius cunctis diebus vitae suae __________________________________________________________________
+25:29 et mutavit vestes eius quas habuerat in carcere et comedebat panem semper in conspectu eius cunctis diebus vitae suae

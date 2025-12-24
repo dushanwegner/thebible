@@ -106,7 +106,7 @@
 
 1:52 dixitque Salomon si fuerit vir bonus non cadet ne unus quidem capillus eius in terram sin autem malum inventum fuerit in eo morietur
 
-1:53 misit ergo rex Salomon et eduxit eum ab altari et ingressus adoravit regem Salomonem dixitque ei Salomon vade in domum tuam __________________________________________________________________
+1:53 misit ergo rex Salomon et eduxit eum ab altari et ingressus adoravit regem Salomonem dixitque ei Salomon vade in domum tuam
 
 ## Chapter 2
 
@@ -200,7 +200,7 @@
 
 2:45 et rex Salomon benedictus et thronus David erit stabilis coram Domino usque in sempiternum
 
-2:46 iussit itaque rex Banaiae filio Ioiadae qui egressus percussit eum et mortuus est __________________________________________________________________
+2:46 iussit itaque rex Banaiae filio Ioiadae qui egressus percussit eum et mortuus est
 
 ## Chapter 3
 
@@ -258,7 +258,7 @@
 
 3:27 respondens rex ait date huic infantem vivum et non occidatur haec est mater eius
 
-3:28 audivit itaque omnis Israhel iudicium quod iudicasset rex et timuerunt regem videntes sapientiam Dei esse in eo ad faciendum iudicium __________________________________________________________________
+3:28 audivit itaque omnis Israhel iudicium quod iudicasset rex et timuerunt regem videntes sapientiam Dei esse in eo ad faciendum iudicium
 
 ## Chapter 4
 
@@ -328,7 +328,7 @@
 
 4:33 et disputavit super lignis a cedro quae est in Libano usque ad hysopum quae egreditur de pariete et disseruit de iumentis et volucribus et reptilibus et piscibus
 
-4:34 et veniebant de cunctis populis ad audiendam sapientiam Salomonis et ab universis regibus terrae qui audiebant sapientiam eius __________________________________________________________________
+4:34 et veniebant de cunctis populis ad audiendam sapientiam Salomonis et ab universis regibus terrae qui audiebant sapientiam eius
 
 ## Chapter 5
 
@@ -366,7 +366,7 @@
 
 5:17 praecepitque rex ut tollerent lapides grandes lapides pretiosos in fundamentum templi et quadrarent eos
 
-5:18 quos dolaverunt cementarii Salomonis et cementarii Hiram porro Biblii praeparaverunt ligna et lapides ad aedificandam domum __________________________________________________________________
+5:18 quos dolaverunt cementarii Salomonis et cementarii Hiram porro Biblii praeparaverunt ligna et lapides ad aedificandam domum
 
 ## Chapter 6
 
@@ -444,7 +444,7 @@
 
 6:37 anno quarto fundata est domus Domini in mense zio
 
-6:38 et in anno undecimo mense bul ipse est mensis octavus perfecta est domus in omni opere suo et in universis utensilibus aedificavitque eam annis septem __________________________________________________________________
+6:38 et in anno undecimo mense bul ipse est mensis octavus perfecta est domus in omni opere suo et in universis utensilibus aedificavitque eam annis septem
 
 ## Chapter 7
 
@@ -548,7 +548,7 @@
 
 7:50 et hydrias et fuscinulas et fialas et mortariola et turibula de auro purissimo et cardines ostiorum domus interioris sancti sanctorum et ostiorum domus templi ex auro erant
 
-7:51 et perfecit omne opus quod faciebat Salomon in domo Domini et intulit quae sanctificaverat David pater suus argentum et aurum et vasa reposuitque in thesauris domus Domini __________________________________________________________________
+7:51 et perfecit omne opus quod faciebat Salomon in domo Domini et intulit quae sanctificaverat David pater suus argentum et aurum et vasa reposuitque in thesauris domus Domini
 
 ## Chapter 8
 
@@ -682,7 +682,7 @@
 
 8:65 fecit ergo Salomon in tempore illo festivitatem celebrem et omnis Israhel cum eo multitudo magna ab introitu Emath usque ad rivum Aegypti coram Domino Deo nostro septem diebus et septem diebus id est quattuordecim diebus
 
-8:66 et in die octava dimisit populos qui benedicentes regi profecti sunt in tabernacula sua laetantes et alacri corde super omnibus bonis quae fecerat Dominus David servo suo et Israhel populo suo __________________________________________________________________
+8:66 et in die octava dimisit populos qui benedicentes regi profecti sunt in tabernacula sua laetantes et alacri corde super omnibus bonis quae fecerat Dominus David servo suo et Israhel populo suo
 
 ## Chapter 9
 
@@ -740,7 +740,7 @@
 
 9:27 misitque Hiram in classe illa servos suos viros nauticos et gnaros maris cum servis Salomonis
 
-9:28 qui cum venissent in Ophir sumptum inde aurum quadringentorum viginti talentorum detulerunt ad regem Salomonem __________________________________________________________________
+9:28 qui cum venissent in Ophir sumptum inde aurum quadringentorum viginti talentorum detulerunt ad regem Salomonem
 
 ## Chapter 10
 
@@ -800,7 +800,7 @@
 
 10:28 et educebantur equi Salomoni de Aegypto et de Coa negotiatores enim regis emebant de Coa et statuto pretio perducebant
 
-10:29 egrediebatur autem quadriga ex Aegypto sescentis siclis argenti et equus centum quinquaginta atque in hunc modum cuncti reges Hettheorum et Syriae equos venundabant __________________________________________________________________
+10:29 egrediebatur autem quadriga ex Aegypto sescentis siclis argenti et equus centum quinquaginta atque in hunc modum cuncti reges Hettheorum et Syriae equos venundabant
 
 ## Chapter 11
 
@@ -888,7 +888,7 @@
 
 11:42 dies autem quos regnavit Salomon in Hierusalem super omnem Israhel quadraginta anni sunt
 
-11:43 dormivitque Salomon cum patribus suis et sepultus est in civitate David patris sui regnavitque Roboam filius eius pro eo __________________________________________________________________
+11:43 dormivitque Salomon cum patribus suis et sepultus est in civitate David patris sui regnavitque Roboam filius eius pro eo
 
 ## Chapter 12
 
@@ -956,7 +956,7 @@
 
 12:32 constituitque diem sollemnem in mense octavo quintadecima die mensis in similitudinem sollemnitatis quae celebratur in Iuda et ascendens altare similiter fecit in Bethel ut immolaret vitulis quos fabricatus erat constituitque in Bethel sacerdotes excelsorum quae fecerat
 
-12:33 et ascendit super altare quod extruxerat in Bethel quintadecima die mensis octavi quem finxerat de corde suo et fecit sollemnitatem filiis Israhel et ascendit super altare ut adoleret incensum __________________________________________________________________
+12:33 et ascendit super altare quod extruxerat in Bethel quintadecima die mensis octavi quem finxerat de corde suo et fecit sollemnitatem filiis Israhel et ascendit super altare ut adoleret incensum
 
 ## Chapter 13
 
@@ -1026,7 +1026,7 @@
 
 13:33 post verba haec non est reversus Hieroboam de via sua pessima sed e contrario fecit de novissimis populi sacerdotes excelsorum quicumque volebat implebat manum suam et fiebat sacerdos excelsorum
 
-13:34 et propter hanc causam peccavit domus Hieroboam et eversa est et deleta de superficie terrae __________________________________________________________________
+13:34 et propter hanc causam peccavit domus Hieroboam et eversa est et deleta de superficie terrae
 
 ## Chapter 14
 
@@ -1090,7 +1090,7 @@
 
 14:30 fuitque bellum inter Roboam et Hieroboam cunctis diebus
 
-14:31 dormivit itaque Roboam cum patribus suis et sepultus est cum eis in civitate David nomen autem matris eius Naama Ammanites et regnavit Abiam filius eius pro eo __________________________________________________________________
+14:31 dormivit itaque Roboam cum patribus suis et sepultus est cum eis in civitate David nomen autem matris eius Naama Ammanites et regnavit Abiam filius eius pro eo
 
 ## Chapter 15
 
@@ -1160,7 +1160,7 @@
 
 15:33 anno tertio Asa regis Iuda regnavit Baasa filius Ahia super omnem Israhel in Thersa viginti quattuor annis
 
-15:34 et fecit malum coram Domino ambulavitque in via Hieroboam et in peccatis eius quibus peccare fecit Israhel __________________________________________________________________
+15:34 et fecit malum coram Domino ambulavitque in via Hieroboam et in peccatis eius quibus peccare fecit Israhel
 
 ## Chapter 16
 
@@ -1230,7 +1230,7 @@
 
 16:33 et plantavit lucum et addidit Ahab in opere suo inritans Dominum Deum Israhel super omnes reges Israhel qui fuerant ante eum
 
-16:34 in diebus eius aedificavit Ahiel de Bethel Hiericho in Abiram primitivo suo fundavit eam et in Segub novissimo suo posuit portas eius iuxta verbum Domini quod locutus fuerat in manu Iosue filii Nun __________________________________________________________________
+16:34 in diebus eius aedificavit Ahiel de Bethel Hiericho in Abiram primitivo suo fundavit eam et in Segub novissimo suo posuit portas eius iuxta verbum Domini quod locutus fuerat in manu Iosue filii Nun
 
 ## Chapter 17
 
@@ -1280,7 +1280,7 @@
 
 17:23 tulitque Helias puerum et deposuit eum de cenaculo in inferiorem domum et tradidit matri suae et ait illi en vivit filius tuus
 
-17:24 dixitque mulier ad Heliam nunc in isto cognovi quoniam vir Dei es tu et verbum Domini in ore tuo verum est __________________________________________________________________
+17:24 dixitque mulier ad Heliam nunc in isto cognovi quoniam vir Dei es tu et verbum Domini in ore tuo verum est
 
 ## Chapter 18
 
@@ -1374,7 +1374,7 @@
 
 18:45 cumque se verterent huc atque illuc ecce caeli contenebrati sunt et nubes et ventus et facta est pluvia grandis ascendens itaque Ahab abiit in Hiezrahel
 
-18:46 et manus Domini facta est super Heliam accinctisque lumbis currebat ante Ahab donec veniret in Hiezrahel __________________________________________________________________
+18:46 et manus Domini facta est super Heliam accinctisque lumbis currebat ante Ahab donec veniret in Hiezrahel
 
 ## Chapter 19
 
@@ -1418,7 +1418,7 @@
 
 19:20 qui statim relictis bubus cucurrit post Heliam et ait osculer oro te patrem meum et matrem meam et sic sequar te dixitque ei vade et revertere quod enim meum erat feci tibi
 
-19:21 reversus autem ab eo tulit par boum et mactavit illud et in aratro boum coxit carnes et dedit populo et comederunt consurgensque abiit et secutus est Heliam et ministrabat ei __________________________________________________________________
+19:21 reversus autem ab eo tulit par boum et mactavit illud et in aratro boum coxit carnes et dedit populo et comederunt consurgensque abiit et secutus est Heliam et ministrabat ei
 
 ## Chapter 20
 
@@ -1506,7 +1506,7 @@
 
 20:42 qui ait ad eum haec dicit Dominus quia dimisisti virum dignum morte de manu tua erit anima tua pro anima eius et populus tuus pro populo eius
 
-20:43 reversus est igitur rex Israhel in domum suam audire contemnens et furibundus venit Samariam __________________________________________________________________
+20:43 reversus est igitur rex Israhel in domum suam audire contemnens et furibundus venit Samariam
 
 ## Chapter 21
 
@@ -1566,7 +1566,7 @@
 
 21:28 factus est autem sermo Domini ad Heliam Thesbiten dicens
 
-21:29 nonne vidisti humiliatum Ahab coram me quia igitur humiliatus est mei causa non inducam malum in diebus eius sed in diebus filii sui inferam malum domui eius __________________________________________________________________
+21:29 nonne vidisti humiliatum Ahab coram me quia igitur humiliatus est mei causa non inducam malum in diebus eius sed in diebus filii sui inferam malum domui eius
 
 ## Chapter 22
 
@@ -1674,4 +1674,4 @@
 
 22:52 Ohozias autem filius Ahab regnare coeperat super Israhel in Samaria anno septimodecimo Iosaphat regis Iuda regnavitque super Israhel duobus annis
 
-22:53 et fecit malum in conspectu Domini et ambulavit in via patris sui et matris suae et in via Hieroboam filii Nabath qui peccare fecit Israhel __________________________________________________________________
+22:53 et fecit malum in conspectu Domini et ambulavit in via patris sui et matris suae et in via Hieroboam filii Nabath qui peccare fecit Israhel
