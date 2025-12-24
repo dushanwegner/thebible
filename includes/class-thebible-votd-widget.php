@@ -183,9 +183,9 @@ class TheBible_VOTD_Widget extends WP_Widget {
             }
         }
 
-        $widget_classes = 'thebible-votd-widget thebible-votd-widget-' . esc_attr($first_lang);
+        $widget_classes = 'thebible-votd-widget thebible-votd-widget-' . esc_attr($first_lang) . ' thebible-votd';
         if ($second_lang !== '') {
-            $widget_classes .= ' thebible-votd-widget-dual';
+            $widget_classes .= ' thebible-votd-widget-dual thebible-votd--dual';
         }
         echo '<div class="' . esc_attr($widget_classes) . '">';
 
@@ -235,7 +235,17 @@ class TheBible_VOTD_Widget extends WP_Widget {
             }
             $citation = $heading_label_ds . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
 
-            echo '<div class="thebible-votd-lang thebible-votd-lang-' . esc_attr($ds) . '">';
+            echo '<div'
+                . TheBible_Markup::build_class_attr( [
+                    'thebible-votd-lang',
+                    'thebible-votd-lang-' . $ds,
+                    'thebible-votd__block',
+                    'thebible-votd__block--lang-' . $ds,
+                ] )
+                . TheBible_Markup::build_data_attrs( [
+                    'thebible-lang' => $ds,
+                ] )
+                . '>';
                        
             echo '<p class="thebible-votd-text">' . wp_kses_post($text) . '</p>';
             echo '<div class="thebible-votd-context">';
@@ -251,8 +261,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $hybrid_path = '/' . $dual_slug . '/' . trim($canonical, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
             $hybrid_url  = home_url($hybrid_path);
 
-            echo '<div class="thebible-votd-interlinear-link">';
-            echo '<a href="' . esc_url($hybrid_url) . '" class="thebible-votd-interlinear-button">' . esc_html__('View Bilingual', 'thebible') . '</a>';
+            echo '<div class="thebible-votd-interlinear-link thebible-votd__bilingual-link" data-thebible-dual="' . esc_attr($dual_slug) . '">';
+            echo '<a href="' . esc_url($hybrid_url) . '" class="thebible-votd-interlinear-button thebible-votd__bilingual-button" data-thebible-dual="' . esc_attr($dual_slug) . '">' . esc_html__('View Bilingual', 'thebible') . '</a>';
             echo '</div>';
         }
 

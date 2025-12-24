@@ -9,7 +9,12 @@
 
 if (!defined('ABSPATH')) { exit; }
 
+require_once plugin_dir_path(__FILE__) . 'includes/bootstrap.php';
+
 class TheBible_Plugin {
+    use TheBible_Interlinear_Trait;
+    use TheBible_Rewrites_Trait;
+    use TheBible_VOTD_Admin_Trait;
     const QV_FLAG = 'thebible';
     const QV_BOOK = 'thebible_book';
     const QV_CHAPTER = 'thebible_ch';
@@ -74,7 +79,7 @@ class TheBible_Plugin {
      * Reset rewrite flush flag to trigger flush on next page load.
      */
     public static function reset_rewrite_flush() {
-        delete_option('thebible_flushed_rules');
+        self::reset_rewrite_flush_impl();
     }
 
     private static function u_strlen($s) {
@@ -256,66 +261,15 @@ class TheBible_Plugin {
     }
 
     public static function activate() {
-        self::add_rewrite_rules();
-        flush_rewrite_rules();
+        self::activate_impl();
     }
 
     public static function deactivate() {
-        flush_rewrite_rules();
-        // Clean up legacy options no longer used by the plugin.
-        delete_option( 'thebible_custom_css' );
-        delete_option( 'thebible_prod_domain' );
+        self::deactivate_impl();
     }
 
     public static function add_rewrite_rules() {
-        $slugs = self::base_slugs();
-        foreach ($slugs as $slug) {
-            $slug = trim($slug, "/ ");
-            if ($slug === '') continue;
-            // index
-            add_rewrite_rule('^' . preg_quote($slug, '/') . '/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
-            // /{slug}/{book}
-            add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
-            // /{slug}/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
-            add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
-            // /{slug}/{book}/{chapter}
-            add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
-        }
-        
-        // Dynamic dual-language URLs based on configuration
-        $first_lang = get_option('thebible_first_language', 'bible');
-        $second_lang = get_option('thebible_second_language', '');
-
-        $known_langs = [ 'bible', 'bibel', 'latin' ];
-        foreach ( $known_langs as $a ) {
-            foreach ( $known_langs as $b ) {
-                if ( $a === $b ) {
-                    continue;
-                }
-                $dual_slug = $a . '-' . $b;
-                // index
-                add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $a . '&thebible_secondary_lang=' . $b, 'top');
-                // /{dual}/{book}
-                add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $a . '&thebible_secondary_lang=' . $b, 'top');
-                // /{dual}/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
-                add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $a . '&thebible_secondary_lang=' . $b, 'top');
-                // /{dual}/{book}/{chapter}
-                add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $a . '&thebible_secondary_lang=' . $b, 'top');
-            }
-        }
-        
-        // Sitemaps: English, German, Latin (use unique endpoints to avoid conflicts with other sitemap plugins)
-        add_rewrite_rule('^bible-sitemap-bible\.xml$', 'index.php?' . self::QV_SITEMAP . '=bible&' . self::QV_SLUG . '=bible', 'top');
-        add_rewrite_rule('^bible-sitemap-bibel\.xml$', 'index.php?' . self::QV_SITEMAP . '=bibel&' . self::QV_SLUG . '=bibel', 'top');
-        add_rewrite_rule('^bible-sitemap-latin\.xml$', 'index.php?' . self::QV_SITEMAP . '=latin&' . self::QV_SLUG . '=latin', 'top');
-
-        // One-time flush after rewrite changes (avoids manual Permalinks save).
-        $ver = '0.1.1-dual-language-any-pair';
-        $flushed = get_option('thebible_flushed_rules', '');
-        if ($flushed !== $ver) {
-            flush_rewrite_rules(false);
-            update_option('thebible_flushed_rules', $ver);
-        }
+        self::add_rewrite_rules_impl();
     }
 
     public static function enqueue_assets() {
@@ -342,130 +296,15 @@ class TheBible_Plugin {
      * Enqueue interlinear styles for VOTD widget
      */
     public static function enqueue_votd_interlinear_styles() {
-        // Always enqueue the interlinear VOTD widget styles
-        // They will only apply to widgets with the interlinear class
-        $interlinear_votd_css_url = plugins_url( 'assets/thebible-votd-interlinear.css', __FILE__ );
-        wp_enqueue_style( 'thebible-votd-interlinear-styles', $interlinear_votd_css_url, [], '0.1.0' );
+        self::enqueue_votd_interlinear_styles_impl();
     }
 
     public static function votd_register_bulk_actions( $bulk_actions ) {
-        if ( ! is_array( $bulk_actions ) ) {
-            return $bulk_actions;
-        }
-        $bulk_actions['thebible_votd_shuffle_selected'] = __( 'Shuffle selected VOTDs', 'thebible' );
-        $bulk_actions['thebible_votd_shuffle_all']      = __( 'Shuffle all VOTDs', 'thebible' );
-        $bulk_actions['thebible_votd_shuffle_all_not_today'] = __( 'Shuffle all VOTDs (except today)', 'thebible' );
-        return $bulk_actions;
+        return self::votd_register_bulk_actions_impl( $bulk_actions );
     }
 
     public static function votd_handle_bulk_actions( $redirect_to, $doaction, $post_ids ) {
-        if ( ! is_array( $post_ids ) ) {
-            $post_ids = [];
-        }
-
-        $today = current_time( 'Y-m-d' );
-
-        if ( $doaction === 'thebible_votd_shuffle_selected' && ! empty( $post_ids ) ) {
-            // Shuffle dates among the selected posts only
-            $dates = [];
-            foreach ( $post_ids as $pid ) {
-                $d = get_post_meta( (int) $pid, '_thebible_votd_date', true );
-                if ( ! is_string( $d ) || $d === '' ) {
-                    continue;
-                }
-                $dates[] = $d;
-            }
-            if ( count( $dates ) > 1 ) {
-                shuffle( $dates );
-                $i = 0;
-                foreach ( $post_ids as $pid ) {
-                    $pid = (int) $pid;
-                    if ( ! isset( $dates[ $i ] ) ) {
-                        break;
-                    }
-                    $new_date = $dates[ $i++ ];
-                    update_post_meta( $pid, '_thebible_votd_date', $new_date );
-
-                    $post_obj = get_post( $pid );
-                    if ( $post_obj && $post_obj->post_type === 'thebible_votd' ) {
-                        $norm = self::normalize_votd_entry( $post_obj );
-                        if ( is_array( $norm ) ) {
-                            $title = self::build_votd_post_title( $norm['book_slug'], $norm['chapter'], $norm['vfrom'], $norm['vto'], $new_date );
-                            if ( ! is_string( $title ) || $title === '' ) {
-                                continue;
-                            }
-
-                            wp_update_post( [
-                                'ID'         => $pid,
-                                'post_title' => $title,
-                                'post_name'  => sanitize_title( $title ),
-                            ] );
-                        }
-                    }
-                }
-                self::rebuild_votd_cache();
-            }
-            return add_query_arg( 'thebible_votd_shuffled', 'selected', $redirect_to );
-        }
-
-        if ( $doaction === 'thebible_votd_shuffle_all' || $doaction === 'thebible_votd_shuffle_all_not_today' ) {
-            // Pull all VOTD posts
-            $q = new WP_Query( [
-                'post_type'      => 'thebible_votd',
-                'post_status'    => 'publish',
-                'posts_per_page' => -1,
-                'no_found_rows'  => true,
-            ] );
-
-            if ( ! empty( $q->posts ) ) {
-                $ids   = [];
-                $dates = [];
-                foreach ( $q->posts as $post ) {
-                    $pid = (int) $post->ID;
-                    $d   = get_post_meta( $pid, '_thebible_votd_date', true );
-                    if ( ! is_string( $d ) || $d === '' ) {
-                        continue;
-                    }
-                    if ( $doaction === 'thebible_votd_shuffle_all_not_today' && $d === $today ) {
-                        continue; // keep today's entry fixed
-                    }
-                    $ids[]   = $pid;
-                    $dates[] = $d;
-                }
-
-                if ( count( $ids ) > 1 && count( $dates ) === count( $ids ) ) {
-                    shuffle( $dates );
-                    foreach ( $ids as $idx => $pid ) {
-                        $pid      = (int) $pid;
-                        $new_date = $dates[ $idx ];
-                        update_post_meta( $pid, '_thebible_votd_date', $new_date );
-
-                        $post_obj = get_post( $pid );
-                        if ( $post_obj && $post_obj->post_type === 'thebible_votd' ) {
-                            $norm = self::normalize_votd_entry( $post_obj );
-                            if ( is_array( $norm ) ) {
-                                $title = self::build_votd_post_title( $norm['book_slug'], $norm['chapter'], $norm['vfrom'], $norm['vto'], $new_date );
-                                if ( ! is_string( $title ) || $title === '' ) {
-                                    continue;
-                                }
-
-                                wp_update_post( [
-                                    'ID'         => $pid,
-                                    'post_title' => $title,
-                                    'post_name'  => sanitize_title( $title ),
-                                ] );
-                            }
-                        }
-                    }
-                    self::rebuild_votd_cache();
-                }
-            }
-
-            $flag = ( $doaction === 'thebible_votd_shuffle_all_not_today' ) ? 'all_not_today' : 'all';
-            return add_query_arg( 'thebible_votd_shuffled', $flag, $redirect_to );
-        }
-
-        return $redirect_to;
+        return self::votd_handle_bulk_actions_impl( $redirect_to, $doaction, $post_ids );
     }
 
     public static function add_query_vars($vars) {
@@ -644,115 +483,7 @@ class TheBible_Plugin {
      * Single-language is treated as "interlinear without a secondary language".
      */
     private static function build_hybrid_content($canonical_key, $chapter, $primary_lang, $secondary_lang = null, $book_slug_for_ids = '') {
-        $primary_content = self::extract_chapter_content($canonical_key, $chapter, $primary_lang);
-        if (!$primary_content) {
-            return '';
-        }
-
-        $primary_verses = self::extract_verses_from_html($primary_content);
-        if (!is_array($primary_verses) || empty($primary_verses)) {
-            return '';
-        }
-
-        $secondary_verses = [];
-        if (is_string($secondary_lang) && $secondary_lang !== '' && $secondary_lang !== $primary_lang) {
-            $secondary_content = self::extract_chapter_content($canonical_key, $chapter, $secondary_lang);
-            if ($secondary_content) {
-                $secondary_verses = self::extract_verses_from_html($secondary_content);
-                if (!is_array($secondary_verses)) { $secondary_verses = []; }
-            }
-        }
-
-        $lang_labels = [
-            'bible' => 'EN',
-            'bibel' => 'DE',
-            'latin' => 'LA',
-        ];
-        $primary_label = $lang_labels[$primary_lang] ?? strtoupper((string)$primary_lang);
-        $secondary_label = (is_string($secondary_lang) && $secondary_lang !== '')
-            ? ($lang_labels[$secondary_lang] ?? strtoupper((string)$secondary_lang))
-            : '';
-
-        if (!is_string($book_slug_for_ids) || $book_slug_for_ids === '') {
-            // IDs and navigation must be stable across languages and match the URL slug.
-            // So we always base them on the canonical key (e.g. "matthew", "2-machabees").
-            $book_slug_for_ids = self::slugify($canonical_key);
-        }
-
-        // Build highlight/scroll targets from URL like /book/20:2-4 or /book/20
-        $targets = [];
-        $vf = absint( get_query_var( self::QV_VFROM ) );
-        $vt = absint( get_query_var( self::QV_VTO ) );
-        if ( $vf ) {
-            if ( ! $vt || $vt < $vf ) { $vt = $vf; }
-            for ( $i = $vf; $i <= $vt; $i++ ) {
-                $targets[] = $book_slug_for_ids . '-' . $chapter . '-' . $i;
-            }
-        }
-        $chapter_scroll_id = $book_slug_for_ids . '-ch-' . $chapter;
-
-        $human = self::resolve_book_for_dataset($canonical_key, $primary_lang);
-        if (!is_string($human) || $human === '') { $human = $canonical_key; }
-
-        $entry = self::resolve_index_entry_for_canonical_book($book_slug_for_ids, $primary_lang);
-        $nav = [
-            'book' => $book_slug_for_ids,
-            'chapter' => (int)$chapter,
-            'max_ch' => 0,
-            'prev_book' => '',
-            'prev_max_ch' => 0,
-            'next_book' => '',
-            'next_max_ch' => 0,
-        ];
-        if (is_array($entry) && isset($entry['order'])) {
-            self::load_index();
-            $idx = ((int)$entry['order']) - 1;
-            $count = is_array(self::$books) ? count(self::$books) : 0;
-            if ($count > 0 && $idx >= 0 && $idx < $count) {
-                $prev_idx = ($idx - 1 + $count) % $count;
-                $next_idx = ($idx + 1) % $count;
-                $prev_entry = self::$books[$prev_idx] ?? null;
-                $next_entry = self::$books[$next_idx] ?? null;
-                if (is_array($prev_entry) && isset($prev_entry['short_name'])) {
-                    $prev_canon = self::canonical_key_for_dataset_short_name($primary_lang, (string)$prev_entry['short_name']);
-                    $nav['prev_book'] = $prev_canon !== '' ? self::slugify($prev_canon) : self::slugify((string)$prev_entry['short_name']);
-                }
-                if (is_array($next_entry) && isset($next_entry['short_name'])) {
-                    $next_canon = self::canonical_key_for_dataset_short_name($primary_lang, (string)$next_entry['short_name']);
-                    $nav['next_book'] = $next_canon !== '' ? self::slugify($next_canon) : self::slugify((string)$next_entry['short_name']);
-                }
-            }
-        }
-
-        $nav['max_ch'] = (int) self::max_chapter_for_book_slug($book_slug_for_ids, $primary_lang);
-        if (is_string($nav['prev_book']) && $nav['prev_book'] !== '') {
-            $nav['prev_max_ch'] = (int) self::max_chapter_for_book_slug($nav['prev_book'], $primary_lang);
-        }
-        if (is_string($nav['next_book']) && $nav['next_book'] !== '') {
-            $nav['next_max_ch'] = (int) self::max_chapter_for_book_slug($nav['next_book'], $primary_lang);
-        }
-
-        $out = '';
-        $out .= '<a id="' . esc_attr($chapter_scroll_id) . '"></a>';
-
-        foreach ($primary_verses as $verse_num => $primary_text) {
-            $verse_num = (int) $verse_num;
-            if ($verse_num <= 0) { continue; }
-            $id = $book_slug_for_ids . '-' . $chapter . '-' . $verse_num;
-
-            $out .= '<p id="' . esc_attr($id) . '" class="verse">';
-            $out .= '<span class="verse-num">' . esc_html($verse_num) . '</span> ';
-            $out .= '<span class="verse-body"><span class="thebible-interlinear-verse-lang">' . esc_html($primary_label) . '</span> ' . esc_html($primary_text) . '</span>';
-
-            if ($secondary_label !== '' && isset($secondary_verses[$verse_num]) && is_string($secondary_verses[$verse_num]) && $secondary_verses[$verse_num] !== '') {
-                $out .= '<br><span class="verse-body verse-body-secondary"><span class="thebible-interlinear-verse-lang">' . esc_html($secondary_label) . '</span> ' . esc_html($secondary_verses[$verse_num]) . '</span>';
-            }
-
-            $out .= '</p>';
-        }
-
-        $out = self::inject_nav_helpers($out, $targets, $chapter_scroll_id, $human, $nav);
-        return '<div class="thebible thebible-book thebible-interlinear">' . $out . '</div>';
+        return self::build_hybrid_content_impl($canonical_key, $chapter, $primary_lang, $secondary_lang, $book_slug_for_ids);
     }
 
     private static function max_chapter_for_book_slug($book_slug, $dataset_slug) {
@@ -1210,734 +941,71 @@ class TheBible_Plugin {
     }
 
     public static function register_votd_cpt() {
-        $labels = [
-            'name'                  => __('Verses of the Day', 'thebible'),
-            'singular_name'         => __('Verse of the Day', 'thebible'),
-            'add_new'               => __('Add New', 'thebible'),
-            'add_new_item'          => __('Add New Verse of the Day', 'thebible'),
-            'edit_item'             => __('Edit Verse of the Day', 'thebible'),
-            'new_item'              => __('New Verse of the Day', 'thebible'),
-            'view_item'             => __('View Verse of the Day', 'thebible'),
-            'search_items'          => __('Search Verses of the Day', 'thebible'),
-            'not_found'             => __('No verses of the day found.', 'thebible'),
-            'not_found_in_trash'    => __('No verses of the day found in Trash.', 'thebible'),
-            'all_items'             => __('Verses of the Day', 'thebible'),
-            'menu_name'             => __('Verse of the Day', 'thebible'),
-        ];
-
-        $args = [
-            'labels'             => $labels,
-            'public'             => false,
-            'show_ui'            => true,
-            'show_in_menu'       => true,
-            'show_in_nav_menus'  => false,
-            'show_in_admin_bar'  => false,
-            'exclude_from_search'=> true,
-            'publicly_queryable' => false,
-            'has_archive'        => false,
-            'hierarchical'       => false,
-            'supports'           => [],
-            'menu_position'      => null,
-        ];
-
-        register_post_type('thebible_votd', $args);
+        self::register_votd_cpt_impl();
     }
 
     public static function votd_columns( $columns ) {
-        if ( ! is_array( $columns ) ) {
-            $columns = [];
-        }
-        // Insert VOTD date near the title column
-        $new = [];
-        foreach ( $columns as $key => $label ) {
-            $new[ $key ] = $label;
-            if ( $key === 'title' ) {
-                $new['votd_date'] = __( 'VOTD Date', 'thebible' );
-                $new['votd_texts'] = __( 'EN/DE/LA', 'thebible' );
-            }
-        }
-        if ( ! isset( $new['votd_date'] ) ) {
-            $new['votd_date'] = __( 'VOTD Date', 'thebible' );
-        }
-        if ( ! isset( $new['votd_texts'] ) ) {
-            $new['votd_texts'] = __( 'EN/DE/LA', 'thebible' );
-        }
-        return $new;
+        return self::votd_columns_impl( $columns );
     }
 
     public static function votd_sortable_columns( $columns ) {
-        if ( ! is_array( $columns ) ) {
-            $columns = [];
-        }
-        // Make the VOTD Date column sortable via meta_key _thebible_votd_date
-        $columns['votd_date'] = 'votd_date';
-        return $columns;
+        return self::votd_sortable_columns_impl( $columns );
     }
 
     public static function render_votd_column( $column, $post_id ) {
-        if ( $column === 'votd_date' ) {
-            $date = get_post_meta( $post_id, '_thebible_votd_date', true );
-            if ( ! is_string( $date ) || $date === '' ) {
-                echo '&mdash;';
-                return;
-            }
-            $ts = strtotime( $date . ' 00:00:00' );
-            if ( $ts ) {
-                $human = date_i18n( 'Y-m-d (D)', $ts );
-            } else {
-                $human = $date;
-            }
-            echo esc_html( $human );
-            return;
-        }
-
-        if ( $column === 'votd_texts' ) {
-            $all = get_option( 'thebible_votd_all', [] );
-            $en  = '';
-            $de  = '';
-            $la  = '';
-            if ( is_array( $all ) ) {
-                foreach ( $all as $entry ) {
-                    if ( isset( $entry['post_id'] ) && (int) $entry['post_id'] === (int) $post_id && isset( $entry['texts'] ) && is_array( $entry['texts'] ) ) {
-                        if ( isset( $entry['texts']['bible'] ) && is_string( $entry['texts']['bible'] ) ) {
-                            $en = $entry['texts']['bible'];
-                        }
-                        if ( isset( $entry['texts']['bibel'] ) && is_string( $entry['texts']['bibel'] ) ) {
-                            $de = $entry['texts']['bibel'];
-                        }
-                        if ( isset( $entry['texts']['latin'] ) && is_string( $entry['texts']['latin'] ) ) {
-                            $la = $entry['texts']['latin'];
-                        }
-                        break;
-                    }
-                }
-            }
-
-            $out = '';
-            if ( $en !== '' ) {
-                $out .= '<div><strong>EN:</strong> ' . esc_html( wp_trim_words( $en, 10, '...' ) ) . '</div>';
-            }
-            if ( $de !== '' ) {
-                $out .= '<div><strong>DE:</strong> ' . esc_html( wp_trim_words( $de, 10, '...' ) ) . '</div>';
-            }
-            if ( $la !== '' ) {
-                $out .= '<div><strong>LA:</strong> ' . esc_html( wp_trim_words( $la, 10, '...' ) ) . '</div>';
-            }
-            if ( $out === '' ) {
-                $out = '&mdash;';
-            }
-            echo $out; // phpcs:ignore WordPress.Security.EscapeOutput
-            return;
-        }
+        self::render_votd_column_impl( $column, $post_id );
     }
 
     public static function votd_date_filter() {
-        global $typenow;
-        if ( $typenow !== 'thebible_votd' ) {
-            return;
-        }
-        $map = get_option( 'thebible_votd_by_date', [] );
-        if ( ! is_array( $map ) || empty( $map ) ) {
-            return;
-        }
-        // Build distinct list of months (YYYY-MM) from known VOTD dates
-        $months = [];
-        foreach ( $map as $d => $_entry ) {
-            if ( ! is_string( $d ) || $d === '' ) {
-                continue;
-            }
-            if ( preg_match( '/^(\d{4}-\d{2})-\d{2}$/', $d, $m ) ) {
-                $months[ $m[1] ] = true;
-            }
-        }
-        if ( empty( $months ) ) {
-            return;
-        }
-        $months   = array_keys( $months );
-        sort( $months );
-        $selected = isset( $_GET['thebible_votd_month'] ) ? (string) wp_unslash( $_GET['thebible_votd_month'] ) : '';
-
-        // VOTD toolbar (single row): actions select + run + month filter
-        $cleanup_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'cleanup' ] ), 'thebible_votd_cleanup' );
-        $rebuild_cache_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'rebuild_cache' ] ), 'thebible_votd_rebuild_cache' );
-        $shuffle_all_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'shuffle_all' ] ), 'thebible_votd_shuffle_all' );
-        $shuffle_all_not_today_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'shuffle_all_not_today' ] ), 'thebible_votd_shuffle_all_not_today' );
-
-        echo '<span class="thebible-votd-actions" style="margin-bottom:10px;display:inline-flex;align-items:center;gap:8px;vertical-align:middle;">';
-
-        echo '<label for="thebible_votd_action_select" class="screen-reader-text">' . esc_html__( 'VOTD action', 'thebible' ) . '</label>';
-        echo '<select id="thebible_votd_action_select">';
-        echo '<option value="">' . esc_html__( 'Actions…', 'thebible' ) . '</option>';
-        echo '<option value="' . esc_url( $rebuild_cache_url ) . '">' . esc_html__( 'Rebuild VOTD cache', 'thebible' ) . '</option>';
-        echo '<option value="' . esc_url( $cleanup_url ) . '">' . esc_html__( 'Clean up schedule', 'thebible' ) . '</option>';
-        echo '<option value="' . esc_url( $shuffle_all_url ) . '">' . esc_html__( 'Shuffle all', 'thebible' ) . '</option>';
-        echo '<option value="' . esc_url( $shuffle_all_not_today_url ) . '">' . esc_html__( 'Shuffle (except today)', 'thebible' ) . '</option>';
-        echo '</select>';
-
-        echo '<a href="#" class="button" id="thebible_votd_action_run">' . esc_html__( 'Run', 'thebible' ) . '</a>';
-
-        echo '<label for="thebible_votd_month" class="screen-reader-text">' . esc_html__( 'Filter by VOTD month', 'thebible' ) . '</label>';
-        echo '<select name="thebible_votd_month" id="thebible_votd_month">';
-        echo '<option value="">' . esc_html__( 'All VOTD months', 'thebible' ) . '</option>';
-        foreach ( $months as $m ) {
-            $label = $m;
-            $ts    = strtotime( $m . '-01 00:00:00' );
-            if ( $ts ) {
-                $label = date_i18n( 'F Y', $ts );
-            }
-            echo '<option value="' . esc_attr( $m ) . '"' . selected( $selected, $m, false ) . '>' . esc_html( $label ) . '</option>';
-        }
-        echo '</select>';
-
-        echo '<script>(function(){var s=document.getElementById("thebible_votd_action_select");var b=document.getElementById("thebible_votd_action_run");if(!s||!b)return;function sync(){var v=s.value||"#";b.setAttribute("href",v);b.classList.toggle("button-primary", !!s.value);}
-sync();s.addEventListener("change",sync);b.addEventListener("click",function(e){if(!s.value){e.preventDefault();}});
-})();</script>';
-
-        echo '</span>';
-        
-        // Don't output the month filter again since it's now in the toolbar above
-        return;
+        self::votd_date_filter_impl();
     }
 
     public static function apply_votd_date_filter( $query ) {
-        if ( ! is_admin() || ! $query->is_main_query() ) {
-            return;
-        }
-
-        $screen    = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-        $post_type = $screen && isset( $screen->post_type ) ? $screen->post_type : ( isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '' );
-        if ( $post_type !== 'thebible_votd' ) {
-            return;
-        }
-
-        $month = isset( $_GET['thebible_votd_month'] ) ? sanitize_text_field( wp_unslash( $_GET['thebible_votd_month'] ) ) : '';
-
-        $meta_query = (array) $query->get( 'meta_query' );
-
-        // If a specific VOTD month is chosen, constrain to dates starting with YYYY-MM
-        if ( $month !== '' ) {
-            $meta_query[] = [
-                'key'     => '_thebible_votd_date',
-                'value'   => $month . '-',
-                'compare' => 'LIKE',
-            ];
-        }
-
-        // By default, hide VOTDs strictly before today on the index screen, unless a
-        // different filter is explicitly requested.
-        $show_all = isset( $_GET['thebible_votd_show_all'] ) && $_GET['thebible_votd_show_all'] === '1';
-        if ( ! $show_all ) {
-            $today = current_time( 'Y-m-d' );
-            $meta_query[] = [
-                'key'     => '_thebible_votd_date',
-                'value'   => $today,
-                'compare' => '>=',
-                'type'    => 'CHAR',
-            ];
-        }
-
-        if ( ! empty( $meta_query ) ) {
-            $query->set( 'meta_query', $meta_query );
-        }
-
-        // Determine if the user explicitly requested a different sort
-        $orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : '';
-        $order   = isset( $_GET['order'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_GET['order'] ) ) ) : '';
-
-        // Default sort: always by VOTD date ascending, unless another orderby is set
-        if ( $orderby === '' || $orderby === 'votd_date' ) {
-            $query->set( 'meta_key', '_thebible_votd_date' );
-            $query->set( 'orderby', 'meta_value' );
-            $query->set( 'order', ( $order === 'DESC' && $orderby === 'votd_date' ) ? 'DESC' : 'ASC' );
-        }
+        self::apply_votd_date_filter_impl( $query );
     }
 
     public static function handle_votd_condense_request() {
-        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-        if ( ! $screen || $screen->id !== 'edit-thebible_votd' ) {
-            return;
-        }
-        if ( ! isset( $_GET['thebible_votd_action'] ) ) {
-            return;
-        }
-        $action = (string) $_GET['thebible_votd_action'];
-        if ( ! current_user_can( 'edit_posts' ) ) {
-            return;
-        }
-        // Handle toolbar actions
-        if ( $action === 'cleanup' ) {
-            if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'thebible_votd_cleanup' ) ) {
-                return;
-            }
-
-            // Ensure cache is current
-            self::rebuild_votd_cache();
-            $all = get_option( 'thebible_votd_all', [] );
-            if ( ! is_array( $all ) || empty( $all ) ) {
-                $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
-                $redirect = add_query_arg( [ 'thebible_votd_condensed' => 1, 'moved' => 0, 'gaps' => 0 ], $redirect );
-                wp_safe_redirect( $redirect );
-                exit;
-            }
-
-            $today   = current_time( 'Y-m-d' );
-            $entries = [];
-            foreach ( $all as $entry ) {
-                if ( ! is_array( $entry ) || ! isset( $entry['date'] ) || ! is_string( $entry['date'] ) || $entry['date'] === '' ) {
-                    continue;
-                }
-                if ( $entry['date'] < $today ) {
-                    continue; // keep past untouched
-                }
-                $entries[] = $entry;
-            }
-
-            // Randomize entries so that, when multiple VOTDs share a date, the specific
-            // post that stays on a given day is effectively chosen at random.
-            if ( count( $entries ) > 1 ) {
-                shuffle( $entries );
-            }
-
-            if ( empty( $entries ) ) {
-                $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
-                $redirect = add_query_arg( [ 'thebible_votd_condensed' => 1, 'moved' => 0, 'gaps' => 0 ], $redirect );
-                wp_safe_redirect( $redirect );
-                exit;
-            }
-
-            // Compute gaps between first and last future dates in the original schedule
-            $first_date = $entries[0]['date'];
-            $last_date  = $entries[ count( $entries ) - 1 ]['date'];
-            $gaps       = 0;
-            if ( is_string( $first_date ) && is_string( $last_date ) && $first_date !== '' && $last_date !== '' ) {
-                $dt_first = new DateTime( max( $today, $first_date ) );
-                $dt_last  = new DateTime( $last_date );
-                if ( $dt_last >= $dt_first ) {
-                    $span_days = (int) $dt_first->diff( $dt_last )->days + 1;
-                    $gaps      = max( 0, $span_days - count( $entries ) );
-                }
-            }
-
-            // Condense: reassign future entries to consecutive days from today forward
-            $cursor = new DateTime( $today );
-            $moved  = 0;
-            foreach ( $entries as $entry ) {
-                if ( ! isset( $entry['post_id'] ) ) {
-                    continue;
-                }
-                $post_id = (int) $entry['post_id'];
-                $new_date = $cursor->format( 'Y-m-d' );
-                if ( ! isset( $entry['date'] ) || ! is_string( $entry['date'] ) || $entry['date'] !== $new_date ) {
-                    // Update stored date meta
-                    update_post_meta( $post_id, '_thebible_votd_date', $new_date );
-
-                    // Also update the VOTD post title to reflect the new date, mirroring save_votd_meta()
-                    $post_obj = get_post( $post_id );
-                    if ( $post_obj && $post_obj->post_type === 'thebible_votd' ) {
-                        $norm = self::normalize_votd_entry( $post_obj );
-                        if ( is_array( $norm ) ) {
-                            $book_key = $norm['book_slug'];
-                            $short    = self::resolve_book_for_dataset( $book_key, 'bible' );
-                            if ( ! is_string( $short ) || $short === '' ) {
-                                $label = ucwords( str_replace( '-', ' ', (string) $book_key ) );
-                            } else {
-                                $label = self::pretty_label( $short );
-                            }
-                            $ref   = $label . ' ' . $norm['chapter'] . ':' . ( $norm['vfrom'] === $norm['vto'] ? $norm['vfrom'] : ( $norm['vfrom'] . '-' . $norm['vto'] ) );
-                            $title = $ref . ' (' . $new_date . ')';
-
-                            wp_update_post( [
-                                'ID'         => $post_id,
-                                'post_title' => $title,
-                                'post_name'  => sanitize_title( $title ),
-                            ] );
-                        }
-                    }
-
-                    $moved++;
-                }
-                $cursor->modify( '+1 day' );
-            }
-
-            self::rebuild_votd_cache();
-
-            $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
-            $redirect = add_query_arg( [ 'thebible_votd_condensed' => 1, 'moved' => $moved, 'gaps' => $gaps ], $redirect );
-            wp_safe_redirect( $redirect );
-            exit;
-        }
-
-        // Toolbar shuffles that do not require selection
-        if ( $action === 'shuffle_all' || $action === 'shuffle_all_not_today' ) {
-            $nonce_action = ( $action === 'shuffle_all' ) ? 'thebible_votd_shuffle_all' : 'thebible_votd_shuffle_all_not_today';
-            if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], $nonce_action ) ) {
-                return;
-            }
-
-            $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
-            // Reuse the bulk handler logic with an empty post_ids list; it ignores
-            // $post_ids for the "all" shuffles and runs a full query instead.
-            $doaction  = ( $action === 'shuffle_all' ) ? 'thebible_votd_shuffle_all' : 'thebible_votd_shuffle_all_not_today';
-            $redirect2 = self::votd_handle_bulk_actions( $redirect, $doaction, [] );
-            wp_safe_redirect( $redirect2 );
-            exit;
-        }
-
-        // Rebuild cache action
-        if ( $action === 'rebuild_cache' ) {
-            if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'thebible_votd_rebuild_cache' ) ) {
-                return;
-            }
-
-            self::rebuild_votd_cache();
-            
-            $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
-            $redirect = add_query_arg( [ 'thebible_votd_cache_rebuilt' => 1 ], $redirect );
-            wp_safe_redirect( $redirect );
-            exit;
-        }
+        self::handle_votd_condense_request_impl();
     }
 
     public static function votd_condense_notice() {
-        if ( ! is_admin() ) {
-            return;
-        }
-        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-        if ( ! $screen || $screen->id !== 'edit-thebible_votd' ) {
-            return;
-        }
-        $did_cleanup = isset( $_GET['thebible_votd_condensed'] );
-        $shuffled    = isset( $_GET['thebible_votd_shuffled'] ) ? (string) $_GET['thebible_votd_shuffled'] : '';
-        $cache_rebuilt = isset( $_GET['thebible_votd_cache_rebuilt'] );
-
-        if ( ! $did_cleanup && $shuffled === '' && ! $cache_rebuilt ) {
-            return;
-        }
-
-        if ( $did_cleanup ) {
-            $moved = isset( $_GET['moved'] ) ? (int) $_GET['moved'] : 0;
-            $gaps  = isset( $_GET['gaps'] ) ? (int) $_GET['gaps'] : 0;
-
-            if ( $moved === 0 && $gaps === 0 ) {
-                echo '<div class="notice notice-info is-dismissible"><p>' . esc_html__( 'VOTD schedule is already clean; no changes were made.', 'thebible' ) . '</p></div>';
-            } elseif ( $gaps > 0 ) {
-                echo '<div class="notice notice-warning is-dismissible"><p>' . sprintf( esc_html__( 'Cleaned up Verse-of-the-Day schedule: filled %1$d empty day slots and adjusted %2$d entries from today forward.', 'thebible' ), $gaps, $moved ) . '</p></div>';
-            } else {
-                echo '<div class="notice notice-success is-dismissible"><p>' . sprintf( esc_html__( 'Cleaned up Verse-of-the-Day schedule: adjusted %1$d entries from today forward.', 'thebible' ), $moved ) . '</p></div>';
-            }
-        }
-
-        if ( $shuffled !== '' ) {
-            if ( $shuffled === 'selected' ) {
-                echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Shuffled selected VOTD entries.', 'thebible' ) . '</p></div>';
-            } elseif ( $shuffled === 'all_not_today' ) {
-                echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Shuffled all VOTD entries except today.', 'thebible' ) . '</p></div>';
-            } else {
-                echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Shuffled all VOTD entries.', 'thebible' ) . '</p></div>';
-            }
-        }
-
-        if ( $cache_rebuilt ) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'VOTD cache rebuilt successfully. Latin verses are now included.', 'thebible' ) . '</p></div>';
-        }
+        self::votd_condense_notice_impl();
     }
 
     public static function add_votd_meta_box() {
-        add_meta_box(
-            'thebible_votd_meta',
-            __('Verse reference', 'thebible'),
-            [__CLASS__, 'render_votd_meta_box'],
-            'thebible_votd',
-            'normal',
-            'default'
-        );
+        self::add_votd_meta_box_impl();
     }
 
     public static function render_votd_meta_box($post) {
-        wp_nonce_field('thebible_votd_meta_save', 'thebible_votd_meta_nonce');
-
-        $book  = get_post_meta($post->ID, '_thebible_votd_book', true);
-        $ch    = get_post_meta($post->ID, '_thebible_votd_chapter', true);
-        $vfrom = get_post_meta($post->ID, '_thebible_votd_vfrom', true);
-        $vto   = get_post_meta($post->ID, '_thebible_votd_vto', true);
-        $date  = get_post_meta($post->ID, '_thebible_votd_date', true);
-
-        if (!is_string($book))  $book = '';
-        if (!is_string($date))  $date = '';
-        $ch    = (string) (int) $ch;
-        $vfrom = (string) (int) $vfrom;
-        $vto   = (string) (int) $vto;
-
-        $canonical_books = self::list_canonical_books();
-
-        echo '<p>' . esc_html__('Define the Bible reference and optional calendar date for this verse-of-the-day entry.', 'thebible') . '</p>';
-
-        echo '<table class="form-table" role="presentation"><tbody>';
-
-        echo '<tr><th scope="row"><label for="thebible_votd_book">' . esc_html__('Book', 'thebible') . '</label></th><td>';
-        echo '<select id="thebible_votd_book" name="thebible_votd_book">';
-        echo '<option value="">' . esc_html__('Select a book…', 'thebible') . '</option>';
-        if (is_array($canonical_books)) {
-            foreach ($canonical_books as $key) {
-                if (!is_string($key) || $key === '') continue;
-                $label = $key;
-                $label = str_replace('-', ' ', $label);
-                $label = ucwords($label);
-                echo '<option value="' . esc_attr($key) . '"' . selected($book, $key, false) . '>' . esc_html($label) . '</option>';
-            }
-        }
-        echo '</select>';
-        echo '<p class="description">' . esc_html__('Canonical book key used to map to all Bible datasets (e.g. "john", "psalms").', 'thebible') . '</p>';
-        echo '</td></tr>';
-
-        echo '<tr><th scope="row"><label for="thebible_votd_chapter">' . esc_html__('Chapter', 'thebible') . '</label></th><td>';
-        echo '<input type="number" min="1" step="1" class="small-text" id="thebible_votd_chapter" name="thebible_votd_chapter" value="' . esc_attr($ch) . '" />';
-        echo '</td></tr>';
-
-        echo '<tr><th scope="row"><label for="thebible_votd_vfrom">' . esc_html__('First verse', 'thebible') . '</label></th><td>';
-        echo '<input type="number" min="1" step="1" class="small-text" id="thebible_votd_vfrom" name="thebible_votd_vfrom" value="' . esc_attr($vfrom) . '" />';
-        echo '</td></tr>';
-
-        echo '<tr><th scope="row"><label for="thebible_votd_vto">' . esc_html__('Last verse', 'thebible') . '</label></th><td>';
-        echo '<input type="number" min="1" step="1" class="small-text" id="thebible_votd_vto" name="thebible_votd_vto" value="' . esc_attr($vto) . '" />';
-        echo '<p class="description">' . esc_html__('If empty or smaller than first verse, the range is treated as a single verse.', 'thebible') . '</p>';
-        echo '</td></tr>';
-
-        echo '<tr><th scope="row"><label for="thebible_votd_date">' . esc_html__('Calendar date (optional)', 'thebible') . '</label></th><td>';
-        echo '<input type="text" class="regular-text" id="thebible_votd_date" name="thebible_votd_date" value="' . esc_attr($date) . '" placeholder="YYYY-MM-DD" />';
-        echo '<p class="description">' . esc_html__('If set, this entry will be used as the verse of the day for that local date (widget mode "today").', 'thebible') . '</p>';
-        echo '</td></tr>';
-
-        echo '</tbody></table>';
-
-        $entry_for_preview = [
-            'book_slug' => $book,
-            'chapter'   => (int) $ch,
-            'vfrom'     => (int) $vfrom,
-            'vto'       => (int) ( (int) $vto > 0 ? $vto : $vfrom ),
-            'date'      => $date,
-        ];
-        $texts = self::extract_votd_texts_for_entry( $entry_for_preview );
-        if ( is_array( $texts ) && ( ! empty( $texts['bible'] ) || ! empty( $texts['bibel'] ) || ! empty( $texts['latin'] ) ) ) {
-            echo '<h3>' . esc_html__( 'Preview (cached verse text)', 'thebible' ) . '</h3>';
-            echo '<p class="description">' . esc_html__( 'These snippets are read from the verse cache for English (Douay), German (Menge), and Latin (Vulgate).', 'thebible' ) . '</p>';
-            echo '<div style="padding:.5em 1em;border:1px solid #ccd0d4;background:#f6f7f7;max-width:48em;">';
-            if ( ! empty( $texts['bible'] ) && is_string( $texts['bible'] ) ) {
-                echo '<p><strong>EN:</strong> ' . esc_html( $texts['bible'] ) . '</p>';
-            }
-            if ( ! empty( $texts['bibel'] ) && is_string( $texts['bibel'] ) ) {
-                echo '<p><strong>DE:</strong> ' . esc_html( $texts['bibel'] ) . '</p>';
-            }
-            if ( ! empty( $texts['latin'] ) && is_string( $texts['latin'] ) ) {
-                echo '<p><strong>LA:</strong> ' . esc_html( $texts['latin'] ) . '</p>';
-            }
-            echo '</div>';
-        }
+        self::render_votd_meta_box_impl($post);
     }
 
     public static function save_votd_meta($post_id, $post) {
-        if ($post->post_type !== 'thebible_votd') {
-            return;
-        }
-        if (!isset($_POST['thebible_votd_meta_nonce']) || !wp_verify_nonce($_POST['thebible_votd_meta_nonce'], 'thebible_votd_meta_save')) {
-            return;
-        }
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-        if (!current_user_can('edit_post', $post_id)) return;
-
-        $book  = isset($_POST['thebible_votd_book']) ? sanitize_text_field(wp_unslash($_POST['thebible_votd_book'])) : '';
-        $ch    = isset($_POST['thebible_votd_chapter']) ? (int) $_POST['thebible_votd_chapter'] : 0;
-        $vfrom = isset($_POST['thebible_votd_vfrom']) ? (int) $_POST['thebible_votd_vfrom'] : 0;
-        $vto   = isset($_POST['thebible_votd_vto']) ? (int) $_POST['thebible_votd_vto'] : 0;
-        $date  = isset($_POST['thebible_votd_date']) ? sanitize_text_field(wp_unslash($_POST['thebible_votd_date'])) : '';
-
-        if ($book !== '') {
-            update_post_meta($post_id, '_thebible_votd_book', $book);
-        } else {
-            delete_post_meta($post_id, '_thebible_votd_book');
-        }
-
-        if ($ch > 0) {
-            update_post_meta($post_id, '_thebible_votd_chapter', $ch);
-        } else {
-            delete_post_meta($post_id, '_thebible_votd_chapter');
-        }
-
-        if ($vfrom > 0) {
-            update_post_meta($post_id, '_thebible_votd_vfrom', $vfrom);
-        } else {
-            delete_post_meta($post_id, '_thebible_votd_vfrom');
-        }
-
-        if ($vto > 0) {
-            update_post_meta($post_id, '_thebible_votd_vto', $vto);
-        } else {
-            delete_post_meta($post_id, '_thebible_votd_vto');
-        }
-
-        if ($date !== '') {
-            $date = preg_replace('/[^0-9\-]/', '', $date);
-            update_post_meta($post_id, '_thebible_votd_date', $date);
-        } else {
-            // Default to today if no date provided
-            $date = current_time('Y-m-d');
-            update_post_meta($post_id, '_thebible_votd_date', $date);
-        }
-
-        // Auto-generate post title from reference and date
-        $entry = self::normalize_votd_entry(get_post($post_id));
-        if (is_array($entry)) {
-            $title = self::build_votd_post_title($entry['book_slug'], $entry['chapter'], $entry['vfrom'], $entry['vto'], $entry['date']);
-            if (!is_string($title) || $title === '') {
-                return;
-            }
-
-            // Avoid infinite recursion when updating the post inside save_post
-            remove_action('save_post', [__CLASS__, 'save_votd_meta'], 10);
-            wp_update_post([
-                'ID'         => $post_id,
-                'post_title' => $title,
-                'post_name'  => sanitize_title($title),
-            ]);
-            add_action('save_post', [__CLASS__, 'save_votd_meta'], 10, 2);
-        }
-
-        self::rebuild_votd_cache();
+        self::save_votd_meta_impl($post_id, $post);
     }
 
     private static function rebuild_votd_cache() {
-        $by_date = [];
-        $all = [];
-
-        $q = new WP_Query([
-            'post_type'      => 'thebible_votd',
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-            'no_found_rows'  => true,
-        ]);
-
-        if (!empty($q->posts)) {
-            foreach ($q->posts as $post) {
-                $entry = self::normalize_votd_entry($post);
-                if (!is_array($entry)) {
-                    continue;
-                }
-                $entry['texts'] = self::extract_votd_texts_for_entry($entry);
-                $all[] = $entry;
-                if (!empty($entry['date'])) {
-                    $by_date[$entry['date']] = $entry;
-                }
-            }
-        }
-
-        update_option('thebible_votd_by_date', $by_date, false);
-        update_option('thebible_votd_all', $all, false);
+        self::rebuild_votd_cache_impl();
     }
 
     private static function normalize_votd_entry($post) {
-        if (!$post || $post->post_type !== 'thebible_votd') return null;
-
-        $book  = get_post_meta($post->ID, '_thebible_votd_book', true);
-        $ch    = (int) get_post_meta($post->ID, '_thebible_votd_chapter', true);
-        $vfrom = (int) get_post_meta($post->ID, '_thebible_votd_vfrom', true);
-        $vto   = (int) get_post_meta($post->ID, '_thebible_votd_vto', true);
-        $date  = get_post_meta($post->ID, '_thebible_votd_date', true);
-
-        if (!is_string($book) || $book === '' || $ch <= 0 || $vfrom <= 0) {
-            return null;
-        }
-        if ($vto <= 0 || $vto < $vfrom) {
-            $vto = $vfrom;
-        }
-        if (!is_string($date)) {
-            $date = '';
-        }
-
-        return [
-            'post_id'   => (int) $post->ID,
-            'book_slug' => $book,
-            'chapter'   => $ch,
-            'vfrom'     => $vfrom,
-            'vto'       => $vto,
-            'date'      => $date,
-        ];
+        return self::normalize_votd_entry_impl($post);
     }
 
     private static function build_votd_post_title($book_key, $chapter, $vfrom, $vto, $date) {
-        $book_key = is_string($book_key) ? $book_key : '';
-        $chapter  = (int) $chapter;
-        $vfrom    = (int) $vfrom;
-        $vto      = (int) $vto;
-        $date     = is_string($date) ? $date : '';
-
-        if ($book_key === '' || $chapter <= 0 || $vfrom <= 0) {
-            return '';
-        }
-        if ($vto <= 0 || $vto < $vfrom) {
-            $vto = $vfrom;
-        }
-
-        $short = self::resolve_book_for_dataset($book_key, 'bible');
-        if (!is_string($short) || $short === '') {
-            $label = ucwords(str_replace('-', ' ', (string) $book_key));
-        } else {
-            $label = self::pretty_label($short);
-        }
-
-        $ref = $label . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
-        if ($date !== '') {
-            return $ref . ' (' . $date . ')';
-        }
-        return $ref;
+        return self::build_votd_post_title_impl($book_key, $chapter, $vfrom, $vto, $date);
     }
 
     public static function get_votd_for_date($date = null) {
-        if ($date === null) {
-            $date = current_time('Y-m-d');
-        }
-        if (!is_string($date) || $date === '') {
-            return null;
-        }
-        $map = get_option('thebible_votd_by_date', []);
-        if (!is_array($map) || empty($map)) {
-            return null;
-        }
-        if (!isset($map[$date]) || !is_array($map[$date])) {
-            return null;
-        }
-        return $map[$date];
+        return self::get_votd_for_date_impl($date);
     }
 
     public static function get_votd_random($exclude_ids = []) {
-        $all = get_option('thebible_votd_all', []);
-        if (!is_array($all) || empty($all)) {
-            return null;
-        }
-        $exclude_ids = array_map('intval', (array) $exclude_ids);
-        $candidates = [];
-        foreach ($all as $entry) {
-            if (!is_array($entry) || empty($entry['post_id'])) {
-                continue;
-            }
-            if (in_array((int) $entry['post_id'], $exclude_ids, true)) {
-                continue;
-            }
-            $candidates[] = $entry;
-        }
-        if (empty($candidates)) {
-            return null;
-        }
-        $idx = array_rand($candidates);
-        return $candidates[$idx];
+        return self::get_votd_random_impl($exclude_ids);
     }
 
     public static function get_votd_random_not_today() {
-        $today = self::get_votd_for_date();
-        $exclude = [];
-        if (is_array($today) && !empty($today['post_id'])) {
-            $exclude[] = (int) $today['post_id'];
-        }
-        return self::get_votd_random($exclude);
+        return self::get_votd_random_not_today_impl();
     }
 
     public static function add_bible_column($columns) {
@@ -2412,48 +1480,7 @@ sync();s.addEventListener("change",sync);b.addEventListener("click",function(e){
     }
 
     private static function extract_votd_texts_for_entry($entry) {
-        if (!is_array($entry)) return [];
-        $out = [];
-        $datasets = ['bible', 'bibel', 'latin'];
-        foreach ($datasets as $dataset) {
-            $short = self::resolve_book_for_dataset($entry['book_slug'], $dataset);
-            if (!is_string($short) || $short === '') {
-                continue;
-            }
-            $index_file = plugin_dir_path(__FILE__) . 'data/' . $dataset . '/html/index.csv';
-            if (!file_exists($index_file)) {
-                continue;
-            }
-            $filename = '';
-            if (($fh = fopen($index_file, 'r')) !== false) {
-                $header = fgetcsv($fh);
-                while (($row = fgetcsv($fh)) !== false) {
-                    if (!is_array($row) || count($row) < 4) continue;
-                    if ((string) $row[1] === (string) $short) {
-                        $filename = (string) $row[3];
-                        break;
-                    }
-                }
-                fclose($fh);
-            }
-            if ($filename === '') {
-                continue;
-            }
-            $html_path = plugin_dir_path(__FILE__) . 'data/' . $dataset . '/html/' . $filename;
-            if (!file_exists($html_path)) {
-                continue;
-            }
-            $html = (string) file_get_contents($html_path);
-            if ($html === '') {
-                continue;
-            }
-            $book_slug = self::slugify($short);
-            $txt = self::extract_verse_text_from_html($html, $book_slug, (int) $entry['chapter'], (int) $entry['vfrom'], (int) $entry['vto']);
-            if (is_string($txt) && $txt !== '') {
-                $out[$dataset] = $txt;
-            }
-        }
-        return $out;
+        return self::extract_votd_texts_for_entry_impl($entry);
     }
 
     private static function normalize_whitespace($s) {
@@ -4367,12 +3394,5 @@ johannes,3,16,18
         return '<footer class="thebible-footer">' . implode('', $blocks) . '</footer>';
     }
 }
-
-require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-renderer.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-og.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd-widget.php';
 
 TheBible_Plugin::init();
