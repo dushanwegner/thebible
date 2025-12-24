@@ -2030,6 +2030,11 @@ class TheBible_Plugin {
 
         // If no chapter is specified, show a simple chapter list instead of rendering the entire book.
         $ch = absint( get_query_var( self::QV_CHAPTER ) );
+        $vf = absint( get_query_var( self::QV_VFROM ) );
+        if ( $vf > 0 && $ch <= 0 ) {
+            self::render_404();
+            return;
+        }
         if ( $ch <= 0 ) {
             status_header(200);
             nocache_headers();
@@ -2076,13 +2081,19 @@ class TheBible_Plugin {
 
         // Unified renderer: always render chapter/verse requests in the interlinear-style layout.
         if ( $ch > 0 ) {
-            $canonical_key = self::canonical_book_slug_from_url($slug, $primary_lang);
+            $canonical_key = '';
+            if (is_array($entry) && isset($entry['short_name']) && is_string($entry['short_name']) && $entry['short_name'] !== '') {
+                $canonical_key = self::canonical_key_for_dataset_short_name($primary_lang, (string) $entry['short_name']);
+            }
+            if (!is_string($canonical_key) || $canonical_key === '') {
+                // Fallback: assume incoming slug is already canonical
+                $canonical_key = self::slugify($slug);
+            }
             if ($canonical_key) {
                 $base_title = isset($entry['display_name']) && $entry['display_name'] !== ''
                     ? $entry['display_name']
                     : self::pretty_label( $entry['short_name'] );
 
-                $vf = absint( get_query_var( self::QV_VFROM ) );
                 $vt = absint( get_query_var( self::QV_VTO ) );
                 if ( $vf ) {
                     if ( ! $vt || $vt < $vf ) { $vt = $vf; }
@@ -2111,76 +2122,9 @@ class TheBible_Plugin {
                 }
             }
         }
-        
-        // Fallback to standard single-language rendering
-        $file = self::html_dir() . $entry['filename'];
-        if (!file_exists($file)) {
-            self::render_404();
-            return;
-        }
-        $html = file_get_contents($file);
-        // Build optional highlight/scroll targets from URL like /book/20:2-4 or /book/20
-        $targets = [];
-        $chapter_scroll_id = null;
-        $ch = absint( get_query_var( self::QV_CHAPTER ) );
-        $vf = absint( get_query_var( self::QV_VFROM ) );
-        $vt = absint( get_query_var( self::QV_VTO ) );
-        $book_slug = self::slugify( $entry['short_name'] );
-        if ( $ch && $vf ) {
-            if ( ! $vt || $vt < $vf ) { $vt = $vf; }
-            for ( $i = $vf; $i <= $vt; $i++ ) {
-                $targets[] = $book_slug . '-' . $ch . '-' . $i;
-            }
-        } elseif ( $ch && ! $vf ) {
-            // Chapter-only: scroll to chapter heading id like slug-ch-{ch}
-            $chapter_scroll_id = $book_slug . '-ch-' . $ch;
-        }
-        // Inject navigation helpers and optional highlight/scroll behavior
-        $human = isset($entry['display_name']) && $entry['display_name'] !== '' ? $entry['display_name'] : $entry['short_name'];
-        $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id, $human);
-        status_header(200);
-        nocache_headers();
-        $base_title = isset($entry['display_name']) && $entry['display_name'] !== ''
-            ? $entry['display_name']
-            : self::pretty_label( $entry['short_name'] );
-        $title = $base_title;
-        $slug_ctx = get_query_var(self::QV_SLUG);
-        if (!is_string($slug_ctx) || $slug_ctx === '') { $slug_ctx = 'bible'; }
-        $ch = absint( get_query_var( self::QV_CHAPTER ) );
-        $vf = absint( get_query_var( self::QV_VFROM ) );
-        $vt = absint( get_query_var( self::QV_VTO ) );
-        if ($ch && $vf) {
-            if (!$vt || $vt < $vf) { $vt = $vf; }
-            $ref = $base_title . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt));
-            $snippet = self::extract_verse_text($entry, $ch, $vf, $vt);
-            if (is_string($snippet) && $snippet !== '') {
-                $snippet = wp_strip_all_tags($snippet);
-                $snippet = preg_replace('/\s+/u', ' ', trim($snippet));
-                if ($snippet !== '') {
-                    if (function_exists('mb_strlen') && function_exists('mb_substr')) {
-                        $max = 80;
-                        if (mb_strlen($snippet, 'UTF-8') > $max) {
-                            $snippet = mb_substr($snippet, 0, $max, 'UTF-8') . '…';
-                        }
-                    } else {
-                        if (strlen($snippet) > 80) {
-                            $snippet = substr($snippet, 0, 80) . '…';
-                        }
-                    }
-                    $title = $ref . ' (»' . $snippet . '«)';
-                } else {
-                    $title = $ref;
-                }
-            } else {
-                $title = $ref;
-            }
-        } elseif ($ch) {
-            $title = $base_title . ' ' . $ch;
-        }
-        $content = '<div class="thebible thebible-book">' . $html . '</div>';
-        $footer = self::render_footer_html();
-        if ($footer !== '') { $content .= $footer; }
-        self::output_with_theme($title, $content, 'book');
+
+        // Never fall back to rendering the whole-book HTML for chapter/verse URLs.
+        self::render_404();
     }
 
     private static function render_404() {
