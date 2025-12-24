@@ -282,33 +282,21 @@ class TheBible_Plugin {
             add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
         }
         
-        // Hybrid language URLs: /{primary}-{secondary}/...
-        // Use a simpler approach that works with WordPress's existing routing
-        add_rewrite_rule('^bible-bibel/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
-        add_rewrite_rule('^bible-bibel/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
-        add_rewrite_rule('^bible-bibel/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
-        add_rewrite_rule('^bible-bibel/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=bibel', 'top');
-
-        // Latin hybrid combinations
-        add_rewrite_rule('^latin-bible/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
-        add_rewrite_rule('^latin-bible/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
-        add_rewrite_rule('^latin-bible/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
-        add_rewrite_rule('^latin-bible/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bible', 'top');
-
-        add_rewrite_rule('^bible-latin/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
-        add_rewrite_rule('^bible-latin/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
-        add_rewrite_rule('^bible-latin/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
-        add_rewrite_rule('^bible-latin/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bible&thebible_secondary_lang=latin', 'top');
-
-        add_rewrite_rule('^bibel-latin/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
-        add_rewrite_rule('^bibel-latin/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
-        add_rewrite_rule('^bibel-latin/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
-        add_rewrite_rule('^bibel-latin/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=bibel&thebible_secondary_lang=latin', 'top');
-
-        add_rewrite_rule('^latin-bibel/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
-        add_rewrite_rule('^latin-bibel/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
-        add_rewrite_rule('^latin-bibel/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
-        add_rewrite_rule('^latin-bibel/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=latin&thebible_secondary_lang=bibel', 'top');
+        // Dynamic dual-language URLs based on configuration
+        $first_lang = get_option('thebible_first_language', 'bible');
+        $second_lang = get_option('thebible_second_language', '');
+        
+        if ($first_lang && $second_lang && $first_lang !== $second_lang) {
+            $dual_slug = $first_lang . '-' . $second_lang;
+            // index
+            add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $first_lang . '&thebible_secondary_lang=' . $second_lang, 'top');
+            // /{dual}/{book}
+            add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $first_lang . '&thebible_secondary_lang=' . $second_lang, 'top');
+            // /{dual}/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
+            add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $first_lang . '&thebible_secondary_lang=' . $second_lang, 'top');
+            // /{dual}/{book}/{chapter}
+            add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $first_lang . '&thebible_secondary_lang=' . $second_lang, 'top');
+        }
         
         // Sitemaps: English, German, Latin (use unique endpoints to avoid conflicts with other sitemap plugins)
         add_rewrite_rule('^bible-sitemap-bible\.xml$', 'index.php?' . self::QV_SITEMAP . '=bible&' . self::QV_SLUG . '=bible', 'top');
@@ -316,7 +304,7 @@ class TheBible_Plugin {
         add_rewrite_rule('^bible-sitemap-latin\.xml$', 'index.php?' . self::QV_SITEMAP . '=latin&' . self::QV_SLUG . '=latin', 'top');
 
         // One-time flush after rewrite changes (avoids manual Permalinks save).
-        $ver = '0.1.0-hybrid-latin-2';
+        $ver = '0.1.0-dual-language-config';
         $flushed = get_option('thebible_flushed_rules', '');
         if ($flushed !== $ver) {
             flush_rewrite_rules(false);
@@ -1259,14 +1247,14 @@ class TheBible_Plugin {
             $new[ $key ] = $label;
             if ( $key === 'title' ) {
                 $new['votd_date'] = __( 'VOTD Date', 'thebible' );
-                $new['votd_texts'] = __( 'EN/DE', 'thebible' );
+                $new['votd_texts'] = __( 'EN/DE/LA', 'thebible' );
             }
         }
         if ( ! isset( $new['votd_date'] ) ) {
             $new['votd_date'] = __( 'VOTD Date', 'thebible' );
         }
         if ( ! isset( $new['votd_texts'] ) ) {
-            $new['votd_texts'] = __( 'EN/DE', 'thebible' );
+            $new['votd_texts'] = __( 'EN/DE/LA', 'thebible' );
         }
         return $new;
     }
@@ -1301,6 +1289,7 @@ class TheBible_Plugin {
             $all = get_option( 'thebible_votd_all', [] );
             $en  = '';
             $de  = '';
+            $la  = '';
             if ( is_array( $all ) ) {
                 foreach ( $all as $entry ) {
                     if ( isset( $entry['post_id'] ) && (int) $entry['post_id'] === (int) $post_id && isset( $entry['texts'] ) && is_array( $entry['texts'] ) ) {
@@ -1310,27 +1299,29 @@ class TheBible_Plugin {
                         if ( isset( $entry['texts']['bibel'] ) && is_string( $entry['texts']['bibel'] ) ) {
                             $de = $entry['texts']['bibel'];
                         }
+                        if ( isset( $entry['texts']['latin'] ) && is_string( $entry['texts']['latin'] ) ) {
+                            $la = $entry['texts']['latin'];
+                        }
                         break;
                     }
                 }
             }
 
-            if ( $en === '' && $de === '' ) {
-                echo '<small>&mdash;</small>';
-                return;
-            }
-
-            echo '<small>';
+            $out = '';
             if ( $en !== '' ) {
-                echo '<strong>EN:</strong> ' . esc_html( trim( (string) $en ) );
+                $out .= '<div><strong>EN:</strong> ' . esc_html( wp_trim_words( $en, 10, '...' ) ) . '</div>';
             }
             if ( $de !== '' ) {
-                if ( $en !== '' ) {
-                    echo '<br />';
-                }
-                echo '<strong>DE:</strong> ' . esc_html( trim( (string) $de ) );
+                $out .= '<div><strong>DE:</strong> ' . esc_html( wp_trim_words( $de, 10, '...' ) ) . '</div>';
             }
-            echo '</small>';
+            if ( $la !== '' ) {
+                $out .= '<div><strong>LA:</strong> ' . esc_html( wp_trim_words( $la, 10, '...' ) ) . '</div>';
+            }
+            if ( $out === '' ) {
+                $out = '&mdash;';
+            }
+            echo $out; // phpcs:ignore WordPress.Security.EscapeOutput
+            return;
         }
     }
 
@@ -1360,15 +1351,24 @@ class TheBible_Plugin {
         sort( $months );
         $selected = isset( $_GET['thebible_votd_month'] ) ? (string) wp_unslash( $_GET['thebible_votd_month'] ) : '';
 
-        // Clean-up and shuffle buttons (near filters, visually close to "Add New" button)
+        // VOTD toolbar (single row): actions select + run + month filter
         $cleanup_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'cleanup' ] ), 'thebible_votd_cleanup' );
-        echo '<a href="' . esc_url( $cleanup_url ) . '" class="button">' . esc_html__( 'Clean up VOTD schedule', 'thebible' ) . '</a> ';
-
+        $rebuild_cache_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'rebuild_cache' ] ), 'thebible_votd_rebuild_cache' );
         $shuffle_all_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'shuffle_all' ] ), 'thebible_votd_shuffle_all' );
-        echo '<a href="' . esc_url( $shuffle_all_url ) . '" class="button">' . esc_html__( 'Shuffle all VOTDs', 'thebible' ) . '</a> ';
-
         $shuffle_all_not_today_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'shuffle_all_not_today' ] ), 'thebible_votd_shuffle_all_not_today' );
-        echo '<a href="' . esc_url( $shuffle_all_not_today_url ) . '" class="button">' . esc_html__( 'Shuffle all VOTDs (except today)', 'thebible' ) . '</a> ';
+
+        echo '<div class="thebible-votd-actions" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+
+        echo '<label for="thebible_votd_action_select" class="screen-reader-text">' . esc_html__( 'VOTD action', 'thebible' ) . '</label>';
+        echo '<select id="thebible_votd_action_select">';
+        echo '<option value="">' . esc_html__( 'Actions…', 'thebible' ) . '</option>';
+        echo '<option value="' . esc_url( $rebuild_cache_url ) . '">' . esc_html__( 'Rebuild VOTD cache', 'thebible' ) . '</option>';
+        echo '<option value="' . esc_url( $cleanup_url ) . '">' . esc_html__( 'Clean up schedule', 'thebible' ) . '</option>';
+        echo '<option value="' . esc_url( $shuffle_all_url ) . '">' . esc_html__( 'Shuffle all', 'thebible' ) . '</option>';
+        echo '<option value="' . esc_url( $shuffle_all_not_today_url ) . '">' . esc_html__( 'Shuffle (except today)', 'thebible' ) . '</option>';
+        echo '</select>';
+
+        echo '<a href="#" class="button" id="thebible_votd_action_run">' . esc_html__( 'Run', 'thebible' ) . '</a>';
 
         echo '<label for="thebible_votd_month" class="screen-reader-text">' . esc_html__( 'Filter by VOTD month', 'thebible' ) . '</label>';
         echo '<select name="thebible_votd_month" id="thebible_votd_month">';
@@ -1382,6 +1382,12 @@ class TheBible_Plugin {
             echo '<option value="' . esc_attr( $m ) . '"' . selected( $selected, $m, false ) . '>' . esc_html( $label ) . '</option>';
         }
         echo '</select>';
+
+        echo '<script>(function(){var s=document.getElementById("thebible_votd_action_select");var b=document.getElementById("thebible_votd_action_run");if(!s||!b)return;function sync(){var v=s.value||"#";b.setAttribute("href",v);b.classList.toggle("button-primary", !!s.value);}
+sync();s.addEventListener("change",sync);b.addEventListener("click",function(e){if(!s.value){e.preventDefault();}});
+})();</script>';
+
+        echo '</div>';
     }
 
     public static function apply_votd_date_filter( $query ) {
@@ -1567,6 +1573,20 @@ class TheBible_Plugin {
             wp_safe_redirect( $redirect2 );
             exit;
         }
+
+        // Rebuild cache action
+        if ( $action === 'rebuild_cache' ) {
+            if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'thebible_votd_rebuild_cache' ) ) {
+                return;
+            }
+
+            self::rebuild_votd_cache();
+            
+            $redirect = remove_query_arg( [ 'thebible_votd_action', '_wpnonce' ] );
+            $redirect = add_query_arg( [ 'thebible_votd_cache_rebuilt' => 1 ], $redirect );
+            wp_safe_redirect( $redirect );
+            exit;
+        }
     }
 
     public static function votd_condense_notice() {
@@ -1579,8 +1599,9 @@ class TheBible_Plugin {
         }
         $did_cleanup = isset( $_GET['thebible_votd_condensed'] );
         $shuffled    = isset( $_GET['thebible_votd_shuffled'] ) ? (string) $_GET['thebible_votd_shuffled'] : '';
+        $cache_rebuilt = isset( $_GET['thebible_votd_cache_rebuilt'] );
 
-        if ( ! $did_cleanup && $shuffled === '' ) {
+        if ( ! $did_cleanup && $shuffled === '' && ! $cache_rebuilt ) {
             return;
         }
 
@@ -1605,6 +1626,10 @@ class TheBible_Plugin {
             } else {
                 echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Shuffled all VOTD entries.', 'thebible' ) . '</p></div>';
             }
+        }
+
+        if ( $cache_rebuilt ) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'VOTD cache rebuilt successfully. Latin verses are now included.', 'thebible' ) . '</p></div>';
         }
     }
 
@@ -1684,15 +1709,18 @@ class TheBible_Plugin {
             'date'      => $date,
         ];
         $texts = self::extract_votd_texts_for_entry( $entry_for_preview );
-        if ( is_array( $texts ) && ( ! empty( $texts['bible'] ) || ! empty( $texts['bibel'] ) ) ) {
+        if ( is_array( $texts ) && ( ! empty( $texts['bible'] ) || ! empty( $texts['bibel'] ) || ! empty( $texts['latin'] ) ) ) {
             echo '<h3>' . esc_html__( 'Preview (cached verse text)', 'thebible' ) . '</h3>';
-            echo '<p class="description">' . esc_html__( 'These snippets are read from the verse cache for English (Douay) and German (Menge).', 'thebible' ) . '</p>';
+            echo '<p class="description">' . esc_html__( 'These snippets are read from the verse cache for English (Douay), German (Menge), and Latin (Vulgate).', 'thebible' ) . '</p>';
             echo '<div style="padding:.5em 1em;border:1px solid #ccd0d4;background:#f6f7f7;max-width:48em;">';
             if ( ! empty( $texts['bible'] ) && is_string( $texts['bible'] ) ) {
                 echo '<p><strong>EN:</strong> ' . esc_html( $texts['bible'] ) . '</p>';
             }
             if ( ! empty( $texts['bibel'] ) && is_string( $texts['bibel'] ) ) {
                 echo '<p><strong>DE:</strong> ' . esc_html( $texts['bibel'] ) . '</p>';
+            }
+            if ( ! empty( $texts['latin'] ) && is_string( $texts['latin'] ) ) {
+                echo '<p><strong>LA:</strong> ' . esc_html( $texts['latin'] ) . '</p>';
             }
             echo '</div>';
         }
@@ -2377,7 +2405,7 @@ class TheBible_Plugin {
     private static function extract_votd_texts_for_entry($entry) {
         if (!is_array($entry)) return [];
         $out = [];
-        $datasets = ['bible', 'bibel'];
+        $datasets = ['bible', 'bibel', 'latin'];
         foreach ($datasets as $dataset) {
             $short = self::resolve_book_for_dataset($entry['book_slug'], $dataset);
             if (!is_string($short) || $short === '') {
@@ -3296,20 +3324,51 @@ class TheBible_Plugin {
                     // keep the existing value instead of resetting slugs.
                     if ( ! isset( $val ) || $val === '' ) {
                         $current = get_option( 'thebible_slugs', 'bible,bibel' );
-                        return is_string( $current ) && $current !== '' ? $current : 'bible,bibel';
+                        return is_string( $current ) ? $current : 'bible,bibel';
                     }
 
-                    if ( ! is_string( $val ) ) return 'bible,bibel';
-                    // normalize comma-separated list
-                    $parts = array_filter( array_map( 'trim', explode( ',', $val ) ) );
-                    // only allow known slugs for now
-                    $known = [ 'bible', 'bibel' ];
-                    $out = [];
-                    foreach ( $parts as $p ) { if ( in_array( $p, $known, true ) ) $out[] = $p; }
-                    if ( empty( $out ) ) $out = [ 'bible' ];
-                    return implode( ',', array_unique( $out ) );
+                    // Accept comma-separated slugs, filter to known keys only.
+                    $raw = is_array( $val ) ? $val : explode( ',', (string) $val );
+                    $known = [ 'bible', 'bibel', 'latin' ];
+                    $clean = [];
+                    foreach ( $raw as $slug ) {
+                        $slug = trim( (string) $slug );
+                        if ( in_array( $slug, $known, true ) ) {
+                            $clean[] = $slug;
+                        }
+                    }
+                    return implode( ',', $clean );
                 },
                 'default'           => 'bible,bibel',
+            ]
+        );
+
+        // Register new language selector settings
+        register_setting(
+            'thebible_options',
+            'thebible_first_language',
+            [
+                'type'              => 'string',
+                'sanitize_callback' => function( $val ) {
+                    $known = [ 'bible', 'bibel', 'latin' ];
+                    $val = trim( (string) $val );
+                    return in_array( $val, $known, true ) ? $val : 'bible';
+                },
+                'default'           => 'bible',
+            ]
+        );
+
+        register_setting(
+            'thebible_options',
+            'thebible_second_language',
+            [
+                'type'              => 'string',
+                'sanitize_callback' => function( $val ) {
+                    $known = [ 'bible', 'bibel', 'latin' ];
+                    $val = trim( (string) $val );
+                    return ( $val === '' || in_array( $val, $known, true ) ) ? $val : '';
+                },
+                'default'           => '',
             ]
         );
 
@@ -3504,7 +3563,7 @@ class TheBible_Plugin {
 
         $slugs_opt = get_option( 'thebible_slugs', 'bible,bibel' );
         $active = array_filter( array_map( 'trim', explode( ',', is_string($slugs_opt)?$slugs_opt:'' ) ) );
-        $known = [ 'bible' => 'English (Douay)', 'bibel' => 'Deutsch (Menge)' ];
+        $known = [ 'bible' => 'English (Douay)', 'bibel' => 'Deutsch (Menge)', 'latin' => 'Latin (Vulgate)' ];
         $og_enabled = get_option('thebible_og_enabled','1');
         $og_w = intval(get_option('thebible_og_width',1200));
         $og_h = intval(get_option('thebible_og_height',630));
@@ -3721,6 +3780,39 @@ class TheBible_Plugin {
                 <?php settings_fields( 'thebible_options' ); ?>
                 <table class="form-table" role="presentation">
                     <tbody>
+                        <tr>
+                            <th scope="row"><label>Language Configuration</label></th>
+                            <td>
+                                <table class="form-table" role="presentation">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row"><label for="thebible_first_language">First Language</label></th>
+                                            <td>
+                                                <select name="thebible_first_language" id="thebible_first_language">
+                                                    <option value="">Select primary language</option>
+                                                    <?php foreach ($known as $slug => $label): ?>
+                                                        <option value="<?php echo esc_attr($slug); ?>" <?php selected(get_option('thebible_first_language', 'bible'), $slug); ?>><?php echo esc_html($label); ?></option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                                <p class="description">Primary language for single-language URLs and the first language in dual-language URLs.</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row"><label for="thebible_second_language">Second Language (Optional)</label></th>
+                                            <td>
+                                                <select name="thebible_second_language" id="thebible_second_language">
+                                                    <option value="">None (single language only)</option>
+                                                    <?php foreach ($known as $slug => $label): ?>
+                                                        <option value="<?php echo esc_attr($slug); ?>" <?php selected(get_option('thebible_second_language', ''), $slug); ?>><?php echo esc_html($label); ?></option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                                <p class="description">Optional secondary language for dual-language URLs. When selected, creates URLs like /first-second/.</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
                         <tr>
                             <th scope="row"><label>Active bibles</label></th>
                             <td>
@@ -4091,7 +4183,7 @@ johannes,3,16,18
             wp_die('Invalid request');
         }
         $slug = isset($_POST['thebible_export_bible_slug']) ? sanitize_text_field(wp_unslash($_POST['thebible_export_bible_slug'])) : '';
-        if ($slug !== 'bible' && $slug !== 'bibel') {
+        if ($slug !== 'bible' && $slug !== 'bibel' && $slug !== 'latin') {
             wp_die('Unknown bible');
         }
         $root = plugin_dir_path(__FILE__) . 'data/' . $slug . '/';
