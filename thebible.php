@@ -1384,6 +1384,8 @@ class TheBible_Plugin {
         if ($secondary_lang && in_array($secondary_lang, ['bible', 'bibel', 'latin'])) {
             self::$secondary_language = $secondary_lang;
         }
+        // DEBUG: log detection state
+        error_log('[TheBible DEBUG] secondary_lang=' . var_export($secondary_lang, true) . ' detected_secondary=' . var_export(self::$secondary_language, true) . ' REQUEST_URI=' . ($_SERVER['REQUEST_URI'] ?? 'null'));
 
         // Prepare title and content
         $book_slug = get_query_var(self::QV_BOOK);
@@ -1420,8 +1422,12 @@ class TheBible_Plugin {
 
                 $canonical_url = home_url($path);
                 $current = home_url(add_query_arg([]));
+                // DEBUG: log canonical vs current
+                error_log('[TheBible DEBUG] canonical_path=' . $path . ' canonical_url=' . $canonical_url . ' current=' . $current);
                 if (trailingslashit($canonical_url) !== trailingslashit($current)) {
-                    wp_redirect($canonical_url, 301);
+                    nocache_headers();
+                    error_log('[TheBible DEBUG] REDIRECTING to ' . $canonical_url);
+                    wp_redirect($canonical_url, 302);
                     exit;
                 }
                 $book_slug = $canonical;
