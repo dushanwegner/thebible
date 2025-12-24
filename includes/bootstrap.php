@@ -7,6 +7,7 @@ require_once plugin_dir_path( __FILE__ ) . 'class-thebible-admin.php';
 require_once plugin_dir_path( __FILE__ ) . 'class-thebible-votd.php';
 require_once plugin_dir_path( __FILE__ ) . 'class-thebible-renderer.php';
 require_once plugin_dir_path( __FILE__ ) . 'class-thebible-og.php';
+require_once plugin_dir_path( __FILE__ ) . 'class-thebible-og-trait.php';
 require_once plugin_dir_path( __FILE__ ) . 'class-thebible-markup.php';
 require_once plugin_dir_path( __FILE__ ) . 'class-thebible-interlinear.php';
 require_once plugin_dir_path( __FILE__ ) . 'class-thebible-rewrites.php';
