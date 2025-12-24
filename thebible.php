@@ -1357,7 +1357,7 @@ class TheBible_Plugin {
         $shuffle_all_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'shuffle_all' ] ), 'thebible_votd_shuffle_all' );
         $shuffle_all_not_today_url = wp_nonce_url( add_query_arg( [ 'thebible_votd_action' => 'shuffle_all_not_today' ] ), 'thebible_votd_shuffle_all_not_today' );
 
-        echo '<div class="thebible-votd-actions" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+        echo '<span class="thebible-votd-actions" style="margin-bottom:10px;display:inline-flex;align-items:center;gap:8px;vertical-align:middle;">';
 
         echo '<label for="thebible_votd_action_select" class="screen-reader-text">' . esc_html__( 'VOTD action', 'thebible' ) . '</label>';
         echo '<select id="thebible_votd_action_select">';
@@ -1387,7 +1387,10 @@ class TheBible_Plugin {
 sync();s.addEventListener("change",sync);b.addEventListener("click",function(e){if(!s.value){e.preventDefault();}});
 })();</script>';
 
-        echo '</div>';
+        echo '</span>';
+        
+        // Don't output the month filter again since it's now in the toolbar above
+        return;
     }
 
     public static function apply_votd_date_filter( $query ) {
