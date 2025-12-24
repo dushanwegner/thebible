@@ -285,17 +285,23 @@ class TheBible_Plugin {
         // Dynamic dual-language URLs based on configuration
         $first_lang = get_option('thebible_first_language', 'bible');
         $second_lang = get_option('thebible_second_language', '');
-        
-        if ($first_lang && $second_lang && $first_lang !== $second_lang) {
-            $dual_slug = $first_lang . '-' . $second_lang;
-            // index
-            add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $first_lang . '&thebible_secondary_lang=' . $second_lang, 'top');
-            // /{dual}/{book}
-            add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $first_lang . '&thebible_secondary_lang=' . $second_lang, 'top');
-            // /{dual}/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
-            add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $first_lang . '&thebible_secondary_lang=' . $second_lang, 'top');
-            // /{dual}/{book}/{chapter}
-            add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $first_lang . '&thebible_secondary_lang=' . $second_lang, 'top');
+
+        $known_langs = [ 'bible', 'bibel', 'latin' ];
+        foreach ( $known_langs as $a ) {
+            foreach ( $known_langs as $b ) {
+                if ( $a === $b ) {
+                    continue;
+                }
+                $dual_slug = $a . '-' . $b;
+                // index
+                add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/?$', 'index.php?' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $a . '&thebible_secondary_lang=' . $b, 'top');
+                // /{dual}/{book}
+                add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $a . '&thebible_secondary_lang=' . $b, 'top');
+                // /{dual}/{book}/{chapter}:{verse} or {chapter}:{from}-{to}
+                add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/([0-9]+):([0-9]+)(?:-([0-9]+))?/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_VFROM . '=$matches[3]&' . self::QV_VTO . '=$matches[4]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $a . '&thebible_secondary_lang=' . $b, 'top');
+                // /{dual}/{book}/{chapter}
+                add_rewrite_rule('^' . preg_quote($dual_slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $a . '&thebible_secondary_lang=' . $b, 'top');
+            }
         }
         
         // Sitemaps: English, German, Latin (use unique endpoints to avoid conflicts with other sitemap plugins)
@@ -304,7 +310,7 @@ class TheBible_Plugin {
         add_rewrite_rule('^bible-sitemap-latin\.xml$', 'index.php?' . self::QV_SITEMAP . '=latin&' . self::QV_SLUG . '=latin', 'top');
 
         // One-time flush after rewrite changes (avoids manual Permalinks save).
-        $ver = '0.1.0-dual-language-config';
+        $ver = '0.1.1-dual-language-any-pair';
         $flushed = get_option('thebible_flushed_rules', '');
         if ($flushed !== $ver) {
             flush_rewrite_rules(false);

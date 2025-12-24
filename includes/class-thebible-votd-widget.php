@@ -236,20 +236,7 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $citation = $heading_label_ds . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
 
             echo '<div class="thebible-votd-lang thebible-votd-lang-' . esc_attr($ds) . '">';
-            
-            // Add language label for dual-language mode
-            if ($second_lang !== '') {
-                $lang_label = '';
-                if ($ds === 'bible') {
-                    $lang_label = 'EN';
-                } elseif ($ds === 'bibel') {
-                    $lang_label = 'DE';
-                } elseif ($ds === 'latin') {
-                    $lang_label = 'LA';
-                }
-                echo '<div class="thebible-votd-lang-label">' . esc_html($lang_label) . '</div>';
-            }
-            
+                       
             echo '<p class="thebible-votd-text">' . wp_kses_post($text) . '</p>';
             echo '<div class="thebible-votd-context">';
             echo '<a class="thebible-votd-context-link" href="' . esc_url( $url_ds ) . '">' . esc_html( $citation ) . '</a>';
@@ -259,10 +246,10 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         // If multiple languages are shown, link to the unified dual-language display.
         if ($second_lang !== '') {
-            // Create dynamic dual-language URL based on configuration
             $dual_slug = $first_lang . '-' . $second_lang;
-            $hybrid_path = '/' . $dual_slug . '/' . trim($book_slug_en, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
-            $hybrid_url = home_url($hybrid_path);
+            // Use canonical book slug; router will normalize further if needed.
+            $hybrid_path = '/' . $dual_slug . '/' . trim($canonical, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
+            $hybrid_url  = home_url($hybrid_path);
 
             echo '<div class="thebible-votd-interlinear-link">';
             echo '<a href="' . esc_url($hybrid_url) . '" class="thebible-votd-interlinear-button">' . esc_html__('View Bilingual', 'thebible') . '</a>';
