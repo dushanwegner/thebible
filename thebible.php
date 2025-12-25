@@ -37,6 +37,7 @@ class TheBible_Plugin {
 
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
+        add_action('init', [__CLASS__, 'maybe_flush_rewrite_rules'], 20);
         add_action('init', ['TheBible_VOTD_Admin', 'register_votd_cpt']);
         add_filter('query_vars', [__CLASS__, 'add_query_vars']);
         add_action('template_redirect', [__CLASS__, 'handle_request']);
@@ -69,6 +70,20 @@ class TheBible_Plugin {
 
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
+    }
+
+    public static function maybe_flush_rewrite_rules() {
+        $stored = get_option('thebible_rewrite_version', '');
+        if (!is_string($stored)) {
+            $stored = '';
+        }
+        if ($stored === THEBIBLE_VERSION) {
+            return;
+        }
+
+        self::add_rewrite_rules();
+        flush_rewrite_rules(false);
+        update_option('thebible_rewrite_version', THEBIBLE_VERSION);
     }
 
     public static function add_settings_page() {
@@ -1606,7 +1621,6 @@ class TheBible_Plugin {
 
         for ($i = 0; $i < $n; $i++) {
             for ($j = 0; $j < $n; $j++) {
-                if ($j === $i) continue;
                 $out[] = $datasets[$i] . '-' . $datasets[$j];
             }
         }
@@ -1614,9 +1628,7 @@ class TheBible_Plugin {
         if ($max_len >= 3 && $n >= 3) {
             for ($i = 0; $i < $n; $i++) {
                 for ($j = 0; $j < $n; $j++) {
-                    if ($j === $i) continue;
                     for ($k = 0; $k < $n; $k++) {
-                        if ($k === $i || $k === $j) continue;
                         $out[] = $datasets[$i] . '-' . $datasets[$j] . '-' . $datasets[$k];
                     }
                 }
@@ -1678,6 +1690,123 @@ class TheBible_Plugin {
         $old = plugin_dir_path(__FILE__) . 'data/' . $dataset_slug . '_books_html/';
         if (is_dir($old)) return trailingslashit($old);
         return null;
+    }
+
+    private static function bible_url_for_slug_and_canonical_book($slug, $canonical_book_slug, $ch = 0, $vf = 0, $vt = 0) {
+        $slug = is_string($slug) ? trim($slug, "/ ") : '';
+        if ($slug === '') {
+            return '';
+        }
+
+        $canonical_book_slug = is_string($canonical_book_slug) ? self::slugify($canonical_book_slug) : '';
+        if ($canonical_book_slug === '') {
+            return '';
+        }
+
+        $url_dataset = $slug;
+        if (strpos($slug, '-') !== false) {
+            $parts = array_values(array_filter(array_map('trim', explode('-', $slug))));
+            if (!empty($parts)) {
+                $url_dataset = $parts[0];
+            }
+        }
+
+        $url_book = $canonical_book_slug;
+        if (is_string($url_dataset) && $url_dataset !== '') {
+            $mapped = self::url_book_slug_for_dataset($canonical_book_slug, $url_dataset);
+            if (is_string($mapped) && $mapped !== '') {
+                $url_book = $mapped;
+            }
+        }
+
+        $path = '/' . $slug . '/' . $url_book . '/';
+        $ch = absint($ch);
+        $vf = absint($vf);
+        $vt = absint($vt);
+        if ($ch > 0) {
+            if ($vf > 0) {
+                if ($vt <= 0 || $vt < $vf) { $vt = $vf; }
+                $path .= $ch . ':' . $vf;
+                if ($vt > $vf) {
+                    $path .= '-' . $vt;
+                }
+            } else {
+                $path .= $ch;
+            }
+        }
+
+        return home_url($path);
+    }
+
+    private static function render_interlinear_language_switcher($canonical_book_slug, $datasets, $ch, $vf, $vt) {
+        $canonical_book_slug = is_string($canonical_book_slug) ? self::slugify($canonical_book_slug) : '';
+        if ($canonical_book_slug === '') {
+            return '';
+        }
+
+        $slug_current = get_query_var(self::QV_SLUG);
+        $slug_current = is_string($slug_current) ? trim($slug_current, "/ ") : '';
+        if ($slug_current === '') {
+            return '';
+        }
+
+        $known = ['bible' => 'English', 'bibel' => 'Deutsch', 'latin' => 'Latin'];
+        $d1 = (is_array($datasets) && isset($datasets[0]) && is_string($datasets[0])) ? $datasets[0] : '';
+        $d2 = (is_array($datasets) && isset($datasets[1]) && is_string($datasets[1])) ? $datasets[1] : '';
+
+        $html = '<div class="thebible-language-switcher" data-language-switcher>';
+
+        $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--single">';
+        $html .= '<span class="thebible-language-switcher__label">Single:</span> ';
+        foreach ($known as $slug => $label) {
+            $url = self::bible_url_for_slug_and_canonical_book($slug, $canonical_book_slug, $ch, $vf, $vt);
+            if (!is_string($url) || $url === '') {
+                continue;
+            }
+            $html .= '<a class="thebible-language-switcher__link" href="' . esc_url($url) . '">' . esc_html($label) . '</a> ';
+        }
+        $html .= '</div>';
+
+        $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--first">';
+        $html .= '<span class="thebible-language-switcher__label">First:</span> ';
+        foreach ($known as $slug => $label) {
+            if ($d2 !== '' && $slug === $d2) {
+                continue;
+            }
+            if ($slug === $d1) {
+                continue;
+            }
+            $target = $d2 !== '' ? ($slug . '-' . $d2) : $slug;
+            $url = self::bible_url_for_slug_and_canonical_book($target, $canonical_book_slug, $ch, $vf, $vt);
+            if (!is_string($url) || $url === '') {
+                continue;
+            }
+            $html .= '<a class="thebible-language-switcher__link" href="' . esc_url($url) . '">' . esc_html($label) . '</a> ';
+        }
+        $html .= '</div>';
+
+        if ($d1 !== '') {
+            $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--second">';
+            $html .= '<span class="thebible-language-switcher__label">Second:</span> ';
+            foreach ($known as $slug => $label) {
+                if ($slug === $d1) {
+                    continue;
+                }
+                if ($slug === $d2) {
+                    continue;
+                }
+                $target = $d1 . '-' . $slug;
+                $url = self::bible_url_for_slug_and_canonical_book($target, $canonical_book_slug, $ch, $vf, $vt);
+                if (!is_string($url) || $url === '') {
+                    continue;
+                }
+                $html .= '<a class="thebible-language-switcher__link" href="' . esc_url($url) . '">' . esc_html($label) . '</a> ';
+            }
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+        return $html;
     }
 
     private static function parse_verse_nodes_by_number($html, $book_slug, $ch) {
@@ -1761,7 +1890,6 @@ class TheBible_Plugin {
         }
 
         $datasets = array_values(array_filter(array_map('trim', explode('-', $slug_combo))));
-        $datasets = array_values(array_unique($datasets));
         if (count($datasets) < 1 || count($datasets) > 3) {
             self::render_404();
             return;
@@ -1781,7 +1909,7 @@ class TheBible_Plugin {
         $docs = [];
         $nodes_by_dataset = [];
 
-        foreach ($datasets as $dataset) {
+        foreach ($datasets as $dataset_idx => $dataset) {
             if (!is_string($dataset) || $dataset === '') {
                 self::render_404();
                 return;
@@ -1810,9 +1938,10 @@ class TheBible_Plugin {
                 return;
             }
 
-            $entries[$dataset] = $entry;
+            $entries[$dataset_idx] = $entry;
+            $entries[$dataset_idx]['_dataset'] = $dataset;
             $html = (string) file_get_contents($file);
-            $entries[$dataset]['_raw_html'] = $html;
+            $entries[$dataset_idx]['_raw_html'] = $html;
         }
 
         $ch = absint(get_query_var(self::QV_CHAPTER));
@@ -1822,8 +1951,8 @@ class TheBible_Plugin {
         }
 
         $nav_blocks = '';
-        foreach ($datasets as $dataset) {
-            $html = (string) $entries[$dataset]['_raw_html'];
+        foreach ($datasets as $dataset_idx => $dataset) {
+            $html = (string) $entries[$dataset_idx]['_raw_html'];
             $chapter_html = self::extract_chapter_from_html($html, $ch);
             if ($chapter_html === null) {
                 self::render_404();
@@ -1831,12 +1960,12 @@ class TheBible_Plugin {
             }
 
             // Keep chapters/verses navigation blocks from the first dataset
-            if ($dataset === $datasets[0]) {
+            if ($dataset_idx === 0) {
                 $nav_blocks = self::extract_nav_blocks_from_chapter_html($chapter_html);
             }
 
             // Remove the chapter heading node (e.g. id="genesis-ch-1") to avoid duplicate/unstyled chapter titles
-            $dataset_book_slug = self::slugify($entries[$dataset]['short_name']);
+            $dataset_book_slug = self::slugify($entries[$dataset_idx]['short_name']);
             $chapter_heading_id = $dataset_book_slug . '-ch-' . $ch;
             $chapter_html = self::strip_element_by_id($chapter_html, $chapter_heading_id);
 
@@ -1846,13 +1975,13 @@ class TheBible_Plugin {
                 return;
             }
             list($doc, $nodes) = $parsed;
-            $docs[$dataset] = $doc;
-            $nodes_by_dataset[$dataset] = $nodes;
+            $docs[$dataset_idx] = $doc;
+            $nodes_by_dataset[$dataset_idx] = $nodes;
         }
 
         $verses = [];
-        foreach ($datasets as $dataset) {
-            $verses = array_merge($verses, array_keys($nodes_by_dataset[$dataset]));
+        foreach ($datasets as $dataset_idx => $dataset) {
+            $verses = array_merge($verses, array_keys($nodes_by_dataset[$dataset_idx]));
         }
         $verses = array_values(array_unique($verses));
         sort($verses);
@@ -1868,6 +1997,13 @@ class TheBible_Plugin {
         if (is_string($nav_blocks) && $nav_blocks !== '') {
             $out .= $nav_blocks;
         }
+
+        $vf = absint(get_query_var(self::QV_VFROM));
+        $vt = absint(get_query_var(self::QV_VTO));
+        $switcher = self::render_interlinear_language_switcher($canonical_key, $datasets, $ch, $vf, $vt);
+        if (is_string($switcher) && $switcher !== '') {
+            $out .= $switcher;
+        }
         foreach ($verses as $v) {
             $out .= '<div class="thebible-interlinear-verse thebible-interlinear-verse--v' . esc_attr((string)$v) . '"'
                 . ' data-verse="' . esc_attr((string)$v) . '"'
@@ -1875,11 +2011,11 @@ class TheBible_Plugin {
                 . ' data-ch="' . esc_attr((string)$ch) . '"'
                 . '>';
             foreach ($datasets as $idx => $dataset) {
-                $node = $nodes_by_dataset[$dataset][$v] ?? null;
+                $node = $nodes_by_dataset[$idx][$v] ?? null;
                 if (!$node) {
                     continue;
                 }
-                $doc = $docs[$dataset];
+                $doc = $docs[$idx];
                 $node = $doc->importNode($node, true);
                 $class_suffix = chr(ord('a') + $idx);
                 $node->setAttribute(
@@ -1924,7 +2060,7 @@ class TheBible_Plugin {
         }
 
         // Inject navigation helpers and sticky header for interlinear pages
-        $first_entry = $entries[$datasets[0]] ?? null;
+        $first_entry = $entries[0] ?? null;
         $human = $first_entry && isset($first_entry['display_name']) && $first_entry['display_name'] !== ''
             ? $first_entry['display_name']
             : ($first_entry ? self::pretty_label($first_entry['short_name']) : '');
@@ -1937,7 +2073,7 @@ class TheBible_Plugin {
         nocache_headers();
 
         $first = $datasets[0];
-        $first_entry = $entries[$first] ?? null;
+        $first_entry = $entries[0] ?? null;
         $base_title = ($first_entry && isset($first_entry['display_name']) && $first_entry['display_name'] !== '')
             ? $first_entry['display_name']
             : ($first_entry ? self::pretty_label($first_entry['short_name']) : '');
