@@ -8,8 +8,8 @@
 
 if (!defined('ABSPATH')) exit;
 
-if (!defined('DWLATINPRAYER_VERSION')) {
-    define('DWLATINPRAYER_VERSION', '1.25.12.23.04');
+if (!defined('THEBIBLE_VERSION')) {
+    define('THEBIBLE_VERSION', '1.25.12.25.01');
 }
 
 class TheBible_Plugin {
