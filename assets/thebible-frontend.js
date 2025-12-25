@@ -468,14 +468,42 @@
             current = heads[0] || null;
             currentIdx = 0;
         }
+
         if (!info) {
-            var ch = 1;
-            if (current) {
-                var m = current.id.match(/-ch-(\d+)$/);
-                if (m) {
-                    ch = parseInt(m[1], 10) || 1;
+            // Determine the chapter number from a stable source first.
+            // On initial load, PHP already renders the correct chapter; avoid reverting to 1
+            // if heading detection temporarily fails during layout.
+            var ch = 0;
+
+            if (elCh) {
+                var existing = parseInt((elCh.textContent || '').trim(), 10);
+                if (!isNaN(existing) && existing > 0) {
+                    ch = existing;
                 }
             }
+
+            if (!ch && chapterScrollId) {
+                var mBar = String(chapterScrollId).match(/-ch-(\d+)$/);
+                if (mBar) {
+                    var fromBar = parseInt(mBar[1], 10);
+                    if (!isNaN(fromBar) && fromBar > 0) {
+                        ch = fromBar;
+                    }
+                }
+            }
+
+            if (!ch && current) {
+                var m = current.id.match(/-ch-(\d+)$/);
+                if (m) {
+                    var fromHead = parseInt(m[1], 10);
+                    if (!isNaN(fromHead) && fromHead > 0) {
+                        ch = fromHead;
+                    }
+                }
+            }
+
+            if (!ch) { ch = 1; }
+
             if (elCh) {
                 // When no verse is selected, show only the chapter number.
                 // The book name is already rendered in the separate [data-label] span.
