@@ -582,12 +582,16 @@ class TheBible_Plugin {
         $slug = get_query_var(self::QV_SLUG);
         if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
 
-        if (is_string($slug) && strpos($slug, '-') !== false) {
-            self::render_multilingual_book($book_slug, $slug);
-            exit;
+        // Canonicalize book slug based on the first dataset in the slug (e.g. latin-bible => latin)
+        $canon_dataset = $slug;
+        if (is_string($canon_dataset) && strpos($canon_dataset, '-') !== false) {
+            $parts = array_values(array_filter(array_map('trim', explode('-', $canon_dataset))));
+            if (!empty($parts)) {
+                $canon_dataset = $parts[0];
+            }
         }
 
-        $canonical = self::canonical_book_slug_from_url($book_slug, $slug);
+        $canonical = self::canonical_book_slug_from_url($book_slug, $canon_dataset);
         if (!$canonical) {
             status_header(404);
             wp_die(__('Book not found', 'thebible'));
@@ -620,7 +624,8 @@ class TheBible_Plugin {
             set_query_var(self::QV_BOOK, $book_slug);
         }
 
-        self::render_book($book_slug);
+        // Always use multilingual renderer (1 dataset is the special case)
+        self::render_multilingual_book($book_slug, $slug);
         exit; // prevent WP from continuing
     }
 
@@ -1616,6 +1621,50 @@ class TheBible_Plugin {
         return [$doc, $out];
     }
 
+    private static function strip_element_by_id($html, $id) {
+        if (!is_string($html) || $html === '') return $html;
+        if (!is_string($id) || $id === '') return $html;
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_clear_errors();
+        $xp = new DOMXPath($doc);
+        $nodes = $xp->query('//*[@id="' . $id . '"]');
+        if ($nodes && $nodes->length) {
+            $n = $nodes->item(0);
+            if ($n && $n->parentNode) {
+                $n->parentNode->removeChild($n);
+            }
+        }
+        $body = $doc->getElementsByTagName('body')->item(0);
+        if (!$body) return $html;
+        $out = '';
+        foreach ($body->childNodes as $child) {
+            $out .= $doc->saveHTML($child);
+        }
+        return $out;
+    }
+
+    private static function extract_nav_blocks_from_chapter_html($chapter_html) {
+        if (!is_string($chapter_html) || $chapter_html === '') return '';
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $chapter_html);
+        libxml_clear_errors();
+        $xp = new DOMXPath($doc);
+
+        $out = '';
+        $chapters = $xp->query('//p[contains(concat(" ", normalize-space(@class), " "), " chapters ")]');
+        if ($chapters && $chapters->length) {
+            $out .= $doc->saveHTML($chapters->item(0));
+        }
+        $verses = $xp->query('//p[contains(concat(" ", normalize-space(@class), " "), " verses ")]');
+        if ($verses && $verses->length) {
+            $out .= $doc->saveHTML($verses->item(0));
+        }
+        return $out;
+    }
+
     private static function render_multilingual_book($url_book_slug, $slug_combo) {
         $url_book_slug = is_string($url_book_slug) ? $url_book_slug : '';
         $slug_combo = is_string($slug_combo) ? trim($slug_combo, "/ ") : '';
@@ -1627,7 +1676,7 @@ class TheBible_Plugin {
 
         $datasets = array_values(array_filter(array_map('trim', explode('-', $slug_combo))));
         $datasets = array_values(array_unique($datasets));
-        if (count($datasets) < 2 || count($datasets) > 3) {
+        if (count($datasets) < 1 || count($datasets) > 3) {
             self::render_404();
             return;
         }
@@ -1676,6 +1725,7 @@ class TheBible_Plugin {
             set_query_var(self::QV_CHAPTER, $ch);
         }
 
+        $nav_blocks = '';
         foreach ($datasets as $dataset) {
             $html = (string) $entries[$dataset]['_raw_html'];
             $chapter_html = self::extract_chapter_from_html($html, $ch);
@@ -1684,8 +1734,17 @@ class TheBible_Plugin {
                 return;
             }
 
-            $book_slug = self::slugify($entries[$dataset]['short_name']);
-            $parsed = self::parse_verse_nodes_by_number($chapter_html, $book_slug, $ch);
+            // Keep chapters/verses navigation blocks from the first dataset
+            if ($dataset === $datasets[0]) {
+                $nav_blocks = self::extract_nav_blocks_from_chapter_html($chapter_html);
+            }
+
+            // Remove the chapter heading node (e.g. id="genesis-ch-1") to avoid duplicate/unstyled chapter titles
+            $dataset_book_slug = self::slugify($entries[$dataset]['short_name']);
+            $chapter_heading_id = $dataset_book_slug . '-ch-' . $ch;
+            $chapter_html = self::strip_element_by_id($chapter_html, $chapter_heading_id);
+
+            $parsed = self::parse_verse_nodes_by_number($chapter_html, $dataset_book_slug, $ch);
             if (!is_array($parsed) || count($parsed) !== 2) {
                 self::render_404();
                 return;
@@ -1703,6 +1762,9 @@ class TheBible_Plugin {
         sort($verses);
 
         $out = '<div class="thebible thebible-book thebible-interlinear">';
+        if (is_string($nav_blocks) && $nav_blocks !== '') {
+            $out .= $nav_blocks;
+        }
         foreach ($verses as $v) {
             $out .= '<div class="thebible-interlinear-verse" data-verse="' . esc_attr((string)$v) . '">';
             foreach ($datasets as $idx => $dataset) {
