@@ -437,11 +437,9 @@
             elCh.textContent = buildRef(info).replace(/^.*?\s(.*)$/, '$1');
             if (controls) renderSelectionControls(info);
         } else {
-            // If selection was just cleared, keep controls for a short grace period
-            // so that clicking "copy" / "post to X" doesn't immediately hide them.
-            if (!lastSelectionTime || Date.now() - lastSelectionTime > 2000) {
-                ensureStandardControls();
-            }
+            // Selection cleared: restore the standard arrow controls immediately.
+            ensureStandardControls();
+            lastSelectionTime = 0;
         }
         var topCut = window.innerHeight * 0.2;
         var current = null;
@@ -557,7 +555,7 @@
 
     // Intercept in-content anchor clicks to scroll below sticky and adjust URL
     document.addEventListener('click', function(e){
-        var a = e.target.closest && e.target.closest('a[href^=#]');
+        var a = e.target.closest && e.target.closest('a[href^="#"]');
         if (!a) return;
         var href = a.getAttribute('href') || '';
         if (!href || href === '#') return;
