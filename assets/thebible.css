@@ -218,3 +218,96 @@
 .thebible.thebible-interlinear .thebible-interlinear-latin {
   --thebible-hook: 1;
 }
+
+/* Language switcher block (interlinear pages)
+
+   This is intentionally light on styling.
+   It mostly provides structure + hook classes so you can style as you like.
+*/
+.thebible .thebible-language-switcher {
+  text-align: center;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+  color: #666;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 1.5rem;
+  /* Generic hooks */
+  --thebible-hook: 1;
+  /* State hooks */
+  /* Group hooks */
+  /* Data attributes for state-based styling */
+}
+.thebible .thebible-language-switcher a {
+  color: inherit;
+}
+.thebible .thebible-language-switcher.is-current {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__group {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__group--single {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__group--first {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__group--second {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__label {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link {
+  --thebible-hook: 1;
+  /* Per-language hooks */
+  /* First/Second picker per-language hooks */
+}
+.thebible .thebible-language-switcher__link.is-current {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--single {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--first {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--second {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--bible {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--bibel {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--latin {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--first-bible {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--first-bibel {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--first-latin {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--second-bible {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--second-bibel {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher__link--second-latin {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher[data-current-slug] {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher[data-current-first] {
+  --thebible-hook: 1;
+}
+.thebible .thebible-language-switcher[data-current-second] {
+  --thebible-hook: 1;
+}

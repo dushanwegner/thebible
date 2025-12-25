@@ -260,12 +260,22 @@ class TheBible_Plugin {
                     }
                 }
                 $ordered = self::ordered_book_slugs();
-                $idx = array_search($nav_book, $ordered, true);
+                $nav_book_for_order = $nav_book;
+                $idx = array_search($nav_book_for_order, $ordered, true);
+                if ($idx === false && !$is_combo && is_string($url_dataset) && $url_dataset !== '' && $url_dataset !== 'bible') {
+                    // Single-language pages may still be using a canonical slug internally (e.g. job)
+                    // while the dataset index uses a localized slug (e.g. hiob). Try mapping.
+                    $mapped = self::url_book_slug_for_dataset($nav_book, $url_dataset);
+                    if (is_string($mapped) && $mapped !== '') {
+                        $nav_book_for_order = $mapped;
+                        $idx = array_search($nav_book_for_order, $ordered, true);
+                    }
+                }
                 if ($idx !== false && !empty($ordered)) {
                     $count_books = count($ordered);
-                    $max_ch = self::max_chapter_for_book_slug($nav_book);
+                    $max_ch = self::max_chapter_for_book_slug($nav_book_for_order);
                     if ($nav_ch > 1) {
-                        $prev_book = $nav_book;
+                        $prev_book = $nav_book_for_order;
                         $prev_ch = $nav_ch - 1;
                     } else {
                         $prev_book = $ordered[($idx - 1 + $count_books) % $count_books];
@@ -273,7 +283,7 @@ class TheBible_Plugin {
                         if ($prev_ch <= 0) { $prev_ch = 1; }
                     }
                     if ($max_ch > 0 && $nav_ch < $max_ch) {
-                        $next_book = $nav_book;
+                        $next_book = $nav_book_for_order;
                         $next_ch = $nav_ch + 1;
                     } else {
                         $next_book = $ordered[($idx + 1) % $count_books];
@@ -385,6 +395,7 @@ class TheBible_Plugin {
         // New structure: data/{slug}/ with html/ and text/ subfolders
         $slug = get_query_var(self::QV_SLUG);
         if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+        set_query_var(self::QV_SLUG, $slug);
         $root = plugin_dir_path(__FILE__) . 'data/' . $slug . '/';
         if (is_dir($root)) return $root;
         return null;
@@ -690,6 +701,7 @@ class TheBible_Plugin {
         // Resolve canonical book slug for the current language dataset
         $slug = get_query_var(self::QV_SLUG);
         if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+        set_query_var(self::QV_SLUG, $slug);
 
         // Canonicalize book slug based on the first dataset in the slug (e.g. latin-bible => latin)
         $canon_dataset = $slug;
@@ -1126,6 +1138,7 @@ class TheBible_Plugin {
         if ($book_slug) {
             $slug = get_query_var(self::QV_SLUG);
             if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+            set_query_var(self::QV_SLUG, $slug);
 
             $canonical = self::canonical_book_slug_from_url($book_slug, $slug);
             if ($canonical !== null && $canonical !== $book_slug) {
