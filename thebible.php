@@ -235,6 +235,14 @@ class TheBible_Plugin {
             if (is_string($nav_book) && $nav_book !== '' && $nav_ch > 0) {
                 $slug_for_urls = get_query_var(self::QV_SLUG);
                 if (!is_string($slug_for_urls) || $slug_for_urls === '') { $slug_for_urls = 'bible'; }
+                $is_combo = (strpos($slug_for_urls, '-') !== false);
+                $url_dataset = $slug_for_urls;
+                if ($is_combo) {
+                    $parts = array_values(array_filter(array_map('trim', explode('-', $slug_for_urls))));
+                    if (!empty($parts)) {
+                        $url_dataset = $parts[0];
+                    }
+                }
                 $ordered = self::ordered_book_slugs();
                 $idx = array_search($nav_book, $ordered, true);
                 if ($idx !== false && !empty($ordered)) {
@@ -256,8 +264,15 @@ class TheBible_Plugin {
                         $next_ch = 1;
                     }
 
-                    $prev_href = esc_url(trailingslashit(home_url('/' . trim($slug_for_urls, '/') . '/' . $prev_book . '/' . $prev_ch)));
-                    $next_href = esc_url(trailingslashit(home_url('/' . trim($slug_for_urls, '/') . '/' . $next_book . '/' . $next_ch)));
+                    $prev_book_url = $prev_book;
+                    $next_book_url = $next_book;
+                    if ($is_combo && is_string($url_dataset) && $url_dataset !== '') {
+                        $prev_book_url = self::url_book_slug_for_dataset($prev_book, $url_dataset);
+                        $next_book_url = self::url_book_slug_for_dataset($next_book, $url_dataset);
+                    }
+
+                    $prev_href = esc_url(trailingslashit(home_url('/' . trim($slug_for_urls, '/') . '/' . $prev_book_url . '/' . $prev_ch)));
+                    $next_href = esc_url(trailingslashit(home_url('/' . trim($slug_for_urls, '/') . '/' . $next_book_url . '/' . $next_ch)));
                 }
             }
         }
@@ -463,6 +478,22 @@ class TheBible_Plugin {
             return null;
         }
         return $entry[$dataset_slug];
+    }
+
+    private static function url_book_slug_for_dataset($canonical_book_slug, $dataset_slug) {
+        $canonical_book_slug = is_string($canonical_book_slug) ? self::slugify($canonical_book_slug) : '';
+        $dataset_slug = is_string($dataset_slug) ? trim($dataset_slug) : '';
+        if ($canonical_book_slug === '' || $dataset_slug === '') {
+            return '';
+        }
+
+        $short = self::resolve_book_for_dataset($canonical_book_slug, $dataset_slug);
+        if (!is_string($short) || $short === '') {
+            return $canonical_book_slug;
+        }
+
+        $s = self::slugify($short);
+        return $s !== '' ? $s : $canonical_book_slug;
     }
 
     private static function canonicalize_key_from_dataset_book_slug($dataset_slug, $dataset_book_slug) {
@@ -1826,12 +1857,23 @@ class TheBible_Plugin {
         $verses = array_values(array_unique($verses));
         sort($verses);
 
-        $out = '<div class="thebible thebible-book thebible-interlinear">';
+        $datasets_attr = esc_attr(implode(',', $datasets));
+        $out = '<div class="thebible thebible-book thebible-interlinear"'
+            . ' data-interlinear="1"'
+            . ' data-book="' . esc_attr($canonical_key) . '"'
+            . ' data-ch="' . esc_attr((string)$ch) . '"'
+            . ' data-datasets="' . $datasets_attr . '"'
+            . ' data-first-dataset="' . esc_attr((string)$datasets[0]) . '"'
+            . '>';
         if (is_string($nav_blocks) && $nav_blocks !== '') {
             $out .= $nav_blocks;
         }
         foreach ($verses as $v) {
-            $out .= '<div class="thebible-interlinear-verse" data-verse="' . esc_attr((string)$v) . '">';
+            $out .= '<div class="thebible-interlinear-verse thebible-interlinear-verse--v' . esc_attr((string)$v) . '"'
+                . ' data-verse="' . esc_attr((string)$v) . '"'
+                . ' data-book="' . esc_attr($canonical_key) . '"'
+                . ' data-ch="' . esc_attr((string)$ch) . '"'
+                . '>';
             foreach ($datasets as $idx => $dataset) {
                 $node = $nodes_by_dataset[$dataset][$v] ?? null;
                 if (!$node) {
@@ -1840,7 +1882,21 @@ class TheBible_Plugin {
                 $doc = $docs[$dataset];
                 $node = $doc->importNode($node, true);
                 $class_suffix = chr(ord('a') + $idx);
-                $node->setAttribute('class', trim($node->getAttribute('class') . ' thebible-interlinear-' . $class_suffix . ' thebible-interlinear-' . $dataset));
+                $node->setAttribute(
+                    'class',
+                    trim(
+                        $node->getAttribute('class')
+                        . ' thebible-interlinear-' . $class_suffix
+                        . ' thebible-interlinear-' . $dataset
+                        . ' thebible-interlinear-entry'
+                        . ' thebible-interlinear-entry--pos-' . $class_suffix
+                        . ' thebible-interlinear-entry--dataset-' . $dataset
+                        . ' thebible-interlinear-entry--idx-' . $idx
+                    )
+                );
+                $node->setAttribute('data-dataset', (string) $dataset);
+                $node->setAttribute('data-line', (string) $class_suffix);
+                $node->setAttribute('data-line-index', (string) $idx);
                 if ($idx === 0) {
                     $id = $canonical_key . '-' . $ch . '-' . $v;
                     $node->setAttribute('id', $id);
