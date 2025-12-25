@@ -1,13 +1,16 @@
 <?php
-/**
- * Plugin Name: The Bible
- * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template.
- * Version: 1.0.0
- * Author: DW
- * License: GPL2+
- */
+/*
+* Plugin Name: The Bible
+* Description: Provides /bible/ with links to books; renders selected book HTML using the site's template.
+* Version: 1.25.12.25.01
+* Author: Dushan Wegner
+*/
 
-if (!defined('ABSPATH')) { exit; }
+if (!defined('ABSPATH')) exit;
+
+if (!defined('DWLATINPRAYER_VERSION')) {
+    define('DWLATINPRAYER_VERSION', '1.25.12.23.04');
+}
 
 class TheBible_Plugin {
     const QV_FLAG = 'thebible';
