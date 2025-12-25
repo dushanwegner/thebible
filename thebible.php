@@ -34,6 +34,7 @@ class TheBible_Plugin {
     private static $book_map = null;
     private static $current_page_title = '';
     private static $max_chapters = [];
+    private static $index_slug = null;
 
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
@@ -410,9 +411,16 @@ class TheBible_Plugin {
     }
 
     private static function load_index() {
-        if (self::$books !== null) return;
+        $slug = get_query_var(self::QV_SLUG);
+        if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+
+        // Cache index per slug; interlinear pages can switch slugs frequently.
+        if (self::$books !== null && is_string(self::$index_slug) && self::$index_slug === $slug) {
+            return;
+        }
         self::$books = [];
         self::$slug_map = [];
+        self::$index_slug = $slug;
         $csv = self::index_csv_path();
         if (!file_exists($csv)) return;
         if (($fh = fopen($csv, 'r')) !== false) {
@@ -1753,54 +1761,60 @@ class TheBible_Plugin {
         $known = ['bible' => 'English', 'bibel' => 'Deutsch', 'latin' => 'Latin'];
         $d1 = (is_array($datasets) && isset($datasets[0]) && is_string($datasets[0])) ? $datasets[0] : '';
         $d2 = (is_array($datasets) && isset($datasets[1]) && is_string($datasets[1])) ? $datasets[1] : '';
+        $current_slug = is_string($slug_current) ? $slug_current : '';
 
-        $html = '<div class="thebible-language-switcher" data-language-switcher>';
+        $html = '<div class="thebible-language-switcher" data-language-switcher'
+            . ' data-current-slug="' . esc_attr($current_slug) . '"'
+            . ' data-current-first="' . esc_attr($d1) . '"'
+            . ' data-current-second="' . esc_attr($d2) . '"'
+            . '>';
 
-        $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--single">';
+        $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--single" data-group="single">';
         $html .= '<span class="thebible-language-switcher__label">Single:</span> ';
         foreach ($known as $slug => $label) {
-            $url = self::bible_url_for_slug_and_canonical_book($slug, $canonical_book_slug, $ch, $vf, $vt);
+            $target = $slug;
+            $url = self::bible_url_for_slug_and_canonical_book($target, $canonical_book_slug, $ch, $vf, $vt);
             if (!is_string($url) || $url === '') {
                 continue;
             }
-            $html .= '<a class="thebible-language-switcher__link" href="' . esc_url($url) . '">' . esc_html($label) . '</a> ';
+            $is_current = ($current_slug === $target);
+            $cls = 'thebible-language-switcher__link thebible-language-switcher__link--single thebible-language-switcher__link--' . $slug;
+            if ($is_current) { $cls .= ' is-current'; }
+            $label_html = $is_current ? ('<strong>' . esc_html($label) . '</strong>') : esc_html($label);
+            $html .= '<a class="' . esc_attr($cls) . '" data-target-slug="' . esc_attr($target) . '" href="' . esc_url($url) . '">' . $label_html . '</a> ';
         }
         $html .= '</div>';
 
-        $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--first">';
+        $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--first" data-group="first">';
         $html .= '<span class="thebible-language-switcher__label">First:</span> ';
         foreach ($known as $slug => $label) {
-            if ($d2 !== '' && $slug === $d2) {
-                continue;
-            }
-            if ($slug === $d1) {
-                continue;
-            }
             $target = $d2 !== '' ? ($slug . '-' . $d2) : $slug;
             $url = self::bible_url_for_slug_and_canonical_book($target, $canonical_book_slug, $ch, $vf, $vt);
             if (!is_string($url) || $url === '') {
                 continue;
             }
-            $html .= '<a class="thebible-language-switcher__link" href="' . esc_url($url) . '">' . esc_html($label) . '</a> ';
+            $is_current = ($current_slug === $target);
+            $cls = 'thebible-language-switcher__link thebible-language-switcher__link--first thebible-language-switcher__link--first-' . $slug;
+            if ($is_current) { $cls .= ' is-current'; }
+            $label_html = $is_current ? ('<strong>' . esc_html($label) . '</strong>') : esc_html($label);
+            $html .= '<a class="' . esc_attr($cls) . '" data-target-slug="' . esc_attr($target) . '" data-target-first="' . esc_attr($slug) . '" href="' . esc_url($url) . '">' . $label_html . '</a> ';
         }
         $html .= '</div>';
 
         if ($d1 !== '') {
-            $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--second">';
+            $html .= '<div class="thebible-language-switcher__group thebible-language-switcher__group--second" data-group="second">';
             $html .= '<span class="thebible-language-switcher__label">Second:</span> ';
             foreach ($known as $slug => $label) {
-                if ($slug === $d1) {
-                    continue;
-                }
-                if ($slug === $d2) {
-                    continue;
-                }
                 $target = $d1 . '-' . $slug;
                 $url = self::bible_url_for_slug_and_canonical_book($target, $canonical_book_slug, $ch, $vf, $vt);
                 if (!is_string($url) || $url === '') {
                     continue;
                 }
-                $html .= '<a class="thebible-language-switcher__link" href="' . esc_url($url) . '">' . esc_html($label) . '</a> ';
+                $is_current = ($current_slug === $target);
+                $cls = 'thebible-language-switcher__link thebible-language-switcher__link--second thebible-language-switcher__link--second-' . $slug;
+                if ($is_current) { $cls .= ' is-current'; }
+                $label_html = $is_current ? ('<strong>' . esc_html($label) . '</strong>') : esc_html($label);
+                $html .= '<a class="' . esc_attr($cls) . '" data-target-slug="' . esc_attr($target) . '" data-target-second="' . esc_attr($slug) . '" href="' . esc_url($url) . '">' . $label_html . '</a> ';
             }
             $html .= '</div>';
         }
@@ -1998,12 +2012,6 @@ class TheBible_Plugin {
             $out .= $nav_blocks;
         }
 
-        $vf = absint(get_query_var(self::QV_VFROM));
-        $vt = absint(get_query_var(self::QV_VTO));
-        $switcher = self::render_interlinear_language_switcher($canonical_key, $datasets, $ch, $vf, $vt);
-        if (is_string($switcher) && $switcher !== '') {
-            $out .= $switcher;
-        }
         foreach ($verses as $v) {
             $out .= '<div class="thebible-interlinear-verse thebible-interlinear-verse--v' . esc_attr((string)$v) . '"'
                 . ' data-verse="' . esc_attr((string)$v) . '"'
@@ -2042,6 +2050,13 @@ class TheBible_Plugin {
                 $out .= $doc->saveHTML($node);
             }
             $out .= '</div>';
+        }
+
+        $vf = absint(get_query_var(self::QV_VFROM));
+        $vt = absint(get_query_var(self::QV_VTO));
+        $switcher = self::render_interlinear_language_switcher($canonical_key, $datasets, $ch, $vf, $vt);
+        if (is_string($switcher) && $switcher !== '') {
+            $out .= $switcher;
         }
         $out .= '</div>';
 
