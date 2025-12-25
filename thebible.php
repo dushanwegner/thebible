@@ -202,8 +202,29 @@ class TheBible_Plugin {
 
         // Add sticky status bar at top (book + current chapter)
         $book_label = is_string($book_label) ? self::pretty_label($book_label) : '';
-        $book_slug_js = esc_js( self::slugify( $book_label ) );
         $book_label_html = esc_html( $book_label );
+
+        // data-slug is used by frontend JS to resolve headings/verses; it must be canonical
+        $book_slug_for_data = '';
+        $initial_ch = 1;
+        if (is_array($nav)) {
+            $nav_book = $nav['book'] ?? '';
+            $nav_ch = isset($nav['chapter']) ? absint($nav['chapter']) : 0;
+            if (is_string($nav_book) && $nav_book !== '') {
+                $book_slug_for_data = self::slugify($nav_book);
+            }
+            if ($nav_ch > 0) {
+                $initial_ch = $nav_ch;
+            }
+        }
+        if ($book_slug_for_data === '') {
+            $book_slug_for_data = self::slugify($book_label);
+        }
+        $q_ch = absint(get_query_var(self::QV_CHAPTER));
+        if ($q_ch > 0 && $initial_ch <= 1) {
+            $initial_ch = $q_ch;
+        }
+        $book_slug_js = esc_js($book_slug_for_data);
 
         $prev_href = '#';
         $next_href = '#';
@@ -253,8 +274,7 @@ class TheBible_Plugin {
         $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"' . $data_attrs . '>'
                 . '<div class="thebible-sticky__left">'
                 . '<span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> '
-                . '<span class="thebible-sticky__sep">—</span> '
-                . '<span class="thebible-sticky__chapter" data-ch>1</span>'
+                . '<span class="thebible-sticky__chapter" data-ch>' . esc_html((string)$initial_ch) . '</span>'
                 . '</div>'
                 . '<div class="thebible-sticky__controls">'
                 . '<a href="' . $prev_href . '" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous chapter">&#8592;</a>'
