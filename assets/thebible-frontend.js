@@ -477,8 +477,9 @@
                 }
             }
             if (elCh) {
-                // When no verse is selected, show only the book name (no chapter)
-                elCh.textContent = '';
+                // When no verse is selected, show only the chapter number.
+                // The book name is already rendered in the separate [data-label] span.
+                elCh.textContent = String(ch);
             }
         }
         var off = currentOffset();

@@ -220,6 +220,8 @@ class TheBible_Plugin {
         $book_label = is_string($book_label) ? self::pretty_label($book_label) : '';
         $book_label_html = esc_html( $book_label );
 
+        $vf = absint(get_query_var(self::QV_VFROM));
+
         // data-slug is used by frontend JS to resolve headings/verses; it must be canonical
         $book_slug_for_data = '';
         $initial_ch = 1;
@@ -312,10 +314,14 @@ class TheBible_Plugin {
             $data_attrs .= ' data-chapter-scroll-id="' . esc_attr( $chapter_scroll_id ) . '"';
         }
 
+        // Keep book label in the label span; chapter span should only contain the chapter number
+        // to avoid visual duplication like "Job Job 31".
+        $sticky_ch_text = (string)$initial_ch;
+
         $sticky = '<div class="thebible-sticky" data-slug="' . $book_slug_js . '"' . $data_attrs . '>'
                 . '<div class="thebible-sticky__left">'
                 . '<span class="thebible-sticky__label" data-label>' . $book_label_html . '</span> '
-                . '<span class="thebible-sticky__chapter" data-ch>' . esc_html((string)$initial_ch) . '</span>'
+                . '<span class="thebible-sticky__chapter" data-ch>' . esc_html($sticky_ch_text) . '</span>'
                 . '</div>'
                 . '<div class="thebible-sticky__controls">'
                 . '<a href="' . $prev_href . '" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous chapter">&#8592;</a>'
