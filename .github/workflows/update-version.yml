@@ -22,6 +22,10 @@ jobs:
           
           # Extract current version from file
           CURRENT_VERSION=$(grep "define('THEBIBLE_VERSION'" thebible.php | grep -o "'[0-9]\.[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9]'" | tr -d "'")
+          # Fallback: try to parse from the 'Version:' line if define fails
+          if [ -z "$CURRENT_VERSION" ]; then
+            CURRENT_VERSION=$(grep "Version:" thebible.php | grep -o "[0-9]\.[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9]")
+          fi
           echo "Current version: $CURRENT_VERSION"
           
           # Extract the counter part (last two digits)
@@ -77,13 +81,14 @@ jobs:
           # Construct version string with dots
           VERSION_STRING="$MAJOR.$YEAR.$MONTH.$DAY.$COUNTER"
           
-          # Update version in files (use -E and grouped capture for safety)
-          sed -i -E "s/(Version:\\s*)[0-9]+(\\.[0-9]+){4}/\\1$VERSION_STRING/" thebible.php
-          sed -i -E "s/(define\('THEBIBLE_VERSION',\\s*')([0-9]+(\\.[0-9]+){4})('\))/\\1$VERSION_STRING\\4/" thebible.php
+          # Update version in files
+          sed -i -E "s/(Version:\s*)[0-9]+(\.[0-9]+){4}/\1$VERSION_STRING/" thebible.php
+          sed -i -E "s/(define\('THEBIBLE_VERSION',\s*')([0-9]+(\.[0-9]+){4})('\))/\1$VERSION_STRING\4/" thebible.php
           
-          # Display updated version
-          grep "Version:" thebible.php
-          grep "THEBIBLE_VERSION" thebible.php
+          # Debug: show what we think we changed
+          echo "=== After update ==="
+          grep "Version:" thebible.php || true
+          grep "THEBIBLE_VERSION" thebible.php || true
 
       - name: Commit and Push Changes
         env:
