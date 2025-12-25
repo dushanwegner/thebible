@@ -1,49 +1,4 @@
 (function(){
-    function getQueryParam(name) {
-        try {
-            if (window.URLSearchParams) {
-                return new URLSearchParams(window.location.search).get(name) || '';
-            }
-        } catch (e) {}
-        // Fallback parser
-        var s = window.location.search || '';
-        if (!s || s.length < 2) return '';
-        s = s.substring(1);
-        var parts = s.split('&');
-        for (var i = 0; i < parts.length; i++) {
-            var kv = parts[i].split('=');
-            if (!kv || kv.length < 1) continue;
-            var k = decodeURIComponent(kv[0] || '');
-            if (k === name) return decodeURIComponent(kv.slice(1).join('=') || '');
-        }
-        return '';
-    }
-
-    function openIndexBookFromQuery() {
-        var key = getQueryParam('thebible_open');
-        if (!key) return;
-        key = String(key).toLowerCase();
-        // Keep only safe characters (matches PHP slugify-ish output)
-        key = key.replace(/[^a-z0-9\-]+/g, '');
-        if (!key) return;
-        var id = 'thebible-index-book-' + key;
-        var det = document.getElementById(id);
-        if (!det || det.tagName.toLowerCase() !== 'details') return;
-        det.open = true;
-        try {
-            det.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (e) {
-            det.scrollIntoView(true);
-        }
-    }
-
-    // Run on index pages as well (no sticky bar there)
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', openIndexBookFromQuery);
-    } else {
-        openIndexBookFromQuery();
-    }
-
     // Main sticky bar and verse navigation logic for The Bible frontend
     var bar = document.querySelector('.thebible-sticky');
     if (!bar) return;
@@ -220,9 +175,9 @@
     function headsList(){
         var list = [];
         if (container) {
-            list = Array.prototype.slice.call(container.querySelectorAll('[id]'));
+            list = Array.prototype.slice.call(container.querySelectorAll('h2[id]'));
         } else {
-            list = Array.prototype.slice.call(document.querySelectorAll('.thebible .thebible-book [id]'));
+            list = Array.prototype.slice.call(document.querySelectorAll('.thebible .thebible-book h2[id]'));
         }
         return list.filter(function(h){ return /-ch-\d+$/.test(h.id); });
     }
@@ -233,56 +188,6 @@
     var linkPrev = bar.querySelector('[data-prev]');
     var linkNext = bar.querySelector('[data-next]');
     var linkTop = bar.querySelector('[data-top]');
-
-    var defaultSep = bar.getAttribute('data-default-sep') || '—';
-    var defaultChLabel = bar.getAttribute('data-default-ch') || '';
-
-    function intAttr(name, fallback){
-        var v = bar.getAttribute(name);
-        if (v == null || v === '') return (typeof fallback === 'number' ? fallback : 0);
-        var n = parseInt(v, 10);
-        return isFinite(n) ? n : (typeof fallback === 'number' ? fallback : 0);
-    }
-    function strAttr(name, fallback){
-        var v = bar.getAttribute(name);
-        if (typeof v === 'string' && v !== '') return v;
-        return (typeof fallback === 'string' ? fallback : '');
-    }
-
-    function hasNavData(){
-        return !!(bar.getAttribute('data-book') && bar.getAttribute('data-current-ch'));
-    }
-
-    function buildBookChapterUrl(bookSlug, chapterNum){
-        var path = location.pathname;
-        // Strip trailing /{chapter} or /{chapter}:{verse} segments.
-        path = path.replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, '/');
-        // Ensure path ends with /{book}/
-        path = path.replace(/\/[^\/]+\/?$/, '/' + bookSlug + '/');
-        return location.origin + path + String(chapterNum) + '/';
-    }
-
-    function navTarget(delta){
-        // delta: -1 for prev, +1 for next
-        var book = strAttr('data-book', '');
-        var ch = intAttr('data-current-ch', 1);
-        var maxCh = intAttr('data-max-ch', 0);
-        var prevBook = strAttr('data-prev-book', '');
-        var prevMax = intAttr('data-prev-max-ch', 0);
-        var nextBook = strAttr('data-next-book', '');
-        var nextMax = intAttr('data-next-max-ch', 0);
-
-        if (!book || !ch) return null;
-
-        if (delta < 0) {
-            if (ch > 1) return { book: book, ch: ch - 1 };
-            if (prevBook) return { book: prevBook, ch: (prevMax > 0 ? prevMax : 1) };
-            return null;
-        }
-        if (maxCh > 0 && ch < maxCh) return { book: book, ch: ch + 1 };
-        if (nextBook) return { book: nextBook, ch: 1 };
-        return null;
-    }
 
     function setTopOffset(){
         var ab = document.getElementById('wpadminbar');
@@ -425,14 +330,6 @@
         return book + ' ' + info.sCh + ':' + info.sV + '-' + info.eCh + ':' + info.eV;
     }
 
-    function buildRefTail(info){
-        if (!info) return '';
-        if (info.sCh === info.eCh) {
-            return String(info.sCh) + ':' + (info.sV === info.eV ? String(info.sV) : (String(info.sV) + '-' + String(info.eV)));
-        }
-        return String(info.sCh) + ':' + String(info.sV) + '-' + String(info.eCh) + ':' + String(info.eV);
-    }
-
     function buildLink(info){
         var base = location.origin + location.pathname
             .replace(/\/?(\d+(?::\d+(?:-\d+)?)?)\/?$/, '/')
@@ -485,17 +382,14 @@
         var cleanedTxt = cleanVerseTextForOutput(rawTxt, true); // mirror PHP behavior and wrap in » «
         var payload = cleanedTxt + ' (' + ref + ') ' + link;
 
-        controls.innerHTML = '<span class="thebible-share-label">Selection</span>'
-            + '<a class="thebible-btn" href="#" data-copy-url>Copy URL</a>'
-            + '<a class="thebible-btn" href="#" data-copy-main>Copy Text</a>'
-            + '<a class="thebible-btn" href="#" data-post-x>Post</a>';
+        controls.innerHTML = 'share: <a href="#" data-copy-url>URL</a> <a href="#" data-copy-main>copy</a> <a href="#" data-post-x>post to X</a>';
 
         var aUrl = controls.querySelector('[data-copy-url]');
         if (aUrl) aUrl.addEventListener('click', function(e){
             e.preventDefault();
             copyToClipboard(link).then(function(){
-                aUrl.textContent = 'Copied';
-                setTimeout(function(){ aUrl.textContent = 'Copy URL'; }, 1000);
+                aUrl.textContent = 'copied';
+                setTimeout(function(){ aUrl.textContent = 'URL'; }, 1000);
             });
         });
 
@@ -503,8 +397,8 @@
         if (aCopy) aCopy.addEventListener('click', function(e){
             e.preventDefault();
             copyToClipboard(payload).then(function(){
-                aCopy.textContent = 'Copied';
-                setTimeout(function(){ aCopy.textContent = 'Copy Text'; }, 1000);
+                aCopy.textContent = 'copied';
+                setTimeout(function(){ aCopy.textContent = 'copy'; }, 1000);
             });
         });
 
@@ -532,41 +426,17 @@
         if (!verses.length) { verses = versesList(); }
         var info = selectionInfo();
         var elCh = bar.querySelector('[data-ch]');
-        var elSep = bar.querySelector('.thebible-sticky__sep');
         if (info && elCh) {
             // Remember when we last had a non-empty selection so we can
             // keep the share controls visible briefly after deselection.
             lastSelectionTime = Date.now();
-            if (elSep) {
-                elSep.style.display = '';
-                elSep.textContent = ' ';
-            }
-            elCh.style.display = '';
-            elCh.textContent = buildRefTail(info);
+            elCh.textContent = buildRef(info).replace(/^.*?\s(.*)$/, '$1');
             if (controls) renderSelectionControls(info);
         } else {
             // If selection was just cleared, keep controls for a short grace period
             // so that clicking "copy" / "post to X" doesn't immediately hide them.
             if (!lastSelectionTime || Date.now() - lastSelectionTime > 2000) {
                 ensureStandardControls();
-            }
-            if (defaultChLabel) {
-                if (elSep) {
-                    elSep.style.display = '';
-                    elSep.textContent = defaultSep;
-                }
-                if (elCh) {
-                    elCh.style.display = '';
-                    elCh.textContent = defaultChLabel;
-                }
-            } else {
-                if (elSep) {
-                    elSep.style.display = 'none';
-                }
-                if (elCh) {
-                    elCh.style.display = 'none';
-                    elCh.textContent = '';
-                }
             }
         }
         var topCut = window.innerHeight * 0.2;
@@ -586,29 +456,31 @@
             current = heads[0] || null;
             currentIdx = 0;
         }
-        // When there is no selection, the sticky bar intentionally shows only the book label.
+        if (!info) {
+            var ch = 1;
+            if (current) {
+                var m = current.id.match(/-ch-(\d+)$/);
+                if (m) {
+                    ch = parseInt(m[1], 10) || 1;
+                }
+            }
+            if (elCh) {
+                elCh.textContent = String(ch);
+            }
+        }
         var off = currentOffset();
         if (currentIdx <= 0) {
-            if (hasNavData()) {
-                disable(linkPrev, false);
-                disable(linkTop, true);
-            } else {
-                disable(linkPrev, true);
-                disable(linkTop, true);
-                if (linkPrev) linkPrev.href = '#';
-            }
+            disable(linkPrev, true);
+            disable(linkTop, true);
+            if (linkPrev) linkPrev.href = '#';
         } else {
             disable(linkPrev, false);
             disable(linkTop, false);
             if (linkPrev) linkPrev.href = '#' + heads[currentIdx - 1].id;
         }
         if (currentIdx >= heads.length - 1) {
-            if (hasNavData()) {
-                disable(linkNext, false);
-            } else {
-                disable(linkNext, true);
-                if (linkNext) linkNext.href = '#';
-            }
+            disable(linkNext, true);
+            if (linkNext) linkNext.href = '#';
         } else {
             disable(linkNext, false);
             if (linkNext) linkNext.href = '#' + heads[currentIdx + 1].id;
@@ -617,12 +489,6 @@
             bar._bound = true;
             if (linkPrev) linkPrev.addEventListener('click', function(e){
                 if (this.classList.contains('is-disabled')) return;
-                if (hasNavData()) {
-                    e.preventDefault();
-                    var tgt = navTarget(-1);
-                    if (tgt) window.location.href = buildBookChapterUrl(tgt.book, tgt.ch);
-                    return;
-                }
                 var hash = this.getAttribute('href') || '';
                 if (!hash || hash === '#') return;
                 e.preventDefault();
@@ -632,12 +498,6 @@
             });
             if (linkNext) linkNext.addEventListener('click', function(e){
                 if (this.classList.contains('is-disabled')) return;
-                if (hasNavData()) {
-                    e.preventDefault();
-                    var tgt = navTarget(1);
-                    if (tgt) window.location.href = buildBookChapterUrl(tgt.book, tgt.ch);
-                    return;
-                }
                 var hash = this.getAttribute('href') || '';
                 if (!hash || hash === '#') return;
                 e.preventDefault();

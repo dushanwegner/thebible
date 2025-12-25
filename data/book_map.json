@@ -1,367 +1,62 @@
 {
-  "genesis": {
-    "bible": "Genesis",
-    "bibel": "Genesis",
-    "latin": "Genesis"
-  },
-  "exodus": {
-    "bible": "Exodus",
-    "bibel": "Exodus",
-    "latin": "Exodus"
-  },
-  "leviticus": {
-    "bible": "Leviticus",
-    "bibel": "Levitikus",
-    "latin": "Leviticus"
-  },
-  "numbers": {
-    "bible": "Numbers",
-    "bibel": "Numeri",
-    "latin": "Numbers"
-  },
-  "deuteronomy": {
-    "bible": "Deuteronomy",
-    "bibel": "Deuteronomium",
-    "latin": "Deuteronomy"
-  },
-  "josue": {
-    "bible": "Josue",
-    "bibel": "Josua",
-    "latin": "Joshua"
-  },
-  "judges": {
-    "bible": "Judges",
-    "bibel": "Richter",
-    "latin": "Judges"
-  },
-  "ruth": {
-    "bible": "Ruth",
-    "bibel": "Rut",
-    "latin": "Ruth"
-  },
-  "1-kings-samuel": {
-    "bible": "1_Kings_Samuel",
-    "bibel": "1_Samuel",
-    "latin": "1_Samuel"
-  },
-  "2-kings-samuel": {
-    "bible": "2_Kings_Samuel",
-    "bibel": "2_Samuel",
-    "latin": "2_Samuel"
-  },
-  "3-kings": {
-    "bible": "3_Kings",
-    "bibel": "1_Koenige",
-    "latin": "1_Kings"
-  },
-  "4-kings": {
-    "bible": "4_Kings",
-    "bibel": "2_Koenige",
-    "latin": "2_Kings"
-  },
-  "1-paralipomenon": {
-    "bible": "1_Paralipomenon",
-    "bibel": "1_Chronik",
-    "latin": "1_Chronicles"
-  },
-  "2-paralipomenon": {
-    "bible": "2_Paralipomenon",
-    "bibel": "2_Chronik",
-    "latin": "2_Chronicles"
-  },
-  "1-esdras": {
-    "bible": "1_Esdras",
-    "bibel": "1_Esra",
-    "latin": "Ezra"
-  },
-  "2-esdras-nehemias": {
-    "bible": "2_Esdras_Nehemias",
-    "bibel": "2_Esra_Nehemia",
-    "latin": "Nehemiah"
-  },
-  "tobias": {
-    "bible": "Tobias",
-    "bibel": "Tobit",
-    "latin": "Tobit"
-  },
-  "judith": {
-    "bible": "Judith",
-    "bibel": "Judith",
-    "latin": "Judith"
-  },
-  "esther": {
-    "bible": "Esther",
-    "bibel": "Esther",
-    "latin": "Esther"
-  },
-  "job": {
-    "bible": "Job",
-    "bibel": "Hiob",
-    "latin": "Job"
-  },
-  "psalms": {
-    "bible": "Psalms",
-    "bibel": "Psalmen",
-    "latin": "Psalms"
-  },
-  "proverbs": {
-    "bible": "Proverbs",
-    "bibel": "Sprueche",
-    "latin": "Proverbs"
-  },
-  "ecclesiastes": {
-    "bible": "Ecclesiastes",
-    "bibel": "Prediger",
-    "latin": "Ecclesiastes"
-  },
-  "canticle-of-canticles": {
-    "bible": "Canticle_of_Canticles",
-    "bibel": "Hoheslied",
-    "latin": "Song_of_Solomon"
-  },
-  "wisdom": {
-    "bible": "Wisdom",
-    "bibel": "Weisheit",
-    "latin": "Wisdom"
-  },
-  "ecclesiasticus": {
-    "bible": "Ecclesiasticus",
-    "bibel": "Jesus_Sirach",
-    "latin": "Sirach"
-  },
-  "isaias": {
-    "bible": "Isaias",
-    "bibel": "Jesaja",
-    "latin": "Isaiah"
-  },
-  "jeremias": {
-    "bible": "Jeremias",
-    "bibel": "Jeremia",
-    "latin": "Jeremiah"
-  },
-  "lamentations": {
-    "bible": "Lamentations",
-    "bibel": "Klagelieder",
-    "latin": "Lamentations"
-  },
-  "baruch": {
-    "bible": "Baruch",
-    "bibel": "Baruch",
-    "latin": "Baruch"
-  },
-  "ezechiel": {
-    "bible": "Ezechiel",
-    "bibel": "Hesekiel",
-    "latin": "Ezekiel"
-  },
-  "daniel": {
-    "bible": "Daniel",
-    "bibel": "Daniel",
-    "latin": "Daniel"
-  },
-  "osee": {
-    "bible": "Osee",
-    "bibel": "Hosea",
-    "latin": "Hosea"
-  },
-  "joel": {
-    "bible": "Joel",
-    "bibel": "Joel",
-    "latin": "Joel"
-  },
-  "amos": {
-    "bible": "Amos",
-    "bibel": "Amos",
-    "latin": "Amos"
-  },
-  "abdias": {
-    "bible": "Abdias",
-    "bibel": "Obadja",
-    "latin": "Obadiah"
-  },
-  "jonas": {
-    "bible": "Jonas",
-    "bibel": "Jona",
-    "latin": "Jonah"
-  },
-  "micheas": {
-    "bible": "Micheas",
-    "bibel": "Micha",
-    "latin": "Micah"
-  },
-  "nahum": {
-    "bible": "Nahum",
-    "bibel": "Nahum",
-    "latin": "Nahum"
-  },
-  "habacuc": {
-    "bible": "Habacuc",
-    "bibel": "Habakuk",
-    "latin": "Habakkuk"
-  },
-  "sophonias": {
-    "bible": "Sophonias",
-    "bibel": "Zefanja",
-    "latin": "Zephaniah"
-  },
-  "aggeus": {
-    "bible": "Aggeus",
-    "bibel": "Haggai",
-    "latin": "Haggai"
-  },
-  "zacharias": {
-    "bible": "Zacharias",
-    "bibel": "Sacharja",
-    "latin": "Zechariah"
-  },
-  "malachias": {
-    "bible": "Malachias",
-    "bibel": "Maleachi",
-    "latin": "Malachi"
-  },
-  "1-machabees": {
-    "bible": "1_Machabees",
-    "bibel": "1_Makkabaeer",
-    "latin": "1_Maccabees"
-  },
-  "2-machabees": {
-    "bible": "2_Machabees",
-    "bibel": "2_Makkabaeer",
-    "latin": "2_Maccabees"
-  },
-  "matthew": {
-    "bible": "Matthew",
-    "bibel": "Matthaeus",
-    "latin": "Matthew"
-  },
-  "mark": {
-    "bible": "Mark",
-    "bibel": "Markus",
-    "latin": "Mark"
-  },
-  "luke": {
-    "bible": "Luke",
-    "bibel": "Lukas",
-    "latin": "Luke"
-  },
-  "john": {
-    "bible": "John",
-    "bibel": "Johannes",
-    "latin": "John"
-  },
-  "acts": {
-    "bible": "Acts",
-    "bibel": "Apostelgeschichte",
-    "latin": "Acts"
-  },
-  "romans": {
-    "bible": "Romans",
-    "bibel": "Roemer",
-    "latin": "Romans"
-  },
-  "1-corinthians": {
-    "bible": "1_Corinthians",
-    "bibel": "1_Korinther",
-    "latin": "1_Corinthians"
-  },
-  "2-corinthians": {
-    "bible": "2_Corinthians",
-    "bibel": "2_Korinther",
-    "latin": "2_Corinthians"
-  },
-  "galatians": {
-    "bible": "Galatians",
-    "bibel": "Galater",
-    "latin": "Galatians"
-  },
-  "ephesians": {
-    "bible": "Ephesians",
-    "bibel": "Epheser",
-    "latin": "Ephesians"
-  },
-  "philippians": {
-    "bible": "Philippians",
-    "bibel": "Philipper",
-    "latin": "Philippians"
-  },
-  "colossians": {
-    "bible": "Colossians",
-    "bibel": "Kolosser",
-    "latin": "Colossians"
-  },
-  "1-thessalonians": {
-    "bible": "1_Thessalonians",
-    "bibel": "1_Thessalonicher",
-    "latin": "1_Thessalonians"
-  },
-  "2-thessalonians": {
-    "bible": "2_Thessalonians",
-    "bibel": "2_Thessalonicher",
-    "latin": "2_Thessalonians"
-  },
-  "1-timothy": {
-    "bible": "1_Timothy",
-    "bibel": "1_Timotheus",
-    "latin": "1_Timothy"
-  },
-  "2-timothy": {
-    "bible": "2_Timothy",
-    "bibel": "2_Timotheus",
-    "latin": "2_Timothy"
-  },
-  "titus": {
-    "bible": "Titus",
-    "bibel": "Titus",
-    "latin": "Titus"
-  },
-  "philemon": {
-    "bible": "Philemon",
-    "bibel": "Philemon",
-    "latin": "Philemon"
-  },
-  "hebrews": {
-    "bible": "Hebrews",
-    "bibel": "Hebraeer",
-    "latin": "Hebrews"
-  },
-  "james": {
-    "bible": "James",
-    "bibel": "Jakobus",
-    "latin": "James"
-  },
-  "1-peter": {
-    "bible": "1_Peter",
-    "bibel": "1_Petrus",
-    "latin": "1_Peter"
-  },
-  "2-peter": {
-    "bible": "2_Peter",
-    "bibel": "2_Petrus",
-    "latin": "2_Peter"
-  },
-  "1-john": {
-    "bible": "1_John",
-    "bibel": "1_Johannes",
-    "latin": "1_John"
-  },
-  "2-john": {
-    "bible": "2_John",
-    "bibel": "2_Johannes",
-    "latin": "2_John"
-  },
-  "3-john": {
-    "bible": "3_John",
-    "bibel": "3_Johannes",
-    "latin": "3_John"
-  },
-  "jude": {
-    "bible": "Jude",
-    "bibel": "Judas",
-    "latin": "Jude"
-  },
-  "apocalypse": {
-    "bible": "Apocalypse",
-    "bibel": "Offenbarung",
-    "latin": "Revelation"
-  }
+  "genesis": { "bible": "Genesis", "bibel": "Genesis" },
+  "exodus": { "bible": "Exodus", "bibel": "Exodus" },
+  "leviticus": { "bible": "Leviticus", "bibel": "Levitikus" },
+  "numbers": { "bible": "Numbers", "bibel": "Numeri" },
+  "deuteronomy": { "bible": "Deuteronomy", "bibel": "Deuteronomium" },
+  "josue": { "bible": "Josue", "bibel": "Josua" },
+  "judges": { "bible": "Judges", "bibel": "Richter" },
+  "ruth": { "bible": "Ruth", "bibel": "Rut" },
+
+  "job": { "bible": "Job", "bibel": "Hiob" },
+  "psalms": { "bible": "Psalms", "bibel": "Psalmen" },
+  "proverbs": { "bible": "Proverbs", "bibel": "Sprueche" },
+  "ecclesiastes": { "bible": "Ecclesiastes", "bibel": "Prediger" },
+  "canticle-of-canticles": { "bible": "Canticle_of_Canticles", "bibel": "Hoheslied" },
+
+  "isaias": { "bible": "Isaias", "bibel": "Jesaja" },
+  "jeremias": { "bible": "Jeremias", "bibel": "Jeremia" },
+  "lamentations": { "bible": "Lamentations", "bibel": "Klagelieder" },
+  "ezechiel": { "bible": "Ezechiel", "bibel": "Hesekiel" },
+  "daniel": { "bible": "Daniel", "bibel": "Daniel" },
+  "osee": { "bible": "Osee", "bibel": "Hosea" },
+  "joel": { "bible": "Joel", "bibel": "Joel" },
+  "amos": { "bible": "Amos", "bibel": "Amos" },
+  "abdias": { "bible": "Abdias", "bibel": "Obadja" },
+  "jonas": { "bible": "Jonas", "bibel": "Jona" },
+  "micheas": { "bible": "Micheas", "bibel": "Micha" },
+  "nahum": { "bible": "Nahum", "bibel": "Nahum" },
+  "habacuc": { "bible": "Habacuc", "bibel": "Habakuk" },
+  "sophonias": { "bible": "Sophonias", "bibel": "Zefanja" },
+  "aggeus": { "bible": "Aggeus", "bibel": "Haggai" },
+  "zacharias": { "bible": "Zacharias", "bibel": "Sacharja" },
+  "malachias": { "bible": "Malachias", "bibel": "Maleachi" },
+
+  "matthew": { "bible": "Matthew", "bibel": "Matthaeus" },
+  "mark": { "bible": "Mark", "bibel": "Markus" },
+  "luke": { "bible": "Luke", "bibel": "Lukas" },
+  "john": { "bible": "John", "bibel": "Johannes" },
+  "acts": { "bible": "Acts", "bibel": "Apostelgeschichte" },
+  "romans": { "bible": "Romans", "bibel": "Roemer" },
+  "1-corinthians": { "bible": "1_Corinthians", "bibel": "1_Korinther" },
+  "2-corinthians": { "bible": "2_Corinthians", "bibel": "2_Korinther" },
+  "galatians": { "bible": "Galatians", "bibel": "Galater" },
+  "ephesians": { "bible": "Ephesians", "bibel": "Epheser" },
+  "philippians": { "bible": "Philippians", "bibel": "Philipper" },
+  "colossians": { "bible": "Colossians", "bibel": "Kolosser" },
+  "1-thessalonians": { "bible": "1_Thessalonians", "bibel": "1_Thessalonicher" },
+  "2-thessalonians": { "bible": "2_Thessalonians", "bibel": "2_Thessalonicher" },
+  "1-timothy": { "bible": "1_Timothy", "bibel": "1_Timotheus" },
+  "2-timothy": { "bible": "2_Timothy", "bibel": "2_Timotheus" },
+  "titus": { "bible": "Titus", "bibel": "Titus" },
+  "philemon": { "bible": "Philemon", "bibel": "Philemon" },
+  "hebrews": { "bible": "Hebrews", "bibel": "Hebraeer" },
+  "james": { "bible": "James", "bibel": "Jakobus" },
+  "1-peter": { "bible": "1_Peter", "bibel": "1_Petrus" },
+  "2-peter": { "bible": "2_Peter", "bibel": "2_Petrus" },
+  "1-john": { "bible": "1_John", "bibel": "1_Johannes" },
+  "2-john": { "bible": "2_John", "bibel": "2_Johannes" },
+  "3-john": { "bible": "3_John", "bibel": "3_Johannes" },
+  "jude": { "bible": "Jude", "bibel": "Judas" },
+  "apocalypse": { "bible": "Apocalypse", "bibel": "Offenbarung" }
 }
