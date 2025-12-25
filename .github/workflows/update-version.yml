@@ -94,7 +94,7 @@ jobs:
           
           git config --global user.name "dushanwegner"
           git config --global user.email "d@wgnr.es"
-          git remote set-url origin https://x-access-token:$GH_PAT@github.com/dushanwegner/dwlatinprayer.git
+          git remote set-url origin https://x-access-token:$GH_PAT@github.com/dushanwegner/thebible.git
           git add thebible.php
           git commit -m "Update version to $VERSION_STRING" || echo "No changes to commit"
           git push origin master
