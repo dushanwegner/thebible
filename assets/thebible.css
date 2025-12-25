@@ -1,5 +1,6 @@
 /* The Bible plugin styles: sticky bar, controls, verse highlight */
-.thebible .thebible-sticky {
+.thebible .thebible-sticky,
+.thebible-sticky {
   position: -webkit-sticky;
   position: sticky;
   top: env(safe-area-inset-top, 0);
@@ -19,12 +20,14 @@
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
-.thebible .thebible-sticky__controls {
+.thebible .thebible-sticky__controls,
+.thebible-sticky__controls {
   display: flex;
   gap: .5rem;
   align-items: center;
 }
-.thebible .thebible-ctl {
+.thebible .thebible-ctl,
+.thebible-ctl {
   color: inherit;
   text-decoration: none;
   display: inline-flex;
@@ -35,7 +38,8 @@
   border-radius: .25rem;
   border: 1px solid rgba(0,0,0,.15);
 }
-.thebible .thebible-ctl:is(.is-disabled) {
+.thebible .thebible-ctl:is(.is-disabled),
+.thebible-ctl:is(.is-disabled) {
   opacity: .35;
   pointer-events: none;
 }
@@ -53,3 +57,29 @@
 .thebible .verse-highlight { background: #fff3cd; padding: 0 .2em; border-radius: .15rem; }
 .thebible .thebible-book p.verse, .thebible.thebible-book p.verse { transition: background-color 1.6s ease-out; }
 .thebible .thebible-book p.verse.verse-flash, .thebible.thebible-book p.verse.verse-flash { background: #fff3cd; }
+
+/* Interlinear display adjustments */
+.thebible.thebible-interlinear {
+  padding-top: 0;
+}
+.thebible.thebible-interlinear .thebible-interlinear-verse {
+  margin-bottom: 1.5em;
+}
+.thebible.thebible-interlinear .thebible-interlinear-verse p {
+  margin: 0 0 0.25em 0;
+  padding: 0.25em 0;
+}
+.thebible.thebible-interlinear .thebible-interlinear-a {
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding-bottom: 0.5em;
+}
+.thebible.thebible-interlinear .thebible-interlinear-b,
+.thebible.thebible-interlinear .thebible-interlinear-c {
+  opacity: 0.9;
+  font-size: 0.95em;
+}
+.thebible.thebible-interlinear .thebible-interlinear-b .verse-num,
+.thebible.thebible-interlinear .thebible-interlinear-c .verse-num {
+  opacity: 0.5;
+}

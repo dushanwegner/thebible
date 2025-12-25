@@ -42,8 +42,8 @@ class TheBible_Plugin {
         add_action('template_redirect', [__CLASS__, 'handle_request']);
 
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
-        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_assets']);
-        add_action('admin_menu', [__CLASS__, 'add_settings_page']);
+        add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
+        add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
 
         add_action('add_meta_boxes', ['TheBible_Admin_Meta', 'add_bible_meta_box']);
@@ -69,6 +69,14 @@ class TheBible_Plugin {
 
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
+    }
+
+    public static function add_settings_page() {
+        self::admin_menu();
+    }
+
+    public static function enqueue_admin_assets($hook) {
+        self::admin_enqueue($hook);
     }
 
     private static function ordered_book_slugs() {
@@ -298,7 +306,7 @@ class TheBible_Plugin {
             || ! empty( get_query_var( self::QV_SLUG ) );
         if ( $is_bible ) {
             $css_url = plugins_url( 'assets/thebible.css', __FILE__ );
-            wp_enqueue_style( 'thebible-styles', $css_url, [], '0.1.1' );
+            wp_enqueue_style( 'thebible-styles', $css_url, [], '0.1.3' );
 
             // Enqueue theme script first (in the head) to prevent flash of unstyled content
             $theme_js_url = plugins_url( 'assets/thebible-theme.js', __FILE__ );
@@ -481,6 +489,9 @@ class TheBible_Plugin {
 
     private static function canonical_book_slug_from_url($raw_book, $slug) {
         if (!is_string($raw_book) || $raw_book === '') return null;
+        if ($slug === 'latin-bible') {
+            $slug = 'bible';
+        }
         if ($slug !== 'bible' && $slug !== 'bibel' && $slug !== 'latin') {
             $slug = 'bible';
         }
@@ -570,6 +581,11 @@ class TheBible_Plugin {
         // Resolve canonical book slug for the current language dataset
         $slug = get_query_var(self::QV_SLUG);
         if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+
+        if (is_string($slug) && strpos($slug, '-') !== false) {
+            self::render_multilingual_book($book_slug, $slug);
+            exit;
+        }
 
         $canonical = self::canonical_book_slug_from_url($book_slug, $slug);
         if (!$canonical) {
@@ -1459,7 +1475,16 @@ class TheBible_Plugin {
         if (!is_string($list)) $list = 'bible';
         $parts = array_filter(array_map('trim', explode(',', $list)));
         if (empty($parts)) { $parts = ['bible']; }
-        return array_values(array_unique($parts));
+        $parts = array_values(array_unique($parts));
+        $datasets = [];
+        foreach ($parts as $p) {
+            $p = trim((string)$p);
+            if ($p === '' || strpos($p, '-') !== false) continue;
+            $datasets[] = $p;
+        }
+        $datasets = array_values(array_unique($datasets));
+        $combos = self::build_language_slug_combinations($datasets, 3);
+        return array_values(array_unique(array_merge($parts, $combos)));
     }
 
     private static function is_bible_request() {
@@ -1471,7 +1496,7 @@ class TheBible_Plugin {
         }
         if (is_string($slug) && $slug !== '') {
             $slug = trim($slug, "/ ");
-            if ($slug === 'bible' || $slug === 'bibel' || $slug === 'latin') {
+            if ($slug === 'bible' || $slug === 'bibel' || $slug === 'latin' || strpos($slug, '-') !== false) {
                 return true;
             }
         }
@@ -1479,6 +1504,272 @@ class TheBible_Plugin {
             return true;
         }
         return false;
+    }
+
+    private static function build_language_slug_combinations($datasets, $max_len = 3) {
+        if (!is_array($datasets) || empty($datasets)) return [];
+        $datasets = array_values(array_unique(array_filter(array_map('trim', $datasets))));
+        $out = [];
+        $n = count($datasets);
+        if ($n < 2) return [];
+
+        for ($i = 0; $i < $n; $i++) {
+            for ($j = 0; $j < $n; $j++) {
+                if ($j === $i) continue;
+                $out[] = $datasets[$i] . '-' . $datasets[$j];
+            }
+        }
+
+        if ($max_len >= 3 && $n >= 3) {
+            for ($i = 0; $i < $n; $i++) {
+                for ($j = 0; $j < $n; $j++) {
+                    if ($j === $i) continue;
+                    for ($k = 0; $k < $n; $k++) {
+                        if ($k === $i || $k === $j) continue;
+                        $out[] = $datasets[$i] . '-' . $datasets[$j] . '-' . $datasets[$k];
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($out));
+    }
+
+    private static function get_book_entry_for_dataset($dataset_slug, $book_slug) {
+        $dataset_slug = is_string($dataset_slug) ? trim($dataset_slug) : '';
+        $book_slug = is_string($book_slug) ? self::slugify($book_slug) : '';
+        if ($dataset_slug === '' || $book_slug === '') return null;
+
+        $index_file = plugin_dir_path(__FILE__) . 'data/' . $dataset_slug . '/html/index.csv';
+        if (!file_exists($index_file)) {
+            $old = plugin_dir_path(__FILE__) . 'data/' . $dataset_slug . '_books_html/index.csv';
+            if (file_exists($old)) {
+                $index_file = $old;
+            } else {
+                return null;
+            }
+        }
+
+        if (($fh = fopen($index_file, 'r')) === false) return null;
+        $header = fgetcsv($fh);
+        $found = null;
+        while (($row = fgetcsv($fh)) !== false) {
+            if (!is_array($row) || count($row) < 3) continue;
+            $short = (string) $row[1];
+            $slug = self::slugify($short);
+            if ($slug === $book_slug) {
+                $display = '';
+                $filename = '';
+                if (count($row) >= 4) {
+                    $display = isset($row[2]) ? (string)$row[2] : '';
+                    $filename = isset($row[3]) ? (string)$row[3] : (isset($row[2]) ? (string)$row[2] : '');
+                } else {
+                    $filename = (string)$row[2];
+                }
+                $found = [
+                    'order' => intval($row[0]),
+                    'short_name' => $short,
+                    'display_name' => $display,
+                    'filename' => $filename,
+                ];
+                break;
+            }
+        }
+        fclose($fh);
+        return $found;
+    }
+
+    private static function html_dir_for_dataset($dataset_slug) {
+        $dataset_slug = is_string($dataset_slug) ? trim($dataset_slug) : '';
+        if ($dataset_slug === '') return null;
+        $root = plugin_dir_path(__FILE__) . 'data/' . $dataset_slug . '/html/';
+        if (is_dir($root)) return trailingslashit($root);
+        $old = plugin_dir_path(__FILE__) . 'data/' . $dataset_slug . '_books_html/';
+        if (is_dir($old)) return trailingslashit($old);
+        return null;
+    }
+
+    private static function parse_verse_nodes_by_number($html, $book_slug, $ch) {
+        $out = [];
+        if (!is_string($html) || $html === '') return $out;
+        if (!is_string($book_slug) || $book_slug === '') return $out;
+        $ch = absint($ch);
+        if ($ch <= 0) return $out;
+
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_clear_errors();
+        $xp = new DOMXPath($doc);
+
+        $prefix = $book_slug . '-' . $ch . '-';
+        $nodes = $xp->query('//*[@id and starts-with(@id, "' . $prefix . '")]');
+        if (!$nodes) return $out;
+        foreach ($nodes as $n) {
+            if (!$n->hasAttribute('id')) continue;
+            $id = (string)$n->getAttribute('id');
+            if (strpos($id, $prefix) !== 0) continue;
+            $v = absint(substr($id, strlen($prefix)));
+            if ($v <= 0) continue;
+            $out[$v] = $n;
+        }
+        return [$doc, $out];
+    }
+
+    private static function render_multilingual_book($url_book_slug, $slug_combo) {
+        $url_book_slug = is_string($url_book_slug) ? $url_book_slug : '';
+        $slug_combo = is_string($slug_combo) ? trim($slug_combo, "/ ") : '';
+        $canonical_key = self::slugify($url_book_slug);
+        if ($canonical_key === '' || $slug_combo === '') {
+            self::render_404();
+            return;
+        }
+
+        $datasets = array_values(array_filter(array_map('trim', explode('-', $slug_combo))));
+        $datasets = array_values(array_unique($datasets));
+        if (count($datasets) < 2 || count($datasets) > 3) {
+            self::render_404();
+            return;
+        }
+
+        $entries = [];
+        $docs = [];
+        $nodes_by_dataset = [];
+
+        foreach ($datasets as $dataset) {
+            if (!is_string($dataset) || $dataset === '') {
+                self::render_404();
+                return;
+            }
+
+            $dataset_short = self::resolve_book_for_dataset($canonical_key, $dataset);
+            if (!is_string($dataset_short) || $dataset_short === '') {
+                $dataset_short = $canonical_key;
+            }
+
+            $entry = self::get_book_entry_for_dataset($dataset, $dataset_short);
+            if (!$entry) {
+                self::render_404();
+                return;
+            }
+
+            $dir = self::html_dir_for_dataset($dataset);
+            if (!$dir) {
+                self::render_404();
+                return;
+            }
+
+            $file = $dir . $entry['filename'];
+            if (!file_exists($file)) {
+                self::render_404();
+                return;
+            }
+
+            $entries[$dataset] = $entry;
+            $html = (string) file_get_contents($file);
+            $entries[$dataset]['_raw_html'] = $html;
+        }
+
+        $ch = absint(get_query_var(self::QV_CHAPTER));
+        if ($ch <= 0) {
+            $ch = 1;
+            set_query_var(self::QV_CHAPTER, $ch);
+        }
+
+        foreach ($datasets as $dataset) {
+            $html = (string) $entries[$dataset]['_raw_html'];
+            $chapter_html = self::extract_chapter_from_html($html, $ch);
+            if ($chapter_html === null) {
+                self::render_404();
+                return;
+            }
+
+            $book_slug = self::slugify($entries[$dataset]['short_name']);
+            $parsed = self::parse_verse_nodes_by_number($chapter_html, $book_slug, $ch);
+            if (!is_array($parsed) || count($parsed) !== 2) {
+                self::render_404();
+                return;
+            }
+            list($doc, $nodes) = $parsed;
+            $docs[$dataset] = $doc;
+            $nodes_by_dataset[$dataset] = $nodes;
+        }
+
+        $verses = [];
+        foreach ($datasets as $dataset) {
+            $verses = array_merge($verses, array_keys($nodes_by_dataset[$dataset]));
+        }
+        $verses = array_values(array_unique($verses));
+        sort($verses);
+
+        $out = '<div class="thebible thebible-book thebible-interlinear">';
+        foreach ($verses as $v) {
+            $out .= '<div class="thebible-interlinear-verse" data-verse="' . esc_attr((string)$v) . '">';
+            foreach ($datasets as $idx => $dataset) {
+                $node = $nodes_by_dataset[$dataset][$v] ?? null;
+                if (!$node) {
+                    continue;
+                }
+                $doc = $docs[$dataset];
+                $node = $doc->importNode($node, true);
+                $class_suffix = chr(ord('a') + $idx);
+                $node->setAttribute('class', trim($node->getAttribute('class') . ' thebible-interlinear-' . $class_suffix . ' thebible-interlinear-' . $dataset));
+                if ($idx === 0) {
+                    $id = $canonical_key . '-' . $ch . '-' . $v;
+                    $node->setAttribute('id', $id);
+                } else {
+                    if ($node->hasAttribute('id')) { $node->removeAttribute('id'); }
+                }
+                $out .= $doc->saveHTML($node);
+            }
+            $out .= '</div>';
+        }
+        $out .= '</div>';
+
+        // Build highlight/scroll targets from URL like /book/20:2-4 or /book/20
+        $targets = [];
+        $chapter_scroll_id = null;
+        $vf = absint(get_query_var(self::QV_VFROM));
+        $vt = absint(get_query_var(self::QV_VTO));
+        if ($ch && $vf) {
+            if (!$vt || $vt < $vf) { $vt = $vf; }
+            for ($i = $vf; $i <= $vt; $i++) {
+                $targets[] = $canonical_key . '-' . $ch . '-' . $i;
+            }
+        } elseif ($ch && !$vf) {
+            $chapter_scroll_id = $canonical_key . '-ch-' . $ch;
+        }
+
+        // Inject navigation helpers and sticky header for interlinear pages
+        $first_entry = $entries[$datasets[0]] ?? null;
+        $human = $first_entry && isset($first_entry['display_name']) && $first_entry['display_name'] !== ''
+            ? $first_entry['display_name']
+            : ($first_entry ? self::pretty_label($first_entry['short_name']) : '');
+        $out = self::inject_nav_helpers($out, $targets, $chapter_scroll_id, $human, [
+            'book' => $canonical_key,
+            'chapter' => $ch,
+        ]);
+
+        status_header(200);
+        nocache_headers();
+
+        $first = $datasets[0];
+        $first_entry = $entries[$first] ?? null;
+        $base_title = ($first_entry && isset($first_entry['display_name']) && $first_entry['display_name'] !== '')
+            ? $first_entry['display_name']
+            : ($first_entry ? self::pretty_label($first_entry['short_name']) : '');
+
+        $title = trim($base_title . ' ' . $ch);
+        $vf = absint(get_query_var(self::QV_VFROM));
+        $vt = absint(get_query_var(self::QV_VTO));
+        if ($ch && $vf) {
+            if (!$vt || $vt < $vf) { $vt = $vf; }
+            $title = trim($base_title . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt)));
+        }
+
+        $footer = self::render_footer_html();
+        if ($footer !== '') { $out .= $footer; }
+        self::output_with_theme($title, $out, 'book');
     }
 
     public static function filter_document_title($title) {
