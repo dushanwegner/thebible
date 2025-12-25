@@ -2363,17 +2363,20 @@ class TheBible_Plugin {
         }
         $html = file_get_contents($file);
 
-        // Determine if we have a chapter request
+        // Determine chapter (full-book rendering is disabled; default to chapter 1)
         $ch = absint(get_query_var(self::QV_CHAPTER));
-        if ($ch > 0) {
-            // Single-chapter mode: extract only the requested chapter
-            $chapter_html = self::extract_chapter_from_html($html, $ch);
-            if ($chapter_html === null) {
-                self::render_404();
-                return;
-            }
-            $html = $chapter_html;
+        if ($ch <= 0) {
+            $ch = 1;
+            set_query_var(self::QV_CHAPTER, $ch);
         }
+
+        // Single-chapter mode: extract only the requested chapter
+        $chapter_html = self::extract_chapter_from_html($html, $ch);
+        if ($chapter_html === null) {
+            self::render_404();
+            return;
+        }
+        $html = $chapter_html;
 
         // Build highlight/scroll targets from URL like /book/20:2-4 or /book/20
         $targets = [];
