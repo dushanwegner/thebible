@@ -189,6 +189,10 @@
     var linkNext = bar.querySelector('[data-next]');
     var linkTop = bar.querySelector('[data-top]');
 
+    function isHashHref(href){
+        return href && href.charAt(0) === '#';
+    }
+
     function setTopOffset(){
         var ab = document.getElementById('wpadminbar');
         var off = (document.body.classList.contains('admin-bar') && ab) ? ab.offsetHeight : 0;
@@ -469,44 +473,73 @@
             }
         }
         var off = currentOffset();
-        if (currentIdx <= 0) {
-            disable(linkPrev, true);
-            disable(linkTop, true);
-            if (linkPrev) linkPrev.href = '#';
+        var prevHref = linkPrev ? (linkPrev.getAttribute('href') || '') : '';
+        var nextHref = linkNext ? (linkNext.getAttribute('href') || '') : '';
+        var topHref  = linkTop ? (linkTop.getAttribute('href') || '') : '';
+
+        // Only manage/disable the controls when they are intended as in-page anchors.
+        // If PHP provided real URLs (cross-book navigation), leave hrefs alone and never disable.
+        if (isHashHref(prevHref) || prevHref === '#') {
+            if (currentIdx <= 0) {
+                disable(linkPrev, true);
+                if (linkPrev) linkPrev.href = '#';
+            } else {
+                disable(linkPrev, false);
+                if (linkPrev) linkPrev.href = '#' + heads[currentIdx - 1].id;
+            }
         } else {
             disable(linkPrev, false);
-            disable(linkTop, false);
-            if (linkPrev) linkPrev.href = '#' + heads[currentIdx - 1].id;
         }
-        if (currentIdx >= heads.length - 1) {
-            disable(linkNext, true);
-            if (linkNext) linkNext.href = '#';
+
+        if (isHashHref(nextHref) || nextHref === '#') {
+            if (currentIdx >= heads.length - 1) {
+                disable(linkNext, true);
+                if (linkNext) linkNext.href = '#';
+            } else {
+                disable(linkNext, false);
+                if (linkNext) linkNext.href = '#' + heads[currentIdx + 1].id;
+            }
         } else {
             disable(linkNext, false);
-            if (linkNext) linkNext.href = '#' + heads[currentIdx + 1].id;
+        }
+
+        if (isHashHref(topHref) || topHref.indexOf('#thebible-book-top') === 0 || topHref === '#') {
+            if (currentIdx <= 0) {
+                disable(linkTop, true);
+            } else {
+                disable(linkTop, false);
+            }
+        } else {
+            // real URL to index-page -> never disable
+            disable(linkTop, false);
         }
         if (!bar._bound) {
             bar._bound = true;
             if (linkPrev) linkPrev.addEventListener('click', function(e){
                 if (this.classList.contains('is-disabled')) return;
-                var hash = this.getAttribute('href') || '';
-                if (!hash || hash === '#') return;
+                var href = this.getAttribute('href') || '';
+                if (!href || href === '#') return;
+                if (!isHashHref(href)) return; // allow normal navigation for real URLs
                 e.preventDefault();
-                var id = hash.replace(/^#/, '');
+                var id = href.replace(/^#/, '');
                 var el = document.getElementById(id);
                 smoothToEl(el, off);
             });
             if (linkNext) linkNext.addEventListener('click', function(e){
                 if (this.classList.contains('is-disabled')) return;
-                var hash = this.getAttribute('href') || '';
-                if (!hash || hash === '#') return;
+                var href = this.getAttribute('href') || '';
+                if (!href || href === '#') return;
+                if (!isHashHref(href)) return; // allow normal navigation for real URLs
                 e.preventDefault();
-                var id = hash.replace(/^#/, '');
+                var id = href.replace(/^#/, '');
                 var el = document.getElementById(id);
                 smoothToEl(el, off);
             });
             if (linkTop) linkTop.addEventListener('click', function(e){
                 if (this.classList.contains('is-disabled')) return;
+                var href = this.getAttribute('href') || '';
+                if (!href || href === '#') return;
+                if (!isHashHref(href) && href.indexOf('#thebible-book-top') !== 0) return; // allow normal navigation
                 e.preventDefault();
                 var topEl = document.getElementById('thebible-book-top');
                 smoothToEl(topEl, off);

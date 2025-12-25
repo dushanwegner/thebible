@@ -24,6 +24,7 @@ class TheBible_Plugin {
     private static $abbr_maps = [];
     private static $book_map = null;
     private static $current_page_title = '';
+    private static $max_chapters = [];
 
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
@@ -71,6 +72,66 @@ class TheBible_Plugin {
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
     }
 
+    private static function ordered_book_slugs() {
+        self::load_index();
+        $out = [];
+        if (!is_array(self::$books) || empty(self::$books)) {
+            return $out;
+        }
+        $books = self::$books;
+        usort($books, function($a, $b) {
+            $ao = isset($a['order']) ? intval($a['order']) : 0;
+            $bo = isset($b['order']) ? intval($b['order']) : 0;
+            return $ao <=> $bo;
+        });
+        foreach ($books as $entry) {
+            if (!is_array($entry) || empty($entry['short_name'])) continue;
+            $slug = self::slugify($entry['short_name']);
+            if ($slug === '') continue;
+            $out[] = $slug;
+        }
+        return array_values(array_unique($out));
+    }
+
+    private static function max_chapter_for_book_slug($book_slug) {
+        $book_slug = self::slugify($book_slug);
+        if ($book_slug === '') return 0;
+        if (isset(self::$max_chapters[$book_slug])) {
+            return intval(self::$max_chapters[$book_slug]);
+        }
+        self::load_index();
+        $entry = self::$slug_map[$book_slug] ?? null;
+        if (!is_array($entry) || empty($entry['filename'])) {
+            self::$max_chapters[$book_slug] = 0;
+            return 0;
+        }
+        $file = self::html_dir() . $entry['filename'];
+        if (!is_string($file) || $file === '' || !file_exists($file)) {
+            self::$max_chapters[$book_slug] = 0;
+            return 0;
+        }
+        $html = (string) @file_get_contents($file);
+        if ($html === '') {
+            self::$max_chapters[$book_slug] = 0;
+            return 0;
+        }
+        $max = 0;
+        if (preg_match_all('/\bid="' . preg_quote($book_slug, '/') . '-ch-(\d+)"/i', $html, $m)) {
+            foreach ($m[1] as $num) {
+                $n = intval($num);
+                if ($n > $max) $max = $n;
+            }
+        }
+        if ($max <= 0 && preg_match_all('/\bid="' . preg_quote($book_slug, '/') . '-(\d+)-(\d+)"/i', $html, $m2)) {
+            foreach ($m2[1] as $num) {
+                $n = intval($num);
+                if ($n > $max) $max = $n;
+            }
+        }
+        self::$max_chapters[$book_slug] = $max;
+        return $max;
+    }
+
     private static function u_strlen($s) {
         if (function_exists('mb_strlen')) return mb_strlen($s, 'UTF-8');
         $arr = preg_split('//u', (string)$s, -1, PREG_SPLIT_NO_EMPTY);
@@ -113,7 +174,7 @@ class TheBible_Plugin {
         return [ $min_font_size, ($add_prefix ? $prefix : '') . $best_body . ($add_suffix ? $suffix : '') ];
     }
 
-    private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null, $book_label = '') {
+    private static function inject_nav_helpers($html, $highlight_ids = [], $chapter_scroll_id = null, $book_label = '', $nav = null) {
         if (!is_string($html) || $html === '') return $html;
 
         // Ensure a stable anchor at the very top of the book content
@@ -165,6 +226,42 @@ class TheBible_Plugin {
         $book_slug_js = esc_js( self::slugify( $book_label ) );
         $book_label_html = esc_html( $book_label );
 
+        $prev_href = '#';
+        $next_href = '#';
+        $top_href = $bible_index;
+        if (is_array($nav)) {
+            $nav_book = $nav['book'] ?? '';
+            $nav_ch = isset($nav['chapter']) ? absint($nav['chapter']) : 0;
+            if (is_string($nav_book) && $nav_book !== '' && $nav_ch > 0) {
+                $slug_for_urls = get_query_var(self::QV_SLUG);
+                if (!is_string($slug_for_urls) || $slug_for_urls === '') { $slug_for_urls = 'bible'; }
+                $ordered = self::ordered_book_slugs();
+                $idx = array_search($nav_book, $ordered, true);
+                if ($idx !== false && !empty($ordered)) {
+                    $count_books = count($ordered);
+                    $max_ch = self::max_chapter_for_book_slug($nav_book);
+                    if ($nav_ch > 1) {
+                        $prev_book = $nav_book;
+                        $prev_ch = $nav_ch - 1;
+                    } else {
+                        $prev_book = $ordered[($idx - 1 + $count_books) % $count_books];
+                        $prev_ch = self::max_chapter_for_book_slug($prev_book);
+                        if ($prev_ch <= 0) { $prev_ch = 1; }
+                    }
+                    if ($max_ch > 0 && $nav_ch < $max_ch) {
+                        $next_book = $nav_book;
+                        $next_ch = $nav_ch + 1;
+                    } else {
+                        $next_book = $ordered[($idx + 1) % $count_books];
+                        $next_ch = 1;
+                    }
+
+                    $prev_href = esc_url(trailingslashit(home_url('/' . trim($slug_for_urls, '/') . '/' . $prev_book . '/' . $prev_ch)));
+                    $next_href = esc_url(trailingslashit(home_url('/' . trim($slug_for_urls, '/') . '/' . $next_book . '/' . $next_ch)));
+                }
+            }
+        }
+
         // Prepare data attributes for frontend JS (highlight targets / chapter scroll)
         $data_attrs = '';
         if ( is_array( $highlight_ids ) && ! empty( $highlight_ids ) ) {
@@ -181,9 +278,9 @@ class TheBible_Plugin {
                 . '<span class="thebible-sticky__chapter" data-ch>1</span>'
                 . '</div>'
                 . '<div class="thebible-sticky__controls">'
-                . '<a href="#" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous chapter">&#8592;</a>'
-                . '<a href="#thebible-book-top" class="thebible-ctl thebible-ctl-top" data-top aria-label="Top of book">&#8593;</a>'
-                . '<a href="#" class="thebible-ctl thebible-ctl-next" data-next aria-label="Next chapter">&#8594;</a>'
+                . '<a href="' . $prev_href . '" class="thebible-ctl thebible-ctl-prev" data-prev aria-label="Previous chapter">&#8592;</a>'
+                . '<a href="' . $top_href . '" class="thebible-ctl thebible-ctl-top" data-top aria-label="Bible index">&#8593;</a>'
+                . '<a href="' . $next_href . '" class="thebible-ctl thebible-ctl-next" data-next aria-label="Next chapter">&#8594;</a>'
                 . '</div>'
                 . '</div>';
         $html = $sticky . $html;
@@ -2396,7 +2493,10 @@ class TheBible_Plugin {
 
         // Inject navigation helpers and optional highlight/scroll behavior
         $human = isset($entry['display_name']) && $entry['display_name'] !== '' ? $entry['display_name'] : $entry['short_name'];
-        $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id, $human);
+        $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id, $human, [
+            'book' => $book_slug,
+            'chapter' => $ch,
+        ]);
 
         status_header(200);
         nocache_headers();
