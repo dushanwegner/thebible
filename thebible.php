@@ -2324,6 +2324,29 @@ class TheBible_Plugin {
         self::output_with_theme($title, $content, 'index');
     }
 
+    private static function extract_chapter_from_html($html, $ch) {
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_clear_errors();
+        $xp = new DOMXPath($doc);
+        // Find the chapter heading like <h2 id="book-CH">Chapter CH</h2>
+        $chapter_node = $xp->query('//h2[contains(@id, "-' . $ch . '")]')->item(0);
+        if (!$chapter_node) return null;
+        $out = '';
+        $node = $chapter_node;
+        while ($node) {
+            $out .= $doc->saveHTML($node);
+            // Stop at next chapter heading or end of parent
+            $next = $node->nextSibling;
+            if ($next && $next->nodeName === 'h2' && strpos($next->getAttribute('id'), '-' . ($ch + 1)) !== false) {
+                break;
+            }
+            $node = $next;
+        }
+        return $out;
+    }
+
     private static function render_book($slug) {
         self::load_index();
         // Normalize incoming slug to match index keys (case-insensitive URLs)
@@ -2339,36 +2362,50 @@ class TheBible_Plugin {
             return;
         }
         $html = file_get_contents($file);
-        // Build optional highlight/scroll targets from URL like /book/20:2-4 or /book/20
+
+        // Determine if we have a chapter request
+        $ch = absint(get_query_var(self::QV_CHAPTER));
+        if ($ch > 0) {
+            // Single-chapter mode: extract only the requested chapter
+            $chapter_html = self::extract_chapter_from_html($html, $ch);
+            if ($chapter_html === null) {
+                self::render_404();
+                return;
+            }
+            $html = $chapter_html;
+        }
+
+        // Build highlight/scroll targets from URL like /book/20:2-4 or /book/20
         $targets = [];
         $chapter_scroll_id = null;
-        $ch = absint( get_query_var( self::QV_CHAPTER ) );
-        $vf = absint( get_query_var( self::QV_VFROM ) );
-        $vt = absint( get_query_var( self::QV_VTO ) );
-        $book_slug = self::slugify( $entry['short_name'] );
-        if ( $ch && $vf ) {
-            if ( ! $vt || $vt < $vf ) { $vt = $vf; }
-            for ( $i = $vf; $i <= $vt; $i++ ) {
+        $vf = absint(get_query_var(self::QV_VFROM));
+        $vt = absint(get_query_var(self::QV_VTO));
+        $book_slug = self::slugify($entry['short_name']);
+        if ($ch && $vf) {
+            if (!$vt || $vt < $vf) { $vt = $vf; }
+            for ($i = $vf; $i <= $vt; $i++) {
                 $targets[] = $book_slug . '-' . $ch . '-' . $i;
             }
-        } elseif ( $ch && ! $vf ) {
+        } elseif ($ch && !$vf) {
             // Chapter-only: scroll to chapter heading id like slug-ch-{ch}
             $chapter_scroll_id = $book_slug . '-ch-' . $ch;
         }
+
         // Inject navigation helpers and optional highlight/scroll behavior
         $human = isset($entry['display_name']) && $entry['display_name'] !== '' ? $entry['display_name'] : $entry['short_name'];
         $html = self::inject_nav_helpers($html, $targets, $chapter_scroll_id, $human);
+
         status_header(200);
         nocache_headers();
         $base_title = isset($entry['display_name']) && $entry['display_name'] !== ''
             ? $entry['display_name']
-            : self::pretty_label( $entry['short_name'] );
+            : self::pretty_label($entry['short_name']);
         $title = $base_title;
         $slug_ctx = get_query_var(self::QV_SLUG);
         if (!is_string($slug_ctx) || $slug_ctx === '') { $slug_ctx = 'bible'; }
-        $ch = absint( get_query_var( self::QV_CHAPTER ) );
-        $vf = absint( get_query_var( self::QV_VFROM ) );
-        $vt = absint( get_query_var( self::QV_VTO ) );
+
+        $vf = absint(get_query_var(self::QV_VFROM));
+        $vt = absint(get_query_var(self::QV_VTO));
         if ($ch && $vf) {
             if (!$vt || $vt < $vf) { $vt = $vf; }
             $ref = $base_title . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt));
@@ -2383,7 +2420,7 @@ class TheBible_Plugin {
                             $snippet = mb_substr($snippet, 0, $max, 'UTF-8') . '…';
                         }
                     } else {
-                        if (strlen($snippet) > 80) {
+                        if (strlen($snippet) > $max) {
                             $snippet = substr($snippet, 0, 80) . '…';
                         }
                     }
