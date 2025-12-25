@@ -33,33 +33,19 @@ class TheBible_Plugin {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
         add_action('init', [__CLASS__, 'register_votd_cpt']);
         add_filter('query_vars', [__CLASS__, 'add_query_vars']);
-        add_action('template_redirect', [__CLASS__, 'handle_sitemap'], 5);
-        add_action('template_redirect', [__CLASS__, 'handle_template_redirect']);
-        add_action('admin_menu', [__CLASS__, 'admin_menu']);
-        add_action('admin_init', [__CLASS__, 'register_settings']);
-        add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
-        add_action('admin_post_thebible_export_bible', [__CLASS__, 'handle_export_bible_txt']);
-        add_action('add_meta_boxes', [__CLASS__, 'add_bible_meta_box']);
-        add_action('add_meta_boxes', [__CLASS__, 'add_votd_meta_box']);
-        add_action('save_post', [__CLASS__, 'save_bible_meta'], 10, 2);
-        add_action('save_post', [__CLASS__, 'save_votd_meta'], 10, 2);
-        add_filter('manage_posts_columns', [__CLASS__, 'add_bible_column']);
-        add_filter('manage_pages_columns', [__CLASS__, 'add_bible_column']);
-        add_action('manage_posts_custom_column', [__CLASS__, 'render_bible_column'], 10, 2);
-        add_action('manage_pages_custom_column', [__CLASS__, 'render_bible_column'], 10, 2);
-        add_filter('bulk_actions-edit-post', [__CLASS__, 'register_strip_bibleserver_bulk']);
-        add_filter('bulk_actions-edit-page', [__CLASS__, 'register_strip_bibleserver_bulk']);
-        add_filter('handle_bulk_actions-edit-post', [__CLASS__, 'handle_strip_bibleserver_bulk'], 10, 3);
-        add_filter('handle_bulk_actions-edit-page', [__CLASS__, 'handle_strip_bibleserver_bulk'], 10, 3);
-        add_filter('upload_mimes', [__CLASS__, 'allow_font_uploads']);
-        add_filter('wp_check_filetype_and_ext', [__CLASS__, 'allow_font_filetype'], 10, 5);
-        add_action('wp_head', [__CLASS__, 'print_custom_css']);
-        add_action('wp_head', [__CLASS__, 'print_og_meta']);
+        add_action('template_redirect', [__CLASS__, 'handle_request']);
+
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
-        add_action('customize_register', [__CLASS__, 'customize_register']);
-        add_filter('the_content', [__CLASS__, 'filter_content_auto_link_bible_refs'], 20);
-        add_filter('pre_get_document_title', [__CLASS__, 'filter_document_title'], 100);
-        add_filter('document_title_parts', [__CLASS__, 'filter_document_title_parts'], 100);
+        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_assets']);
+        add_action('admin_menu', [__CLASS__, 'add_settings_page']);
+        add_action('admin_init', [__CLASS__, 'register_settings']);
+
+        add_action('add_meta_boxes', ['TheBible_Admin_Meta', 'add_bible_meta_box']);
+        add_action('save_post', ['TheBible_Admin_Meta', 'save_bible_meta'], 10, 2);
+
+        add_filter('manage_posts_columns', ['TheBible_Admin_Meta', 'add_bible_column']);
+        add_action('manage_posts_custom_column', ['TheBible_Admin_Meta', 'render_bible_column'], 10, 2);
+
         add_action('widgets_init', [__CLASS__, 'register_widgets']);
         // Admin list enhancements for Verse of the Day CPT
         add_filter('manage_edit-thebible_votd_columns', [__CLASS__, 'votd_columns']);
@@ -67,6 +53,9 @@ class TheBible_Plugin {
         add_action('manage_thebible_votd_posts_custom_column', [__CLASS__, 'render_votd_column'], 10, 2);
         add_action('restrict_manage_posts', [__CLASS__, 'votd_date_filter']);
         add_action('pre_get_posts', [__CLASS__, 'apply_votd_date_filter']);
+        add_action('admin_notices', [__CLASS__, 'votd_condense_notice']);
+        add_action('wp_ajax_thebible_votd_condense', [__CLASS__, 'handle_votd_condense_request']);
+        add_action('admin_action_thebible_strip_bibleserver_links', [__CLASS__, 'handle_strip_bulk_action']);
         add_filter('bulk_actions-edit-thebible_votd', [__CLASS__, 'votd_register_bulk_actions']);
         add_filter('handle_bulk_actions-edit-thebible_votd', [__CLASS__, 'votd_handle_bulk_actions'], 10, 3);
         add_action('load-edit.php', [__CLASS__, 'handle_votd_condense_request']);
@@ -647,7 +636,16 @@ class TheBible_Plugin {
             $slug = 'bible';
         }
         $abbr = self::get_abbreviation_map($slug);
-        if (empty($abbr)) return null;
+        if (empty($abbr)) {
+            // Some datasets (e.g. latin) may not ship an abbreviations map.
+            // In that case, accept direct book slugs if they exist in the index.
+            self::load_index();
+            $direct = self::slugify($raw_book);
+            if ($direct !== '' && isset(self::$slug_map[$direct])) {
+                return $direct;
+            }
+            return null;
+        }
 
         $book = str_replace('-', ' ', $raw_book);
         $book = urldecode($book);
@@ -688,52 +686,71 @@ class TheBible_Plugin {
         return trim($label);
     }
 
-    public static function add_bible_meta_box() {
-        $screens = get_post_types(['public' => true], 'names');
-        foreach ($screens as $post_type) {
-            add_meta_box(
-                'thebible_meta',
-                __('Bible for references', 'thebible'),
-                [__CLASS__, 'render_bible_meta_box'],
-                $post_type,
-                'side',
-                'default'
-            );
+    public static function handle_request() {
+        // Main request router; will be refactored later.
+        $book = get_query_var(self::QV_BOOK);
+        if ($book) {
+            self::render_bible_page();
+            return;
+        }
+        $sitemap = get_query_var(self::QV_SITEMAP);
+        if ($sitemap) {
+            self::handle_sitemap();
+            return;
+        }
+        $flag = get_query_var(self::QV_FLAG);
+        if ($flag) {
+            self::render_index();
+            return;
         }
     }
 
-    public static function render_bible_meta_box($post) {
-        wp_nonce_field('thebible_meta_save', 'thebible_meta_nonce');
-        $current = get_post_meta($post->ID, 'thebible_slug', true);
-        if (!is_string($current) || $current === '') {
-            $current = 'bible';
+    public static function render_bible_page() {
+        $book_slug = get_query_var(self::QV_BOOK);
+        if (!$book_slug) {
+            self::render_index();
+            return;
         }
-        $options = [
-            'bible' => __('English (Douay-Rheims)', 'thebible'),
-            'bibel' => __('Deutsch (Menge)', 'thebible'),
-            'latin' => __('Latin (Vulgata)', 'thebible'),
-        ];
-        echo '<p><label for="thebible_slug_field">' . esc_html__('Use this Bible when auto-linking references in this content.', 'thebible') . '</label></p>';
-        echo '<select name="thebible_slug_field" id="thebible_slug_field" class="widefat">';
-        foreach ($options as $slug => $label) {
-            echo '<option value="' . esc_attr($slug) . '"' . selected($current, $slug, false) . '>' . esc_html($label) . '</option>';
-        }
-        echo '</select>';
-    }
 
-    public static function save_bible_meta($post_id, $post) {
-        if (!isset($_POST['thebible_meta_nonce']) || !wp_verify_nonce($_POST['thebible_meta_nonce'], 'thebible_meta_save')) {
-            return;
+        // Resolve canonical book slug for the current language dataset
+        $slug = get_query_var(self::QV_SLUG);
+        if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+
+        $canonical = self::canonical_book_slug_from_url($book_slug, $slug);
+        if (!$canonical) {
+            status_header(404);
+            wp_die(__('Book not found', 'thebible'));
         }
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-        if (!current_user_can('edit_post', $post_id)) return;
-        if (!isset($_POST['thebible_slug_field'])) return;
-        $val = sanitize_text_field(wp_unslash($_POST['thebible_slug_field']));
-        if ($val !== 'bible' && $val !== 'bibel' && $val !== 'latin') {
-            delete_post_meta($post_id, 'thebible_slug');
-            return;
+
+        // If the URL slug differs from the canonical one, redirect
+        if ($canonical !== $book_slug) {
+            $ch = get_query_var(self::QV_CHAPTER);
+            $vf = get_query_var(self::QV_VFROM);
+            $vt = get_query_var(self::QV_VTO);
+
+            $path = '/' . trim($slug, '/') . '/' . $canonical . '/';
+            if ($ch) {
+                $path .= $ch;
+                if ($vf) {
+                    $path .= ':' . $vf;
+                    if ($vt && $vt > $vf) {
+                        $path .= '-' . $vt;
+                    }
+                }
+            }
+
+            $canonical_url = home_url($path);
+            $current = home_url(add_query_arg([]));
+            if (trailingslashit($canonical_url) !== trailingslashit($current)) {
+                wp_redirect($canonical_url, 301);
+                exit;
+            }
+            $book_slug = $canonical;
+            set_query_var(self::QV_BOOK, $book_slug);
         }
-        update_post_meta($post_id, 'thebible_slug', $val);
+
+        self::render_book($book_slug);
+        exit; // prevent WP from continuing
     }
 
     public static function register_votd_cpt() {
@@ -1399,26 +1416,6 @@ class TheBible_Plugin {
             $exclude[] = (int) $today['post_id'];
         }
         return self::get_votd_random($exclude);
-    }
-
-    public static function add_bible_column($columns) {
-        if (!is_array($columns)) return $columns;
-        $columns['thebible_slug'] = __('Bible', 'thebible');
-        return $columns;
-    }
-
-    public static function render_bible_column($column, $post_id) {
-        if ($column !== 'thebible_slug') return;
-        $slug = get_post_meta($post_id, 'thebible_slug', true);
-        if ($slug === 'bibel') {
-            echo esc_html__('Deutsch (Menge)', 'thebible');
-        } elseif ($slug === 'latin') {
-            echo esc_html__('Latin (Vulgata)', 'thebible');
-        } elseif ($slug === 'bible') {
-            echo esc_html__('English (Douay-Rheims)', 'thebible');
-        } else {
-            echo esc_html($slug);
-        }
     }
 
     public static function register_widgets() {
