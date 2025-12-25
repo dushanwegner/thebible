@@ -465,6 +465,41 @@ class TheBible_Plugin {
         return $entry[$dataset_slug];
     }
 
+    private static function canonicalize_key_from_dataset_book_slug($dataset_slug, $dataset_book_slug) {
+        if (!is_string($dataset_slug) || $dataset_slug === '') {
+            return null;
+        }
+        if (!is_string($dataset_book_slug) || $dataset_book_slug === '') {
+            return null;
+        }
+
+        self::load_book_map();
+        if (!is_array(self::$book_map) || empty(self::$book_map)) {
+            return null;
+        }
+
+        $dataset_slug = trim($dataset_slug);
+        $dataset_book_slug = self::slugify($dataset_book_slug);
+        if ($dataset_book_slug === '') {
+            return null;
+        }
+
+        foreach (self::$book_map as $canon_key => $map_entry) {
+            if (!is_string($canon_key) || $canon_key === '' || !is_array($map_entry)) {
+                continue;
+            }
+            $mapped = $map_entry[$dataset_slug] ?? null;
+            if (!is_string($mapped) || $mapped === '') {
+                continue;
+            }
+            if (self::slugify($mapped) === $dataset_book_slug) {
+                return (string) $canon_key;
+            }
+        }
+
+        return null;
+    }
+
     public static function list_canonical_books() {
         self::load_book_map();
         if (!is_array(self::$book_map) || empty(self::$book_map)) {
@@ -1699,6 +1734,16 @@ class TheBible_Plugin {
         if (count($datasets) < 1 || count($datasets) > 3) {
             self::render_404();
             return;
+        }
+
+        // If the URL book slug is localized for the first dataset (e.g. /bibel-latin/hiob/...),
+        // map it back to our canonical key (e.g. job) so other datasets can resolve properly.
+        $first_dataset = $datasets[0] ?? '';
+        if (is_string($first_dataset) && $first_dataset !== '' && $first_dataset !== 'latin') {
+            $mapped_key = self::canonicalize_key_from_dataset_book_slug($first_dataset, $url_book_slug);
+            if (is_string($mapped_key) && $mapped_key !== '') {
+                $canonical_key = self::slugify($mapped_key);
+            }
         }
 
         $entries = [];
