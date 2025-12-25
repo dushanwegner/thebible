@@ -193,6 +193,8 @@ class TheBible_OG_Image {
         if ($enabled !== '1' && $enabled !== 1) { status_header(404); exit; }
         if (!function_exists('imagecreatetruecolor')) { status_header(500); exit; }
 
+        $download = isset($_GET['thebible_og_download']) && $_GET['thebible_og_download'];
+
         $book_slug = get_query_var(TheBible_Plugin::QV_BOOK);
         $ch = absint( get_query_var( TheBible_Plugin::QV_CHAPTER ) );
         $vf = absint( get_query_var( TheBible_Plugin::QV_VFROM ) );
@@ -206,6 +208,12 @@ class TheBible_OG_Image {
         $ref = $book_label . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt));
         $text = TheBible_Plugin::extract_verse_text($entry, $ch, $vf, $vt);
         if ($text === '') { status_header(404); exit; }
+
+        // Friendly download filename
+        $safe_book = sanitize_title($book_label);
+        if (!is_string($safe_book) || $safe_book === '') { $safe_book = 'bible'; }
+        $safe_ref = $ch . '-' . $vf . ($vt > $vf ? ('-' . $vt) : '');
+        $download_filename = $safe_book . '-' . $safe_ref . '.png';
         // Strip any trailing/leading invisible control/mark characters that may render as boxes near quotes
         $text = preg_replace('/^[\p{Cf}\p{Cc}\p{Mn}\p{Me}]+|[\p{Cf}\p{Cc}\p{Mn}\p{Me}]+$/u', '', (string)$text);
         $text = trim($text);
@@ -290,6 +298,9 @@ class TheBible_OG_Image {
             nocache_headers();
             status_header(200);
             header('Content-Type: image/png');
+            if ($download) {
+                header("Content-Disposition: attachment; filename=\"" . $download_filename . "\"; filename*=UTF-8''" . rawurlencode($download_filename));
+            }
             readfile($cache_file);
             exit;
         }
@@ -409,6 +420,9 @@ class TheBible_OG_Image {
         nocache_headers();
         status_header(200);
         header('Content-Type: image/png');
+        if ($download) {
+            header("Content-Disposition: attachment; filename=\"" . $download_filename . "\"; filename*=UTF-8''" . rawurlencode($download_filename));
+        }
         if (is_file($cache_file)) { readfile($cache_file); } else { imagepng($im); }
         imagedestroy($im);
         exit;

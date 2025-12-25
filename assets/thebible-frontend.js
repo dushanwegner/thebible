@@ -386,7 +386,10 @@
         var cleanedTxt = cleanVerseTextForOutput(rawTxt, true); // mirror PHP behavior and wrap in » «
         var payload = cleanedTxt + ' (' + ref + ') ' + link;
 
-        controls.innerHTML = 'share: <a href="#" data-copy-url>URL</a> <a href="#" data-copy-main>copy</a> <a href="#" data-post-x>post to X</a>';
+        // OG image download URL for the selection (served by PHP via query vars + thebible_og=1)
+        var ogUrl = link + (link.indexOf('?') === -1 ? '?' : '&') + 'thebible_og=1&thebible_og_download=1';
+
+        controls.innerHTML = 'share: <a href="#" data-copy-url>URL</a> <a href="#" data-copy-main>copy</a> <a href="#" data-post-x>post to X</a> <a href="#" data-download-image>image</a>';
 
         var aUrl = controls.querySelector('[data-copy-url]');
         if (aUrl) aUrl.addEventListener('click', function(e){
@@ -411,6 +414,13 @@
             e.preventDefault();
             var url = 'https://x.com/intent/tweet?text=' + encodeURIComponent(payload);
             window.open(url, '_blank', 'noopener');
+        });
+
+        var aImg = controls.querySelector('[data-download-image]');
+        if (aImg) aImg.addEventListener('click', function(e){
+            e.preventDefault();
+            // Direct download handled by PHP (Content-Disposition: attachment)
+            window.location.href = ogUrl;
         });
     }
 
