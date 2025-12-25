@@ -42,13 +42,13 @@ class TheBible_VOTD_Widget extends WP_Widget {
         // Resolve VOTD entry based on date mode
         $ref = null;
         if ($date_mode === 'random') {
-            $ref = TheBible_Plugin::get_votd_random();
+            $ref = TheBible_VOTD_Admin::get_votd_random();
         } elseif ($date_mode === 'pick_date' && $pick_date !== '') {
-            $ref = TheBible_Plugin::get_votd_for_date($pick_date);
+            $ref = TheBible_VOTD_Admin::get_votd_for_date($pick_date);
         } else { // today_fallback
-            $ref = TheBible_Plugin::get_votd_for_date();
+            $ref = TheBible_VOTD_Admin::get_votd_for_date();
             if (!is_array($ref)) {
-                $ref = TheBible_Plugin::get_votd_random();
+                $ref = TheBible_VOTD_Admin::get_votd_random();
             }
         }
 
