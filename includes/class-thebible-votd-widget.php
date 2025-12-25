@@ -11,11 +11,36 @@ class TheBible_VOTD_Widget extends WP_Widget {
         );
     }
 
+    private static function available_language_slugs() {
+        $list = get_option('thebible_slugs', 'bible,bibel,latin');
+        if (!is_string($list)) {
+            $list = 'bible';
+        }
+        $parts = array_values(array_filter(array_map('trim', explode(',', $list))));
+        if (empty($parts)) {
+            $parts = ['bible'];
+        }
+        $out = [];
+        foreach ($parts as $p) {
+            $p = sanitize_key($p);
+            if ($p !== '') {
+                $out[] = $p;
+            }
+        }
+        $out = array_values(array_unique($out));
+        if (empty($out)) {
+            $out = ['bible'];
+        }
+        return $out;
+    }
+
     public function widget($args, $instance) {
         $title           = isset($instance['title']) ? $instance['title'] : '';
         $title_tpl       = isset($instance['title_template']) ? $instance['title_template'] : '';
         $date_mode       = isset($instance['date_mode']) ? $instance['date_mode'] : 'today_fallback';
         $pick_date       = isset($instance['pick_date']) ? $instance['pick_date'] : '';
+        $lang_first      = isset($instance['lang_first']) ? $instance['lang_first'] : '';
+        $lang_last       = isset($instance['lang_last']) ? $instance['lang_last'] : '';
         $lang_mode       = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
         $custom_css      = isset($instance['custom_css']) ? $instance['custom_css'] : '';
         $tpl_en          = isset($instance['template_en']) ? $instance['template_en'] : '';
@@ -28,9 +53,38 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $date_mode = 'today_fallback';
         }
         if (!is_string($pick_date)) $pick_date = '';
-        if (!in_array($lang_mode, ['bible', 'bibel', 'both'], true)) {
-            $lang_mode = 'bible';
+        $available = self::available_language_slugs();
+        if (!is_string($lang_first)) $lang_first = '';
+        if (!is_string($lang_last)) $lang_last = '';
+        $lang_first = sanitize_key($lang_first);
+        $lang_last = sanitize_key($lang_last);
+
+        // Backwards compatibility with legacy single-select mode
+        if ($lang_first === '') {
+            if (!in_array($lang_mode, ['bible', 'bibel', 'both'], true)) {
+                $lang_mode = 'bible';
+            }
+            if ($lang_mode === 'both') {
+                $lang_first = 'bible';
+                $lang_last = 'bibel';
+            } else {
+                $lang_first = $lang_mode;
+                $lang_last = $lang_mode;
+            }
         }
+
+        if (!in_array($lang_first, $available, true)) {
+            $lang_first = $available[0];
+        }
+        if ($lang_last === '') {
+            $lang_last = $lang_first;
+        }
+        if (!in_array($lang_last, $available, true)) {
+            $lang_last = $lang_first;
+        }
+
+        $langs_to_show = ($lang_last !== $lang_first) ? [$lang_first, $lang_last] : [$lang_first];
+        $link_slug = ($lang_last !== $lang_first) ? ($lang_first . '-' . $lang_last) : $lang_first;
         if (!is_string($custom_css)) $custom_css = '';
         if (!is_string($tpl_en)) $tpl_en = '';
         if (!is_string($tpl_de)) $tpl_de = '';
@@ -84,9 +138,10 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $ref_str .= ' (' . $date . ')';
         }
 
-        // Primary URL: English dataset
-        $path_en = '/bible/' . trim($book_slug_en, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
-        $url_en  = home_url($path_en);
+        // Single canonical URL for the whole widget.
+        // If two languages are selected, link to interlinear slug (lang_first-lang_last), otherwise single dataset.
+        $path_ref = '/' . trim($link_slug, '/') . '/' . trim($canonical, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
+        $url_ref  = home_url($path_ref);
 
         echo isset($args['before_widget']) ? $args['before_widget'] : '';
 
@@ -140,7 +195,7 @@ class TheBible_VOTD_Widget extends WP_Widget {
             }
         }
 
-        echo '<div class="thebible-votd-widget thebible-votd-widget-' . esc_attr($lang_mode) . '">';
+        echo '<div class="thebible-votd-widget thebible-votd-widget-' . esc_attr($link_slug) . '">';
 
         // Title inside widget, above verse
         if ($title_tpl !== '' || $title !== '') {
@@ -155,14 +210,7 @@ class TheBible_VOTD_Widget extends WP_Widget {
             echo '<div class="thebible-votd-heading">' . esc_html($title_rendered) . '</div>';
         }
 
-        // Verse text blocks per language, using a fixed layout (no per-language templates)
-        $langs_to_show = [];
-        if ($lang_mode === 'both') {
-            $langs_to_show = ['bible', 'bibel'];
-        } else {
-            $langs_to_show = [$lang_mode];
-        }
-
+        // Verse text blocks per language, but only ONE link (to single or interlinear page)
         foreach ($langs_to_show as $ds) {
             $text = isset($texts[$ds]) ? $texts[$ds] : '';
             if (!is_string($text) || $text === '') {
@@ -172,10 +220,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
             // Normalize and clean quotation marks for widget output, and wrap once in outer guillemets
             $text = TheBible_Plugin::clean_verse_text_for_output($text, true, '»', '«');
 
+            // Dataset-specific book label (for internal display only; link is rendered once below)
             $short_ds = TheBible_Plugin::resolve_book_for_dataset($canonical, $ds);
-            $book_slug_ds = TheBible_Plugin::slugify($short_ds ? $short_ds : $canonical);
-            $path_ds = '/' . trim($ds, '/') . '/' . trim($book_slug_ds, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
-            $url_ds  = home_url($path_ds);
 
             // Citation label for this dataset
             if (!is_string($short_ds) || $short_ds === '') {
@@ -192,11 +238,12 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
             echo '<div class="thebible-votd-lang thebible-votd-lang-' . esc_attr($ds) . '">';
             echo '<p class="thebible-votd-text">' . wp_kses_post($text) . '</p>';
-            echo '<div class="thebible-votd-context">';
-            echo '<a class="thebible-votd-context-link" href="' . esc_url( $url_ds ) . '">' . esc_html( $citation ) . '</a>';
-            echo '</div>';
             echo '</div>';
         }
+
+        echo '<div class="thebible-votd-context">';
+        echo '<a class="thebible-votd-context-link" href="' . esc_url( $url_ref ) . '">' . esc_html( $ref_str ) . '</a>';
+        echo '</div>';
 
         echo '</div>';
 
@@ -208,6 +255,8 @@ class TheBible_VOTD_Widget extends WP_Widget {
         $title_tpl    = isset($instance['title_template']) ? $instance['title_template'] : '';
         $date_mode    = isset($instance['date_mode']) ? $instance['date_mode'] : 'today_fallback';
         $pick_date    = isset($instance['pick_date']) ? $instance['pick_date'] : '';
+        $lang_first   = isset($instance['lang_first']) ? $instance['lang_first'] : '';
+        $lang_last    = isset($instance['lang_last']) ? $instance['lang_last'] : '';
         $lang_mode    = isset($instance['lang_mode']) ? $instance['lang_mode'] : 'bible';
         $custom_css   = isset($instance['custom_css']) ? $instance['custom_css'] : '';
         $tpl_en       = isset($instance['template_en']) ? $instance['template_en'] : '';
@@ -219,8 +268,28 @@ class TheBible_VOTD_Widget extends WP_Widget {
             $date_mode = 'today_fallback';
         }
         if (!is_string($pick_date)) $pick_date = '';
-        if (!in_array($lang_mode, ['bible', 'bibel', 'both'], true)) {
-            $lang_mode = 'bible';
+        $available = self::available_language_slugs();
+        if (!is_string($lang_first)) $lang_first = '';
+        if (!is_string($lang_last)) $lang_last = '';
+        $lang_first = sanitize_key($lang_first);
+        $lang_last = sanitize_key($lang_last);
+        if ($lang_first === '') {
+            if (!in_array($lang_mode, ['bible', 'bibel', 'both'], true)) {
+                $lang_mode = 'bible';
+            }
+            if ($lang_mode === 'both') {
+                $lang_first = 'bible';
+                $lang_last = 'bibel';
+            } else {
+                $lang_first = $lang_mode;
+                $lang_last = $lang_mode;
+            }
+        }
+        if (!in_array($lang_first, $available, true)) {
+            $lang_first = $available[0];
+        }
+        if ($lang_last === '' || !in_array($lang_last, $available, true)) {
+            $lang_last = $lang_first;
         }
         if (!is_string($custom_css)) $custom_css = '';
         if (!is_string($tpl_en)) $tpl_en = '';
@@ -248,8 +317,10 @@ class TheBible_VOTD_Widget extends WP_Widget {
         $date_mode_name = $this->get_field_name('date_mode');
         $pick_date_id = $this->get_field_id('pick_date');
         $pick_date_name = $this->get_field_name('pick_date');
-        $lang_mode_id = $this->get_field_id('lang_mode');
-        $lang_mode_name = $this->get_field_name('lang_mode');
+        $lang_first_id = $this->get_field_id('lang_first');
+        $lang_first_name = $this->get_field_name('lang_first');
+        $lang_last_id = $this->get_field_id('lang_last');
+        $lang_last_name = $this->get_field_name('lang_last');
         $css_id = $this->get_field_id('custom_css');
         $css_name = $this->get_field_name('custom_css');
         $tpl_en_id = $this->get_field_id('template_en');
@@ -312,14 +383,45 @@ class TheBible_VOTD_Widget extends WP_Widget {
         }
 
         echo '<p>';
-        echo '<label for="' . esc_attr($lang_mode_id) . '">' . esc_html__('Language(s):', 'thebible') . '</label> ';
-        echo '<select id="' . esc_attr($lang_mode_id) . '" name="' . esc_attr($lang_mode_name) . '">';
-        echo '<option value="bible"' . selected($lang_mode, 'bible', false) . '>' . esc_html__('English Bible only', 'thebible') . '</option>';
-        echo '<option value="bibel"' . selected($lang_mode, 'bibel', false) . '>' . esc_html__('German Bibel only', 'thebible') . '</option>';
-        echo '<option value="both"' . selected($lang_mode, 'both', false) . '>' . esc_html__('Both (English + German)', 'thebible') . '</option>';
+        echo '<label for="' . esc_attr($lang_first_id) . '">' . esc_html__('First language:', 'thebible') . '</label> ';
+        echo '<select id="' . esc_attr($lang_first_id) . '" name="' . esc_attr($lang_first_name) . '">';
+        foreach ($available as $ds) {
+            echo '<option value="' . esc_attr($ds) . '"' . selected($lang_first, $ds, false) . '>' . esc_html($ds) . '</option>';
+        }
         echo '</select>';
         echo '</p>';
 
+        echo '<p>';
+        echo '<label for="' . esc_attr($lang_last_id) . '">' . esc_html__('Last language:', 'thebible') . '</label> ';
+        echo '<select id="' . esc_attr($lang_last_id) . '" name="' . esc_attr($lang_last_name) . '">';
+        foreach ($available as $ds) {
+            echo '<option value="' . esc_attr($ds) . '"' . selected($lang_last, $ds, false) . '>' . esc_html($ds) . '</option>';
+        }
+        echo '</select>';
+        echo '</p>';
+
+    }
+
+    public function update($new_instance, $old_instance) {
+        $instance = $old_instance;
+
+        $instance['title'] = isset($new_instance['title']) ? sanitize_text_field($new_instance['title']) : '';
+        $instance['title_template'] = isset($new_instance['title_template']) ? sanitize_text_field($new_instance['title_template']) : '';
+        $instance['date_mode'] = isset($new_instance['date_mode']) ? sanitize_key($new_instance['date_mode']) : 'today_fallback';
+        $instance['pick_date'] = isset($new_instance['pick_date']) ? sanitize_text_field($new_instance['pick_date']) : '';
+        $instance['custom_css'] = isset($new_instance['custom_css']) ? (string) $new_instance['custom_css'] : '';
+        $instance['template_en'] = isset($new_instance['template_en']) ? (string) $new_instance['template_en'] : '';
+        $instance['template_de'] = isset($new_instance['template_de']) ? (string) $new_instance['template_de'] : '';
+        $instance['date_format_mode'] = isset($new_instance['date_format_mode']) ? sanitize_key($new_instance['date_format_mode']) : '';
+
+        // New range-based language selection
+        $instance['lang_first'] = isset($new_instance['lang_first']) ? sanitize_key($new_instance['lang_first']) : '';
+        $instance['lang_last'] = isset($new_instance['lang_last']) ? sanitize_key($new_instance['lang_last']) : '';
+
+        // Keep legacy setting for backwards compatibility (may still exist in old widgets)
+        $instance['lang_mode'] = isset($new_instance['lang_mode']) ? sanitize_key($new_instance['lang_mode']) : (isset($old_instance['lang_mode']) ? $old_instance['lang_mode'] : 'bible');
+
+        return $instance;
     }
 
 }
