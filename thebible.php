@@ -317,9 +317,10 @@ class TheBible_Plugin {
             // /{slug}/{book}/{chapter}
             add_rewrite_rule('^' . preg_quote($slug, '/') . '/([^/]+)/([0-9]+)/?$', 'index.php?' . self::QV_BOOK . '=$matches[1]&' . self::QV_CHAPTER . '=$matches[2]&' . self::QV_FLAG . '=1&' . self::QV_SLUG . '=' . $slug, 'top');
         }
-        // Sitemaps: English and German (use unique endpoints to avoid conflicts with other sitemap plugins)
+        // Sitemaps: English, German, and Latin (use unique endpoints to avoid conflicts with other sitemap plugins)
         add_rewrite_rule('^bible-sitemap-bible\.xml$', 'index.php?' . self::QV_SITEMAP . '=bible&' . self::QV_SLUG . '=bible', 'top');
         add_rewrite_rule('^bible-sitemap-bibel\.xml$', 'index.php?' . self::QV_SITEMAP . '=bibel&' . self::QV_SLUG . '=bibel', 'top');
+        add_rewrite_rule('^bible-sitemap-latin\.xml$', 'index.php?' . self::QV_SITEMAP . '=latin&' . self::QV_SLUG . '=latin', 'top');
     }
 
     public static function enqueue_assets() {
@@ -642,7 +643,7 @@ class TheBible_Plugin {
 
     private static function canonical_book_slug_from_url($raw_book, $slug) {
         if (!is_string($raw_book) || $raw_book === '') return null;
-        if ($slug !== 'bible' && $slug !== 'bibel') {
+        if ($slug !== 'bible' && $slug !== 'bibel' && $slug !== 'latin') {
             $slug = 'bible';
         }
         $abbr = self::get_abbreviation_map($slug);
@@ -710,6 +711,7 @@ class TheBible_Plugin {
         $options = [
             'bible' => __('English (Douay-Rheims)', 'thebible'),
             'bibel' => __('Deutsch (Menge)', 'thebible'),
+            'latin' => __('Latin (Vulgata)', 'thebible'),
         ];
         echo '<p><label for="thebible_slug_field">' . esc_html__('Use this Bible when auto-linking references in this content.', 'thebible') . '</label></p>';
         echo '<select name="thebible_slug_field" id="thebible_slug_field" class="widefat">';
@@ -727,7 +729,7 @@ class TheBible_Plugin {
         if (!current_user_can('edit_post', $post_id)) return;
         if (!isset($_POST['thebible_slug_field'])) return;
         $val = sanitize_text_field(wp_unslash($_POST['thebible_slug_field']));
-        if ($val !== 'bible' && $val !== 'bibel') {
+        if ($val !== 'bible' && $val !== 'bibel' && $val !== 'latin') {
             delete_post_meta($post_id, 'thebible_slug');
             return;
         }
@@ -1410,10 +1412,12 @@ class TheBible_Plugin {
         $slug = get_post_meta($post_id, 'thebible_slug', true);
         if ($slug === 'bibel') {
             echo esc_html__('Deutsch (Menge)', 'thebible');
+        } elseif ($slug === 'latin') {
+            echo esc_html__('Latin (Vulgata)', 'thebible');
         } elseif ($slug === 'bible') {
             echo esc_html__('English (Douay-Rheims)', 'thebible');
         } else {
-            echo '&#8212;';
+            echo esc_html($slug);
         }
     }
 
@@ -1505,7 +1509,7 @@ class TheBible_Plugin {
         if (!is_string($slug) || $slug === '') {
             $slug = 'bible';
         }
-        if ($slug !== 'bible' && $slug !== 'bibel') {
+        if ($slug !== 'bible' && $slug !== 'bibel' && $slug !== 'latin') {
             $slug = 'bible';
         }
 
@@ -1694,7 +1698,7 @@ class TheBible_Plugin {
         if (!$map) return;
 
         $slug = get_query_var(self::QV_SLUG);
-        if ($slug !== 'bible' && $slug !== 'bibel') {
+        if ($slug !== 'bible' && $slug !== 'bibel' && $slug !== 'latin') {
             status_header(404);
             exit;
         }
@@ -2417,7 +2421,7 @@ class TheBible_Plugin {
         nocache_headers();
         $slug = get_query_var(self::QV_SLUG);
         if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
-        $title = ($slug === 'bibel') ? 'Die Bibel' : 'The Bible';
+        $title = ($slug === 'bibel') ? 'Die Bibel' : (($slug === 'latin') ? 'Biblia Sacra' : 'The Bible');
         $content = self::build_index_html();
         $footer = self::render_footer_html();
         if ($footer !== '') { $content .= $footer; }
@@ -2588,7 +2592,7 @@ class TheBible_Plugin {
     }
 
     private static function base_slugs() {
-        $list = get_option('thebible_slugs', 'bible,bibel');
+        $list = get_option('thebible_slugs', 'bible,bibel,latin');
         if (!is_string($list)) $list = 'bible';
         $parts = array_filter(array_map('trim', explode(',', $list)));
         if (empty($parts)) { $parts = ['bible']; }
@@ -2604,7 +2608,7 @@ class TheBible_Plugin {
         }
         if (is_string($slug) && $slug !== '') {
             $slug = trim($slug, "/ ");
-            if ($slug === 'bible' || $slug === 'bibel') {
+            if ($slug === 'bible' || $slug === 'bibel' || $slug === 'latin') {
                 return true;
             }
         }
