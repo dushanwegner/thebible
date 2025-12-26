@@ -134,9 +134,6 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         $book_slug_en = TheBible_Plugin::slugify($short_en ? $short_en : $canonical);
         $ref_str = $label . ' ' . $chapter . ':' . ($vfrom === $vto ? $vfrom : ($vfrom . '-' . $vto));
-        if (is_string($date) && $date !== '') {
-            $ref_str .= ' (' . $date . ')';
-        }
 
         // Single canonical URL for the whole widget.
         // If two languages are selected, link to interlinear slug (lang_first-lang_last), otherwise single dataset.
