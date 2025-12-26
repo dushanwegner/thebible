@@ -5,6 +5,13 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 trait TheBible_Router_Trait {
     public static function handle_request() {
         // Main request router; will be refactored later.
+
+        $selftest = get_query_var(self::QV_SELFTEST);
+        if (!empty($selftest)) {
+            self::render_selftest();
+            exit;
+        }
+
         // Serve Open Graph image when requested
         $og = get_query_var(self::QV_OG);
         if ($og) {
@@ -112,11 +119,23 @@ trait TheBible_Router_Trait {
         $abbr = self::get_abbreviation_map($slug);
         if (empty($abbr)) {
             // Some datasets (e.g. latin) may not ship an abbreviations map.
-            // In that case, accept direct book slugs if they exist in the index.
+            // In that case, accept direct book slugs if they exist in the index,
+            // OR treat the raw URL book as a canonical key and map it via book_map.json.
             self::load_index();
             $direct = self::slugify($raw_book);
             if ($direct !== '' && isset(self::$slug_map[$direct])) {
                 return $direct;
+            }
+
+            $canonical_key = self::slugify($raw_book);
+            if ($canonical_key !== '') {
+                $mapped_short = self::resolve_book_for_dataset($canonical_key, $slug);
+                if (is_string($mapped_short) && $mapped_short !== '') {
+                    $mapped_slug = self::slugify($mapped_short);
+                    if ($mapped_slug !== '' && isset(self::$slug_map[$mapped_slug])) {
+                        return $mapped_slug;
+                    }
+                }
             }
             return null;
         }

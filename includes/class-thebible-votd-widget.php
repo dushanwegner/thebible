@@ -140,7 +140,15 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         // Single canonical URL for the whole widget.
         // If two languages are selected, link to interlinear slug (lang_first-lang_last), otherwise single dataset.
-        $path_ref = '/' . trim($link_slug, '/') . '/' . trim($canonical, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
+        $book_for_url = TheBible_Plugin::resolve_book_for_dataset($canonical, $lang_first);
+        if (!is_string($book_for_url) || $book_for_url === '') {
+            $book_for_url = $canonical;
+        }
+        $book_slug_for_url = TheBible_Plugin::slugify($book_for_url);
+        if (!is_string($book_slug_for_url) || $book_slug_for_url === '') {
+            $book_slug_for_url = (string) $canonical;
+        }
+        $path_ref = '/' . trim($link_slug, '/') . '/' . trim($book_slug_for_url, '/') . '/' . $chapter . ':' . $vfrom . ($vto > $vfrom ? ('-' . $vto) : '');
         $url_ref  = home_url($path_ref);
 
         echo isset($args['before_widget']) ? $args['before_widget'] : '';
