@@ -59,5 +59,5 @@
   "2-john": { "bible": "2_John", "bibel": "2_Johannes" },
   "3-john": { "bible": "3_John", "bibel": "3_Johannes" },
   "jude": { "bible": "Jude", "bibel": "Judas" },
-  "apocalypse": { "bible": "Apocalypse", "bibel": "Offenbarung" }
+  "apocalypse": { "bible": "Apocalypse", "bibel": "Offenbarung", "latin": "Revelation" }
 }

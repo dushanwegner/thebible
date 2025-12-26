@@ -308,7 +308,7 @@ class TheBible_VOTD_Widget extends WP_Widget {
 
         // Show default templates in the form when empty (same structure for all languages)
         $default_tpl = "<p class=\"thebible-votd-text\">{votd-content}</p>\n"
-                     . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen ���</a></div>";
+                     . "<div class=\"thebible-votd-context\"><a class=\"thebible-votd-context-link\" href=\"{votd-link}\">{votd-citation}, jetzt lesen &rarr;</a></div>";
 
         if ($tpl_en === '') {
             $tpl_en = $default_tpl;
