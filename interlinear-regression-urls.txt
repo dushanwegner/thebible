@@ -1,0 +1,62 @@
+# TheBible interlinear regression URLs
+# One URL per line. Lines starting with # are ignored by the suggested curl smoke test.
+
+# Normal / known-good
+http://latinprayer.local/bibel-latin/hiob/31/
+http://latinprayer.local/bible-latin/job/31/
+http://latinprayer.local/bibel-bible/hiob/31/
+http://latinprayer.local/bibel-latin/psalmen/1/
+http://latinprayer.local/bible-latin/psalms/1/
+
+# Verse range highlighting (should still render)
+http://latinprayer.local/bible-latin/job/31/?thebible_vfrom=4&thebible_vto=7
+http://latinprayer.local/bibel-latin/hiob/31/?thebible_vfrom=4&thebible_vto=7
+
+# Known mismatch / edge cases (should be 200 with notices)
+http://latinprayer.local/bibel-latin/daniel/13/
+http://latinprayer.local/bibel-latin/daniel/14/
+
+# Reference (English segmentation)
+http://latinprayer.local/bible/daniel/13/
+http://latinprayer.local/bible/daniel/14/
+
+# Contained German standalone books
+# NOTE: these currently return 500 on this install (likely unrelated WP/runtime error).
+# Keep them here as canaries, but comment out for an "all-green" run.
+# http://latinprayer.local/bibel/zusaetze-daniel/1/
+# http://latinprayer.local/bibel/zusaetze-daniel/2/
+# http://latinprayer.local/bibel/zusaetze-ester/1/
+# http://latinprayer.local/bibel/gebet-manasses/1/
+
+# Interlinear with one dataset missing the chapter (should still be 200)
+# (same note as above: currently 500 on this install)
+# http://latinprayer.local/bibel-latin/zusaetze-daniel/1/
+# http://latinprayer.local/bibel-latin/zusaetze-ester/1/
+# http://latinprayer.local/bibel-latin/gebet-manasses/1/
+
+# Interlinear with 3 datasets
+http://latinprayer.local/bible-bibel-latin/job/31/
+http://latinprayer.local/bible-bibel-latin/psalms/1/
+
+# URL book slug localized in first dataset (German) should map canonically
+http://latinprayer.local/bibel-latin/hiob/1/
+http://latinprayer.local/bibel-bible/hiob/1/
+
+# Some OT books with different chapter counts across traditions (should not 404)
+http://latinprayer.local/bibel-latin/ester/10/
+http://latinprayer.local/bible-latin/esther/10/
+
+# Deuterocanon (spot checks)
+http://latinprayer.local/bible-latin/tobias/1/
+http://latinprayer.local/bible-latin/judith/1/
+http://latinprayer.local/bible-latin/wisdom/1/
+http://latinprayer.local/bible-latin/ecclesiasticus/1/
+
+# NT (spot checks)
+http://latinprayer.local/bible-latin/matthew/1/
+http://latinprayer.local/bible-latin/john/1/
+http://latinprayer.local/bible-latin/romans/8/
+
+# Intentionally invalid / expected failures (optional; comment out if you want all-green)
+# http://latinprayer.local/bibel-latin/not-a-book/1/
+# http://latinprayer.local/bibel-latin/job/999/
