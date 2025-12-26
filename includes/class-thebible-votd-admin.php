@@ -48,14 +48,14 @@ class TheBible_VOTD_Admin {
             $new[$key] = $label;
             if ($key === 'title') {
                 $new['votd_date'] = __('VOTD Date', 'thebible');
-                $new['votd_texts'] = __('EN/DE', 'thebible');
+                $new['votd_texts'] = __('EN/DE/LA', 'thebible');
             }
         }
         if (!isset($new['votd_date'])) {
             $new['votd_date'] = __('VOTD Date', 'thebible');
         }
         if (!isset($new['votd_texts'])) {
-            $new['votd_texts'] = __('EN/DE', 'thebible');
+            $new['votd_texts'] = __('EN/DE/LA', 'thebible');
         }
         return $new;
     }
@@ -89,6 +89,7 @@ class TheBible_VOTD_Admin {
             $all = get_option('thebible_votd_all', []);
             $en = '';
             $de = '';
+            $la = '';
             if (is_array($all)) {
                 foreach ($all as $entry) {
                     if (isset($entry['post_id']) && (int) $entry['post_id'] === (int) $post_id && isset($entry['texts']) && is_array($entry['texts'])) {
@@ -98,12 +99,15 @@ class TheBible_VOTD_Admin {
                         if (isset($entry['texts']['bibel']) && is_string($entry['texts']['bibel'])) {
                             $de = $entry['texts']['bibel'];
                         }
+                        if (isset($entry['texts']['latin']) && is_string($entry['texts']['latin'])) {
+                            $la = $entry['texts']['latin'];
+                        }
                         break;
                     }
                 }
             }
 
-            if ($en === '' && $de === '') {
+            if ($en === '' && $de === '' && $la === '') {
                 echo '<small>&mdash;</small>';
                 return;
             }
@@ -117,6 +121,12 @@ class TheBible_VOTD_Admin {
                     echo '<br />';
                 }
                 echo '<strong>DE:</strong> ' . esc_html(trim((string) $de));
+            }
+            if ($la !== '') {
+                if ($en !== '' || $de !== '') {
+                    echo '<br />';
+                }
+                echo '<strong>LA:</strong> ' . esc_html(trim((string) $la));
             }
             echo '</small>';
         }
@@ -155,6 +165,9 @@ class TheBible_VOTD_Admin {
 
         $shuffle_all_not_today_url = wp_nonce_url(add_query_arg(['thebible_votd_action' => 'shuffle_all_not_today']), 'thebible_votd_shuffle_all_not_today');
         echo '<a href="' . esc_url($shuffle_all_not_today_url) . '" class="button">' . esc_html__('Shuffle all VOTDs (except today)', 'thebible') . '</a> ';
+
+        $flush_cache_url = wp_nonce_url(add_query_arg(['thebible_votd_action' => 'flush_cache']), 'thebible_votd_flush_cache');
+        echo '<a href="' . esc_url($flush_cache_url) . '" class="button">' . esc_html__('Flush VOTD cache', 'thebible') . '</a> ';
 
         echo '<label for="thebible_votd_month" class="screen-reader-text">' . esc_html__('Filter by VOTD month', 'thebible') . '</label>';
         echo '<select name="thebible_votd_month" id="thebible_votd_month">';
@@ -229,6 +242,19 @@ class TheBible_VOTD_Admin {
         $action = (string) $_GET['thebible_votd_action'];
         if (!current_user_can('edit_posts')) {
             return;
+        }
+
+        if ($action === 'flush_cache') {
+            if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'thebible_votd_flush_cache')) {
+                return;
+            }
+
+            self::rebuild_votd_cache();
+
+            $redirect = remove_query_arg(['thebible_votd_action', '_wpnonce']);
+            $redirect = add_query_arg(['thebible_votd_cache_flushed' => 1], $redirect);
+            wp_safe_redirect($redirect);
+            exit;
         }
 
         if ($action === 'cleanup') {
@@ -350,8 +376,9 @@ class TheBible_VOTD_Admin {
         }
         $did_cleanup = isset($_GET['thebible_votd_condensed']);
         $shuffled = isset($_GET['thebible_votd_shuffled']) ? (string) $_GET['thebible_votd_shuffled'] : '';
+        $cache_flushed = isset($_GET['thebible_votd_cache_flushed']);
 
-        if (!$did_cleanup && $shuffled === '') {
+        if (!$did_cleanup && $shuffled === '' && !$cache_flushed) {
             return;
         }
 
@@ -376,6 +403,10 @@ class TheBible_VOTD_Admin {
             } else {
                 echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Shuffled all VOTD entries.', 'thebible') . '</p></div>';
             }
+        }
+
+        if ($cache_flushed) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Flushed Verse-of-the-Day cache.', 'thebible') . '</p></div>';
         }
     }
 
@@ -455,15 +486,18 @@ class TheBible_VOTD_Admin {
             'date' => $date,
         ];
         $texts = self::extract_votd_texts_for_entry($entry_for_preview);
-        if (is_array($texts) && (!empty($texts['bible']) || !empty($texts['bibel']))) {
+        if (is_array($texts) && (!empty($texts['bible']) || !empty($texts['bibel']) || !empty($texts['latin']))) {
             echo '<h3>' . esc_html__('Preview (cached verse text)', 'thebible') . '</h3>';
-            echo '<p class="description">' . esc_html__('These snippets are read from the verse cache for English (Douay) and German (Menge).', 'thebible') . '</p>';
+            echo '<p class="description">' . esc_html__('These snippets are read from the verse cache for English (Douay), German (Menge), and Latin.', 'thebible') . '</p>';
             echo '<div style="padding:.5em 1em;border:1px solid #ccd0d4;background:#f6f7f7;max-width:48em;">';
             if (!empty($texts['bible']) && is_string($texts['bible'])) {
                 echo '<p><strong>EN:</strong> ' . esc_html($texts['bible']) . '</p>';
             }
             if (!empty($texts['bibel']) && is_string($texts['bibel'])) {
                 echo '<p><strong>DE:</strong> ' . esc_html($texts['bibel']) . '</p>';
+            }
+            if (!empty($texts['latin']) && is_string($texts['latin'])) {
+                echo '<p><strong>LA:</strong> ' . esc_html($texts['latin']) . '</p>';
             }
             echo '</div>';
         }
@@ -730,7 +764,7 @@ class TheBible_VOTD_Admin {
     private static function extract_votd_texts_for_entry($entry) {
         if (!is_array($entry)) return [];
         $out = [];
-        $datasets = ['bible', 'bibel'];
+        $datasets = ['bible', 'bibel', 'latin'];
         foreach ($datasets as $dataset) {
             $short = TheBible_Plugin::resolve_book_for_dataset($entry['book_slug'], $dataset);
             if (!is_string($short) || $short === '') {

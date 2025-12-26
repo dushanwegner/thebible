@@ -866,10 +866,16 @@ class TheBible_Plugin {
         self::handle_request();
     }
 
-    private static function extract_verse_text_from_html($html, $book_slug, $ch, $vf, $vt) {
+    public static function extract_verse_text_from_html($html, $book_slug, $ch, $vf, $vt) {
         if (!is_string($html) || $html === '' || !is_string($book_slug) || $book_slug === '') {
             return '';
         }
+        $ch = absint($ch);
+        $vf = absint($vf);
+        $vt = absint($vt);
+        if ($ch <= 0 || $vf <= 0) return '';
+        if ($vt <= 0 || $vt < $vf) { $vt = $vf; }
+
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
         $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
