@@ -2,14 +2,14 @@
 /*
 * Plugin Name: The Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template.
-* Version: 1.25.12.25.14
+* Version: 1.25.12.25.13
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('THEBIBLE_VERSION')) {
-    define('THEBIBLE_VERSION', '1.25.12.25.14');
+    define('THEBIBLE_VERSION', '1.25.12.25.13');
 }
 
 // Load include classes before hooks are registered
@@ -35,6 +35,7 @@ class TheBible_Plugin {
     private static $current_page_title = '';
     private static $max_chapters = [];
     private static $index_slug = null;
+    private static $osis_mapping = null;
 
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
@@ -496,6 +497,88 @@ class TheBible_Plugin {
             }
         }
         self::$book_map = $map;
+    }
+
+    private static function load_osis_mapping() {
+        if (self::$osis_mapping !== null) {
+            return;
+        }
+        $file = plugin_dir_path(__FILE__) . 'includes/osis-mapping.json';
+        $map = [];
+        if (file_exists($file)) {
+            $raw = file_get_contents($file);
+            if (is_string($raw) && $raw !== '') {
+                $data = json_decode($raw, true);
+                if (is_array($data)) {
+                    $map = $data;
+                }
+            }
+        }
+        self::$osis_mapping = $map;
+    }
+
+    private static function osis_for_dataset_book_slug($dataset_slug, $dataset_book_slug) {
+        $dataset_slug = is_string($dataset_slug) ? trim($dataset_slug) : '';
+        $dataset_book_slug = is_string($dataset_book_slug) ? self::slugify($dataset_book_slug) : '';
+        if ($dataset_slug === '' || $dataset_book_slug === '') {
+            return null;
+        }
+        self::load_osis_mapping();
+        if (!is_array(self::$osis_mapping) || empty(self::$osis_mapping['books']) || !is_array(self::$osis_mapping['books'])) {
+            return null;
+        }
+
+        foreach (self::$osis_mapping['books'] as $osis => $entry) {
+            if (!is_string($osis) || $osis === '' || !is_array($entry)) {
+                continue;
+            }
+            if ($dataset_slug === 'bibel') {
+                $list = $entry['bibel'] ?? null;
+                if (is_array($list)) {
+                    foreach ($list as $s) {
+                        if (is_string($s) && self::slugify($s) === $dataset_book_slug) {
+                            return $osis;
+                        }
+                    }
+                }
+                continue;
+            }
+            $mapped = $entry[$dataset_slug] ?? null;
+            if (is_string($mapped) && $mapped !== '' && self::slugify($mapped) === $dataset_book_slug) {
+                return $osis;
+            }
+        }
+        return null;
+    }
+
+    private static function dataset_book_slug_for_osis($dataset_slug, $osis) {
+        $dataset_slug = is_string($dataset_slug) ? trim($dataset_slug) : '';
+        $osis = is_string($osis) ? trim($osis) : '';
+        if ($dataset_slug === '' || $osis === '') {
+            return null;
+        }
+        self::load_osis_mapping();
+        if (!is_array(self::$osis_mapping) || empty(self::$osis_mapping['books']) || !is_array(self::$osis_mapping['books'])) {
+            return null;
+        }
+        $entry = self::$osis_mapping['books'][$osis] ?? null;
+        if (!is_array($entry)) {
+            return null;
+        }
+        if ($dataset_slug === 'bibel') {
+            $list = $entry['bibel'] ?? null;
+            if (is_array($list) && !empty($list)) {
+                $first = $list[0] ?? null;
+                return is_string($first) && $first !== '' ? self::slugify($first) : null;
+            }
+            return null;
+        }
+        $mapped = $entry[$dataset_slug] ?? null;
+        if (!is_string($mapped) || $mapped === '') {
+            return null;
+        }
+        $s = self::slugify($mapped);
+        return $s !== '' ? $s : null;
     }
 
     public static function resolve_book_for_dataset($canonical_key, $dataset_slug) {
@@ -1928,7 +2011,7 @@ class TheBible_Plugin {
             return;
         }
 
-        // If the URL book slug is localized for the first dataset (e.g. /bibel-latin/hiob/...),
+        // If the URL book slug is localized for the first dataset (e.g. /bibel-latin/hiob/...)
         // map it back to our canonical key (e.g. job) so other datasets can resolve properly.
         $first_dataset = $datasets[0] ?? '';
         if (is_string($first_dataset) && $first_dataset !== '' && $first_dataset !== 'latin') {
@@ -1938,25 +2021,50 @@ class TheBible_Plugin {
             }
         }
 
+        // OSIS-based canonicalization (English is the reference segmentation).
+        // Try to identify the OSIS book for the incoming dataset/book slug, then use the mapped
+        // English (bible) slug as the canonical key used in URLs, IDs, and nav.
+        $osis = self::osis_for_dataset_book_slug($first_dataset, $url_book_slug);
+        if (is_string($osis) && $osis !== '') {
+            $bible_ref = self::dataset_book_slug_for_osis('bible', $osis);
+            if (is_string($bible_ref) && $bible_ref !== '') {
+                $canonical_key = $bible_ref;
+            }
+        }
+
         $entries = [];
         $docs = [];
         $nodes_by_dataset = [];
 
+        $notices = [];
+        $active_datasets = [];
         foreach ($datasets as $dataset_idx => $dataset) {
             if (!is_string($dataset) || $dataset === '') {
                 self::render_404();
                 return;
             }
 
-            $dataset_short = self::resolve_book_for_dataset($canonical_key, $dataset);
+            $dataset_short = null;
+            if (is_string($osis) && $osis !== '') {
+                $dataset_short = self::dataset_book_slug_for_osis($dataset, $osis);
+            }
             if (!is_string($dataset_short) || $dataset_short === '') {
-                $dataset_short = $canonical_key;
+                // Fall back to legacy canonical-slug book_map.json logic
+                $dataset_short = self::resolve_book_for_dataset($canonical_key, $dataset);
+                if (!is_string($dataset_short) || $dataset_short === '') {
+                    $dataset_short = $canonical_key;
+                }
             }
 
             $entry = self::get_book_entry_for_dataset($dataset, $dataset_short);
             if (!$entry) {
-                self::render_404();
-                return;
+                // If the first dataset can't resolve, the page can't be rendered.
+                if ($dataset_idx === 0) {
+                    self::render_404();
+                    return;
+                }
+                $notices[] = 'Dataset "' . esc_html($dataset) . '" has no matching book for this selection.';
+                continue;
             }
 
             $dir = self::html_dir_for_dataset($dataset);
@@ -1967,14 +2075,19 @@ class TheBible_Plugin {
 
             $file = $dir . $entry['filename'];
             if (!file_exists($file)) {
-                self::render_404();
-                return;
+                if ($dataset_idx === 0) {
+                    self::render_404();
+                    return;
+                }
+                $notices[] = 'Dataset "' . esc_html($dataset) . '" is missing the source file for this book.';
+                continue;
             }
 
             $entries[$dataset_idx] = $entry;
             $entries[$dataset_idx]['_dataset'] = $dataset;
             $html = (string) file_get_contents($file);
             $entries[$dataset_idx]['_raw_html'] = $html;
+            $active_datasets[] = $dataset;
         }
 
         $ch = absint(get_query_var(self::QV_CHAPTER));
@@ -1985,11 +2098,24 @@ class TheBible_Plugin {
 
         $nav_blocks = '';
         foreach ($datasets as $dataset_idx => $dataset) {
+            if (!isset($entries[$dataset_idx]) || !is_array($entries[$dataset_idx]) || !isset($entries[$dataset_idx]['_raw_html'])) {
+                continue;
+            }
             $html = (string) $entries[$dataset_idx]['_raw_html'];
             $chapter_html = self::extract_chapter_from_html($html, $ch);
             if ($chapter_html === null) {
-                self::render_404();
-                return;
+                $notices[] = 'Dataset "' . esc_html($dataset) . '" has no chapter ' . esc_html((string)$ch) . ' for this book.';
+                // Catholic/common-sense guidance for known mismatches/containment.
+                if (is_string($osis) && $osis === 'Dan' && $ch >= 13) {
+                    if ($dataset === 'bibel') {
+                        // German tradition in this dataset uses a standalone "Zusätze Daniel" book.
+                        $add_ch = ($ch === 13) ? 1 : 2;
+                        $notices[] = 'Hint: In German, try /bibel/zusaetze-daniel/' . esc_html((string)$add_ch) . '/ for the Additions to Daniel.';
+                    } elseif ($dataset === 'latin') {
+                        $notices[] = 'Hint: Latin Daniel in this dataset appears to omit Daniel 13–14. Try the English reference: /bible/daniel/' . esc_html((string)$ch) . '/.';
+                    }
+                }
+                continue;
             }
 
             // Keep chapters/verses navigation blocks from the first dataset
@@ -2004,22 +2130,63 @@ class TheBible_Plugin {
 
             $parsed = self::parse_verse_nodes_by_number($chapter_html, $dataset_book_slug, $ch);
             if (!is_array($parsed) || count($parsed) !== 2) {
-                self::render_404();
-                return;
+                $notices[] = 'Dataset "' . esc_html($dataset) . '" could not be parsed for chapter ' . esc_html((string)$ch) . '.';
+                continue;
             }
             list($doc, $nodes) = $parsed;
             $docs[$dataset_idx] = $doc;
             $nodes_by_dataset[$dataset_idx] = $nodes;
         }
 
+        $active_dataset_indices = array_keys($nodes_by_dataset);
+        sort($active_dataset_indices);
+
         $verses = [];
-        foreach ($datasets as $dataset_idx => $dataset) {
-            $verses = array_merge($verses, array_keys($nodes_by_dataset[$dataset_idx]));
+        foreach ($active_dataset_indices as $dataset_idx) {
+            $nodes = $nodes_by_dataset[$dataset_idx] ?? null;
+            if (!is_array($nodes)) {
+                continue;
+            }
+            $verses = array_merge($verses, array_keys($nodes));
         }
         $verses = array_values(array_unique($verses));
         sort($verses);
 
-        $datasets_attr = esc_attr(implode(',', $datasets));
+        if (empty($active_dataset_indices)) {
+            // No dataset could provide the requested chapter; render a page with notices only.
+            $datasets_attr = esc_attr(implode(',', $active_datasets));
+            $out = '<div class="thebible thebible-book thebible-interlinear"'
+                . ' data-interlinear="1"'
+                . ' data-book="' . esc_attr($canonical_key) . '"'
+                . ' data-ch="' . esc_attr((string)$ch) . '"'
+                . ' data-datasets="' . $datasets_attr . '"'
+                . ' data-first-dataset="' . esc_attr((string)$datasets[0]) . '"'
+                . '>';
+            if (!empty($notices)) {
+                $out .= '<div class="thebible-interlinear-notices" data-interlinear-notices="1">';
+                foreach ($notices as $msg) {
+                    $out .= '<p class="thebible-interlinear-notice">' . $msg . '</p>';
+                }
+                $out .= '</div>';
+            }
+            $out .= '</div>';
+
+            $vf = absint(get_query_var(self::QV_VFROM));
+            $vt = absint(get_query_var(self::QV_VTO));
+            $switcher = self::render_interlinear_language_switcher($canonical_key, $datasets, $ch, $vf, $vt);
+            if (is_string($switcher) && $switcher !== '') {
+                $out .= $switcher;
+            }
+
+            status_header(200);
+            nocache_headers();
+            self::output_with_theme('Bible', $out, 'book');
+            return;
+        }
+
+        $primary_dataset_idx = $active_dataset_indices[0];
+
+        $datasets_attr = esc_attr(implode(',', $active_datasets));
         $out = '<div class="thebible thebible-book thebible-interlinear"'
             . ' data-interlinear="1"'
             . ' data-book="' . esc_attr($canonical_key) . '"'
@@ -2027,6 +2194,14 @@ class TheBible_Plugin {
             . ' data-datasets="' . $datasets_attr . '"'
             . ' data-first-dataset="' . esc_attr((string)$datasets[0]) . '"'
             . '>';
+
+        if (!empty($notices)) {
+            $out .= '<div class="thebible-interlinear-notices" data-interlinear-notices="1">';
+            foreach ($notices as $msg) {
+                $out .= '<p class="thebible-interlinear-notice">' . $msg . '</p>';
+            }
+            $out .= '</div>';
+        }
         if (is_string($nav_blocks) && $nav_blocks !== '') {
             $out .= $nav_blocks;
         }
@@ -2037,7 +2212,11 @@ class TheBible_Plugin {
                 . ' data-book="' . esc_attr($canonical_key) . '"'
                 . ' data-ch="' . esc_attr((string)$ch) . '"'
                 . '>';
-            foreach ($datasets as $idx => $dataset) {
+            foreach ($active_dataset_indices as $idx) {
+                $dataset = $datasets[$idx] ?? '';
+                if (!is_string($dataset) || $dataset === '') {
+                    continue;
+                }
                 $node = $nodes_by_dataset[$idx][$v] ?? null;
                 if (!$node) {
                     continue;

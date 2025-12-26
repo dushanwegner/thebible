@@ -1,0 +1,4788 @@
+{
+  "canonical": {
+    "reference_segmentation": "bible",
+    "scheme": "OSIS"
+  },
+  "contained_books": [
+    {
+      "bibel": "zusaetze-ester",
+      "bible_container": {
+        "bible": "esther",
+        "osis": "Esth"
+      },
+      "anchor_hints": {
+        "bible": {
+          "marker": "dragon",
+          "chapter_id": "id=\"esther-ch-10\"",
+          "verse_id": "id=\"esther-10-7\""
+        }
+      },
+      "latin_container": {
+        "latin": "esther",
+        "osis": "Esth"
+      },
+      "notes": "German has Additions to Esther as standalone; English/Latin likely contain them within Esther (exact anchors/ranges TBD).",
+      "osis": "AddEsth"
+    },
+    {
+      "bibel": "zusaetze-daniel",
+      "bible_container": {
+        "bible": "daniel",
+        "osis": "Dan"
+      },
+      "anchor_hints": {
+        "bible": {
+          "susanna": {
+            "marker": "susanna",
+            "chapter_id": "id=\"daniel-ch-13\"",
+            "verse_id": "id=\"daniel-13-2\""
+          },
+          "bel_and_dragon": {
+            "marker": "dragon",
+            "chapter_id": "id=\"daniel-ch-14\"",
+            "verse_id": "id=\"daniel-14-22\""
+          }
+        }
+      },
+      "latin_container": {
+        "latin": "daniel",
+        "osis": "Dan"
+      },
+      "notes": "German has Additions to Daniel as standalone; English/Latin likely contain them within Daniel (exact anchors/ranges TBD).",
+      "osis": "AddDan"
+    },
+    {
+      "bibel": "gebet-manasses",
+      "bible_container": null,
+      "anchor_hints": {
+        "latin": {
+          "marker": "Prayer of Manasse",
+          "verse_id": "id=\"2-maccabees-15-39\""
+        }
+      },
+      "latin_container": {
+        "latin": "2-maccabees",
+        "osis": "2Macc"
+      },
+      "notes": "In your data, Latin contains Prayer of Manasseh inside 2 Maccabees. English dataset containment not detected by phrase scan; may be absent or differently labeled.",
+      "osis": "PrMan"
+    }
+  ],
+  "generated_at_utc": "2025-12-26T07:13:19Z",
+  "per_book": {
+    "1Chr": {
+      "bibel": {
+        "filename": "13-1_Chronik.html",
+        "max_ch": 29,
+        "slug": "1-chronik"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 29,
+          "ref_max_ch": 29,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 29,
+          "ref_max_ch": 29,
+          "sampled_verse_diffs": {
+            "29": {
+              "other_count": 29,
+              "other_only": [],
+              "ref_count": 30,
+              "ref_only": [
+                30
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "13-1_Chronicles.html",
+        "max_ch": 29,
+        "slug": "1-chronicles"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "13-1_Paralipomenon.html",
+        "max_ch": 29,
+        "slug": "1-paralipomenon"
+      }
+    },
+    "1Cor": {
+      "bibel": {
+        "filename": "56-1_Korinther.html",
+        "max_ch": 16,
+        "slug": "1-korinther"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "16": {
+              "other_count": 23,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "53-1_Corinthians.html",
+        "max_ch": 16,
+        "slug": "1-corinthians"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "53-1_Corinthians.html",
+        "max_ch": 16,
+        "slug": "1-corinthians"
+      }
+    },
+    "1John": {
+      "bibel": {
+        "filename": "72-1_Johannes.html",
+        "max_ch": 5,
+        "slug": "1-johannes"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_diffs": {
+            "5": {
+              "other_count": 20,
+              "other_only": [],
+              "ref_count": 21,
+              "ref_only": [
+                21
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "69-1_John.html",
+        "max_ch": 5,
+        "slug": "1-john"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "69-1_John.html",
+        "max_ch": 5,
+        "slug": "1-john"
+      }
+    },
+    "1Kgs": {
+      "bibel": {
+        "filename": "11-1_Koenige.html",
+        "max_ch": 22,
+        "slug": "1-koenige"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 22,
+          "ref_max_ch": 22,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 22,
+          "ref_max_ch": 22,
+          "sampled_verse_diffs": {
+            "22": {
+              "other_count": 53,
+              "other_only": [],
+              "ref_count": 54,
+              "ref_only": [
+                54
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "11-1_Kings.html",
+        "max_ch": 22,
+        "slug": "1-kings"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "11-3_Kings.html",
+        "max_ch": 22,
+        "slug": "3-kings"
+      }
+    },
+    "1Macc": {
+      "bibel": {
+        "filename": "45-1_Makkabaeer.html",
+        "max_ch": 16,
+        "slug": "1-makkabaeer"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 64,
+              "other_only": [
+                45
+              ],
+              "ref_count": 66,
+              "ref_only": [
+                65,
+                66,
+                67
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 67,
+              "other_only": [
+                45
+              ],
+              "ref_count": 66,
+              "ref_only": []
+            },
+            "16": {
+              "other_count": 23,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "45-1_Maccabees.html",
+        "max_ch": 16,
+        "slug": "1-maccabees"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "45-1_Machabees.html",
+        "max_ch": 16,
+        "slug": "1-machabees"
+      }
+    },
+    "1Pet": {
+      "bibel": {
+        "filename": "70-1_Petrus.html",
+        "max_ch": 5,
+        "slug": "1-petrus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_diffs": {
+            "5": {
+              "other_count": 13,
+              "other_only": [],
+              "ref_count": 14,
+              "ref_only": [
+                14
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "67-1_Peter.html",
+        "max_ch": 5,
+        "slug": "1-peter"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "67-1_Peter.html",
+        "max_ch": 5,
+        "slug": "1-peter"
+      }
+    },
+    "1Sam": {
+      "bibel": {
+        "filename": "09-1_Samuel.html",
+        "max_ch": 31,
+        "slug": "1-samuel"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 31,
+          "ref_max_ch": 31,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 31,
+          "ref_max_ch": 31,
+          "sampled_verse_diffs": {
+            "31": {
+              "other_count": 12,
+              "other_only": [],
+              "ref_count": 13,
+              "ref_only": [
+                13
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "09-1_Samuel.html",
+        "max_ch": 31,
+        "slug": "1-samuel"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "09-1_Kings_Samuel.html",
+        "max_ch": 31,
+        "slug": "1-kings-samuel"
+      }
+    },
+    "1Thess": {
+      "bibel": {
+        "filename": "62-1_Thessalonicher.html",
+        "max_ch": 5,
+        "slug": "1-thessalonicher"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_diffs": {
+            "5": {
+              "other_count": 27,
+              "other_only": [],
+              "ref_count": 28,
+              "ref_only": [
+                28
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "59-1_Thessalonians.html",
+        "max_ch": 5,
+        "slug": "1-thessalonians"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "59-1_Thessalonians.html",
+        "max_ch": 5,
+        "slug": "1-thessalonians"
+      }
+    },
+    "1Tim": {
+      "bibel": {
+        "filename": "64-1_Timotheus.html",
+        "max_ch": 6,
+        "slug": "1-timotheus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 6,
+          "ref_max_ch": 6,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 6,
+          "ref_max_ch": 6,
+          "sampled_verse_diffs": {
+            "6": {
+              "other_count": 20,
+              "other_only": [],
+              "ref_count": 21,
+              "ref_only": [
+                21
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "61-1_Timothy.html",
+        "max_ch": 6,
+        "slug": "1-timothy"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "61-1_Timothy.html",
+        "max_ch": 6,
+        "slug": "1-timothy"
+      }
+    },
+    "2Chr": {
+      "bibel": {
+        "filename": "14-2_Chronik.html",
+        "max_ch": 36,
+        "slug": "2-chronik"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 36,
+          "ref_max_ch": 36,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 18,
+              "other_only": [
+                18
+              ],
+              "ref_count": 17,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 17,
+              "other_only": [],
+              "ref_count": 18,
+              "ref_only": [
+                18
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 36,
+          "ref_max_ch": 36,
+          "sampled_verse_diffs": {
+            "2": {
+              "other_count": 70,
+              "other_only": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "ref_count": 18,
+              "ref_only": []
+            },
+            "36": {
+              "other_count": 22,
+              "other_only": [],
+              "ref_count": 23,
+              "ref_only": [
+                23
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "14-2_Chronicles.html",
+        "max_ch": 36,
+        "slug": "2-chronicles"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "14-2_Paralipomenon.html",
+        "max_ch": 36,
+        "slug": "2-paralipomenon"
+      }
+    },
+    "2Cor": {
+      "bibel": {
+        "filename": "57-2_Korinther.html",
+        "max_ch": 13,
+        "slug": "2-korinther"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 13,
+          "ref_max_ch": 13,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 24,
+              "other_only": [
+                24
+              ],
+              "ref_count": 23,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 13,
+          "ref_max_ch": 13,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 24,
+              "other_only": [
+                24
+              ],
+              "ref_count": 23,
+              "ref_only": []
+            },
+            "13": {
+              "other_count": 12,
+              "other_only": [],
+              "ref_count": 13,
+              "ref_only": [
+                13
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "54-2_Corinthians.html",
+        "max_ch": 13,
+        "slug": "2-corinthians"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "54-2_Corinthians.html",
+        "max_ch": 13,
+        "slug": "2-corinthians"
+      }
+    },
+    "2John": {
+      "bibel": {
+        "filename": "73-2_Johannes.html",
+        "max_ch": 1,
+        "slug": "2-johannes"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 12,
+              "other_only": [],
+              "ref_count": 13,
+              "ref_only": [
+                13
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "70-2_John.html",
+        "max_ch": 1,
+        "slug": "2-john"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "70-2_John.html",
+        "max_ch": 1,
+        "slug": "2-john"
+      }
+    },
+    "2Kgs": {
+      "bibel": {
+        "filename": "12-2_Koenige.html",
+        "max_ch": 25,
+        "slug": "2-koenige"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 25,
+          "ref_max_ch": 25,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 25,
+          "ref_max_ch": 25,
+          "sampled_verse_diffs": {
+            "25": {
+              "other_count": 29,
+              "other_only": [],
+              "ref_count": 30,
+              "ref_only": [
+                30
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "12-2_Kings.html",
+        "max_ch": 25,
+        "slug": "2-kings"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "12-4_Kings.html",
+        "max_ch": 25,
+        "slug": "4-kings"
+      }
+    },
+    "2Macc": {
+      "bibel": {
+        "filename": "46-2_Makkabaeer.html",
+        "max_ch": 15,
+        "slug": "2-makkabaeer"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 15,
+          "ref_max_ch": 15,
+          "sampled_verse_diffs": {
+            "15": {
+              "other_count": 39,
+              "other_only": [],
+              "ref_count": 40,
+              "ref_only": [
+                40
+              ]
+            },
+            "2": {
+              "other_count": 32,
+              "other_only": [],
+              "ref_count": 33,
+              "ref_only": [
+                33
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 15,
+          "ref_max_ch": 15,
+          "sampled_verse_diffs": {
+            "15": {
+              "other_count": 39,
+              "other_only": [],
+              "ref_count": 40,
+              "ref_only": [
+                40
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "46-2_Maccabees.html",
+        "max_ch": 15,
+        "slug": "2-maccabees"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "46-2_Machabees.html",
+        "max_ch": 15,
+        "slug": "2-machabees"
+      }
+    },
+    "2Pet": {
+      "bibel": {
+        "filename": "71-2_Petrus.html",
+        "max_ch": 3,
+        "slug": "2-petrus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "3": {
+              "other_count": 17,
+              "other_only": [],
+              "ref_count": 18,
+              "ref_only": [
+                18
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "68-2_Peter.html",
+        "max_ch": 3,
+        "slug": "2-peter"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "68-2_Peter.html",
+        "max_ch": 3,
+        "slug": "2-peter"
+      }
+    },
+    "2Sam": {
+      "bibel": {
+        "filename": "10-2_Samuel.html",
+        "max_ch": 24,
+        "slug": "2-samuel"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 24,
+          "ref_max_ch": 24,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 24,
+          "ref_max_ch": 24,
+          "sampled_verse_diffs": {
+            "24": {
+              "other_count": 24,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                25
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "10-2_Samuel.html",
+        "max_ch": 24,
+        "slug": "2-samuel"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "10-2_Kings_Samuel.html",
+        "max_ch": 24,
+        "slug": "2-kings-samuel"
+      }
+    },
+    "2Thess": {
+      "bibel": {
+        "filename": "63-2_Thessalonicher.html",
+        "max_ch": 3,
+        "slug": "2-thessalonicher"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "2": {
+              "other_count": 17,
+              "other_only": [
+                17
+              ],
+              "ref_count": 16,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "2": {
+              "other_count": 17,
+              "other_only": [
+                17
+              ],
+              "ref_count": 16,
+              "ref_only": []
+            },
+            "3": {
+              "other_count": 17,
+              "other_only": [],
+              "ref_count": 18,
+              "ref_only": [
+                18
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "60-2_Thessalonians.html",
+        "max_ch": 3,
+        "slug": "2-thessalonians"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "60-2_Thessalonians.html",
+        "max_ch": 3,
+        "slug": "2-thessalonians"
+      }
+    },
+    "2Tim": {
+      "bibel": {
+        "filename": "65-2_Timotheus.html",
+        "max_ch": 4,
+        "slug": "2-timotheus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_diffs": {
+            "4": {
+              "other_count": 21,
+              "other_only": [],
+              "ref_count": 22,
+              "ref_only": [
+                22
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "62-2_Timothy.html",
+        "max_ch": 4,
+        "slug": "2-timothy"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "62-2_Timothy.html",
+        "max_ch": 4,
+        "slug": "2-timothy"
+      }
+    },
+    "3John": {
+      "bibel": {
+        "filename": "74-3_Johannes.html",
+        "max_ch": 1,
+        "slug": "3-johannes"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 15,
+              "other_only": [
+                15
+              ],
+              "ref_count": 14,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_mismatch": false
+        }
+      },
+      "latin": {
+        "filename": "71-3_John.html",
+        "max_ch": 1,
+        "slug": "3-john"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "71-3_John.html",
+        "max_ch": 1,
+        "slug": "3-john"
+      }
+    },
+    "Acts": {
+      "bibel": {
+        "filename": "54-Apostelgeschichte.html",
+        "max_ch": 28,
+        "slug": "apostelgeschichte"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 28,
+          "ref_max_ch": 28,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 28,
+          "ref_max_ch": 28,
+          "sampled_verse_diffs": {
+            "28": {
+              "other_count": 30,
+              "other_only": [],
+              "ref_count": 31,
+              "ref_only": [
+                31
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "51-Acts.html",
+        "max_ch": 28,
+        "slug": "acts"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "51-Acts.html",
+        "max_ch": 28,
+        "slug": "acts"
+      }
+    },
+    "Amos": {
+      "bibel": {
+        "filename": "30-Amos.html",
+        "max_ch": 9,
+        "slug": "amos"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 9,
+          "ref_max_ch": 9,
+          "sampled_verse_diffs": {
+            "9": {
+              "other_count": 15,
+              "other_only": [
+                15
+              ],
+              "ref_count": 14,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 40,
+          "ref_max_ch": 9,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 15,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
+            },
+            "2": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 16,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            },
+            "3": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 15,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
+            },
+            "9": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 14,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "35-Amos.html",
+        "max_ch": 40,
+        "slug": "amos"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "35-Amos.html",
+        "max_ch": 9,
+        "slug": "amos"
+      }
+    },
+    "Bar": {
+      "bibel": {
+        "filename": "44-Baruch.html",
+        "max_ch": 5,
+        "slug": "baruch"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 5,
+          "ref_max_ch": 6,
+          "sampled_verse_diffs": {
+            "3": {
+              "other_count": 37,
+              "other_only": [],
+              "ref_count": 38,
+              "ref_only": [
+                38
+              ]
+            },
+            "6": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 72,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 13,
+          "ref_max_ch": 6,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 22,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ]
+            },
+            "2": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 35,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            },
+            "3": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 38,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            },
+            "6": {
+              "other_count": 19,
+              "other_only": [],
+              "ref_count": 72,
+              "ref_only": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "30-Baruch.html",
+        "max_ch": 13,
+        "slug": "baruch"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "30-Baruch.html",
+        "max_ch": 6,
+        "slug": "baruch"
+      }
+    },
+    "Col": {
+      "bibel": {
+        "filename": "61-Kolosser.html",
+        "max_ch": 4,
+        "slug": "kolosser"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_diffs": {
+            "4": {
+              "other_count": 17,
+              "other_only": [],
+              "ref_count": 18,
+              "ref_only": [
+                18
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "58-Colossians.html",
+        "max_ch": 4,
+        "slug": "colossians"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "58-Colossians.html",
+        "max_ch": 4,
+        "slug": "colossians"
+      }
+    },
+    "Dan": {
+      "bibel": {
+        "filename": "27-Daniel.html",
+        "max_ch": 12,
+        "slug": "daniel"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 12,
+          "ref_max_ch": 14,
+          "sampled_verse_diffs": {
+            "14": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 42,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            },
+            "3": {
+              "other_count": 33,
+              "other_only": [],
+              "ref_count": 100,
+              "ref_only": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 3,
+          "ref_max_ch": 14,
+          "sampled_verse_diffs": {
+            "14": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 42,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            },
+            "3": {
+              "other_count": 22,
+              "other_only": [],
+              "ref_count": 100,
+              "ref_only": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "32-Daniel.html",
+        "max_ch": 3,
+        "slug": "daniel"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "32-Daniel.html",
+        "max_ch": 14,
+        "slug": "daniel"
+      }
+    },
+    "Deut": {
+      "bibel": {
+        "filename": "05-Deuteronomium.html",
+        "max_ch": 34,
+        "slug": "deuteronomium"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 34,
+          "ref_max_ch": 34,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 34,
+          "ref_max_ch": 34,
+          "sampled_verse_diffs": {
+            "34": {
+              "other_count": 11,
+              "other_only": [],
+              "ref_count": 12,
+              "ref_only": [
+                12
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "05-Deuteronomy.html",
+        "max_ch": 34,
+        "slug": "deuteronomy"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "05-Deuteronomy.html",
+        "max_ch": 34,
+        "slug": "deuteronomy"
+      }
+    },
+    "Eccl": {
+      "bibel": {
+        "filename": "21-Prediger.html",
+        "max_ch": 12,
+        "slug": "prediger"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 12,
+          "ref_max_ch": 12,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 12,
+          "ref_max_ch": 12,
+          "sampled_verse_diffs": {
+            "12": {
+              "other_count": 13,
+              "other_only": [],
+              "ref_count": 14,
+              "ref_only": [
+                14
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "23-Ecclesiastes.html",
+        "max_ch": 12,
+        "slug": "ecclesiastes"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "23-Ecclesiastes.html",
+        "max_ch": 12,
+        "slug": "ecclesiastes"
+      }
+    },
+    "Eph": {
+      "bibel": {
+        "filename": "59-Epheser.html",
+        "max_ch": 6,
+        "slug": "epheser"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 6,
+          "ref_max_ch": 6,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 6,
+          "ref_max_ch": 6,
+          "sampled_verse_diffs": {
+            "6": {
+              "other_count": 23,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "56-Ephesians.html",
+        "max_ch": 6,
+        "slug": "ephesians"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "56-Ephesians.html",
+        "max_ch": 6,
+        "slug": "ephesians"
+      }
+    },
+    "Esth": {
+      "bibel": {
+        "filename": "17-Ester.html",
+        "max_ch": 10,
+        "slug": "ester"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 10,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "16": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 10,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "16": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "19-Esther.html",
+        "max_ch": 10,
+        "slug": "esther"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "19-Esther.html",
+        "max_ch": 16,
+        "slug": "esther"
+      }
+    },
+    "Exod": {
+      "bibel": {
+        "filename": "02-Exodus.html",
+        "max_ch": 40,
+        "slug": "exodus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 40,
+          "ref_max_ch": 40,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 22,
+              "other_only": [
+                18
+              ],
+              "ref_count": 21,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 25,
+              "other_only": [
+                18
+              ],
+              "ref_count": 24,
+              "ref_only": []
+            },
+            "3": {
+              "other_count": 22,
+              "other_only": [
+                18
+              ],
+              "ref_count": 21,
+              "ref_only": []
+            },
+            "40": {
+              "other_count": 38,
+              "other_only": [
+                37,
+                38
+              ],
+              "ref_count": 36,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 25,
+          "ref_max_ch": 40,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 22,
+              "other_only": [
+                18
+              ],
+              "ref_count": 21,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 25,
+              "other_only": [
+                18
+              ],
+              "ref_count": 24,
+              "ref_only": []
+            },
+            "3": {
+              "other_count": 22,
+              "other_only": [
+                18
+              ],
+              "ref_count": 21,
+              "ref_only": []
+            },
+            "40": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 36,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "02-Exodus.html",
+        "max_ch": 25,
+        "slug": "exodus"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "02-Exodus.html",
+        "max_ch": 40,
+        "slug": "exodus"
+      }
+    },
+    "Ezek": {
+      "bibel": {
+        "filename": "26-Hesekiel.html",
+        "max_ch": 48,
+        "slug": "hesekiel"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 48,
+          "ref_max_ch": 48,
+          "sampled_verse_diffs": {
+            "2": {
+              "other_count": 10,
+              "other_only": [
+                10
+              ],
+              "ref_count": 9,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 48,
+          "ref_max_ch": 48,
+          "sampled_verse_diffs": {
+            "48": {
+              "other_count": 34,
+              "other_only": [],
+              "ref_count": 35,
+              "ref_only": [
+                35
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "31-Ezekiel.html",
+        "max_ch": 48,
+        "slug": "ezekiel"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "31-Ezechiel.html",
+        "max_ch": 48,
+        "slug": "ezechiel"
+      }
+    },
+    "Ezra": {
+      "bibel": {
+        "filename": "15-Esra.html",
+        "max_ch": 10,
+        "slug": "esra"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 10,
+          "ref_max_ch": 10,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 24,
+          "ref_max_ch": 10,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 11,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ]
+            },
+            "10": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 44,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            },
+            "2": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 70,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            },
+            "3": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 13,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "15-Ezra.html",
+        "max_ch": 24,
+        "slug": "ezra"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "15-1_Esdras.html",
+        "max_ch": 10,
+        "slug": "1-esdras"
+      }
+    },
+    "Gal": {
+      "bibel": {
+        "filename": "58-Galater.html",
+        "max_ch": 6,
+        "slug": "galater"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 6,
+          "ref_max_ch": 6,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 6,
+          "ref_max_ch": 6,
+          "sampled_verse_diffs": {
+            "6": {
+              "other_count": 17,
+              "other_only": [],
+              "ref_count": 18,
+              "ref_only": [
+                18
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "55-Galatians.html",
+        "max_ch": 6,
+        "slug": "galatians"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "55-Galatians.html",
+        "max_ch": 6,
+        "slug": "galatians"
+      }
+    },
+    "Gen": {
+      "bibel": {
+        "filename": "01-Genesis.html",
+        "max_ch": 50,
+        "slug": "genesis"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 50,
+          "ref_max_ch": 50,
+          "sampled_verse_diffs": {
+            "50": {
+              "other_count": 26,
+              "other_only": [
+                26
+              ],
+              "ref_count": 25,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 26,
+          "ref_max_ch": 50,
+          "sampled_verse_diffs": {
+            "50": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "01-Genesis.html",
+        "max_ch": 26,
+        "slug": "genesis"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "01-Genesis.html",
+        "max_ch": 50,
+        "slug": "genesis"
+      }
+    },
+    "Hab": {
+      "bibel": {
+        "filename": "35-Habakuk.html",
+        "max_ch": 3,
+        "slug": "habakuk"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "3": {
+              "other_count": 18,
+              "other_only": [],
+              "ref_count": 19,
+              "ref_only": [
+                19
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "40-Habakkuk.html",
+        "max_ch": 3,
+        "slug": "habakkuk"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "40-Habacuc.html",
+        "max_ch": 3,
+        "slug": "habacuc"
+      }
+    },
+    "Hag": {
+      "bibel": {
+        "filename": "37-Haggai.html",
+        "max_ch": 2,
+        "slug": "haggai"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 2,
+          "ref_max_ch": 2,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 15,
+              "other_only": [
+                15
+              ],
+              "ref_count": 14,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 23,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 2,
+          "ref_max_ch": 2,
+          "sampled_verse_diffs": {
+            "2": {
+              "other_count": 23,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "42-Haggai.html",
+        "max_ch": 2,
+        "slug": "haggai"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "42-Aggeus.html",
+        "max_ch": 2,
+        "slug": "aggeus"
+      }
+    },
+    "Heb": {
+      "bibel": {
+        "filename": "68-Hebraeer.html",
+        "max_ch": 13,
+        "slug": "hebraeer"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 13,
+          "ref_max_ch": 13,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 13,
+          "ref_max_ch": 13,
+          "sampled_verse_diffs": {
+            "13": {
+              "other_count": 24,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                25
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "65-Hebrews.html",
+        "max_ch": 13,
+        "slug": "hebrews"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "65-Hebrews.html",
+        "max_ch": 13,
+        "slug": "hebrews"
+      }
+    },
+    "Hos": {
+      "bibel": {
+        "filename": "28-Hosea.html",
+        "max_ch": 14,
+        "slug": "hosea"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 14,
+          "ref_max_ch": 14,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 9,
+              "other_only": [],
+              "ref_count": 11,
+              "ref_only": [
+                10,
+                11
+              ]
+            },
+            "2": {
+              "other_count": 25,
+              "other_only": [
+                25
+              ],
+              "ref_count": 24,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 14,
+          "ref_max_ch": 14,
+          "sampled_verse_diffs": {
+            "14": {
+              "other_count": 9,
+              "other_only": [],
+              "ref_count": 10,
+              "ref_only": [
+                10
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "33-Hosea.html",
+        "max_ch": 14,
+        "slug": "hosea"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "33-Osee.html",
+        "max_ch": 14,
+        "slug": "osee"
+      }
+    },
+    "Isa": {
+      "bibel": {
+        "filename": "23-Jesaja.html",
+        "max_ch": 66,
+        "slug": "jesaja"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 66,
+          "ref_max_ch": 66,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 66,
+          "ref_max_ch": 66,
+          "sampled_verse_diffs": {
+            "66": {
+              "other_count": 23,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "27-Isaiah.html",
+        "max_ch": 66,
+        "slug": "isaiah"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "27-Isaias.html",
+        "max_ch": 66,
+        "slug": "isaias"
+      }
+    },
+    "Jas": {
+      "bibel": {
+        "filename": "69-Jakobus.html",
+        "max_ch": 5,
+        "slug": "jakobus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_diffs": {
+            "5": {
+              "other_count": 19,
+              "other_only": [],
+              "ref_count": 20,
+              "ref_only": [
+                20
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "66-James.html",
+        "max_ch": 5,
+        "slug": "james"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "66-James.html",
+        "max_ch": 5,
+        "slug": "james"
+      }
+    },
+    "Jdt": {
+      "bibel": {
+        "filename": "40-Judit.html",
+        "max_ch": 16,
+        "slug": "judit"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 16,
+              "other_only": [
+                13,
+                14,
+                15,
+                16
+              ],
+              "ref_count": 12,
+              "ref_only": []
+            },
+            "16": {
+              "other_count": 25,
+              "other_only": [],
+              "ref_count": 31,
+              "ref_only": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            "2": {
+              "other_count": 28,
+              "other_only": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "ref_count": 18,
+              "ref_only": []
+            },
+            "3": {
+              "other_count": 10,
+              "other_only": [],
+              "ref_count": 15,
+              "ref_only": [
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 19,
+              "other_only": [
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19
+              ],
+              "ref_count": 12,
+              "ref_only": []
+            },
+            "16": {
+              "other_count": 30,
+              "other_only": [],
+              "ref_count": 31,
+              "ref_only": [
+                31
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "18-Judith.html",
+        "max_ch": 16,
+        "slug": "judith"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "18-Judith.html",
+        "max_ch": 16,
+        "slug": "judith"
+      }
+    },
+    "Jer": {
+      "bibel": {
+        "filename": "24-Jeremia.html",
+        "max_ch": 52,
+        "slug": "jeremia"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 52,
+          "ref_max_ch": 52,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 52,
+          "ref_max_ch": 52,
+          "sampled_verse_diffs": {
+            "52": {
+              "other_count": 33,
+              "other_only": [],
+              "ref_count": 34,
+              "ref_only": [
+                34
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "28-Jeremiah.html",
+        "max_ch": 52,
+        "slug": "jeremiah"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "28-Jeremias.html",
+        "max_ch": 52,
+        "slug": "jeremias"
+      }
+    },
+    "Job": {
+      "bibel": {
+        "filename": "18-Hiob.html",
+        "max_ch": 42,
+        "slug": "hiob"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 42,
+          "ref_max_ch": 42,
+          "sampled_verse_diffs": {
+            "42": {
+              "other_count": 17,
+              "other_only": [
+                17
+              ],
+              "ref_count": 16,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 42,
+          "ref_max_ch": 42,
+          "sampled_verse_diffs": {
+            "42": {
+              "other_count": 15,
+              "other_only": [],
+              "ref_count": 16,
+              "ref_only": [
+                16
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "20-Job.html",
+        "max_ch": 42,
+        "slug": "job"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "20-Job.html",
+        "max_ch": 42,
+        "slug": "job"
+      }
+    },
+    "Joel": {
+      "bibel": {
+        "filename": "29-Joel.html",
+        "max_ch": 4,
+        "slug": "joel"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 4,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 20,
+              "other_only": [
+                16
+              ],
+              "ref_count": 19,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 27,
+              "other_only": [
+                19
+              ],
+              "ref_count": 31,
+              "ref_only": [
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            "3": {
+              "other_count": 5,
+              "other_only": [],
+              "ref_count": 21,
+              "ref_only": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 9,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 20,
+              "other_only": [
+                16
+              ],
+              "ref_count": 19,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 32,
+              "other_only": [
+                19
+              ],
+              "ref_count": 31,
+              "ref_only": []
+            },
+            "3": {
+              "other_count": 20,
+              "other_only": [],
+              "ref_count": 21,
+              "ref_only": [
+                21
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "34-Joel.html",
+        "max_ch": 9,
+        "slug": "joel"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "34-Joel.html",
+        "max_ch": 3,
+        "slug": "joel"
+      }
+    },
+    "John": {
+      "bibel": {
+        "filename": "53-Johannes.html",
+        "max_ch": 21,
+        "slug": "johannes"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 21,
+          "ref_max_ch": 21,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 21,
+          "ref_max_ch": 21,
+          "sampled_verse_diffs": {
+            "21": {
+              "other_count": 24,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                25
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "50-John.html",
+        "max_ch": 21,
+        "slug": "john"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "50-John.html",
+        "max_ch": 21,
+        "slug": "john"
+      }
+    },
+    "Jonah": {
+      "bibel": {
+        "filename": "32-Jona.html",
+        "max_ch": 4,
+        "slug": "jona"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_diffs": {
+            "4": {
+              "other_count": 10,
+              "other_only": [],
+              "ref_count": 11,
+              "ref_only": [
+                11
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "37-Jonah.html",
+        "max_ch": 4,
+        "slug": "jonah"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "37-Jonas.html",
+        "max_ch": 4,
+        "slug": "jonas"
+      }
+    },
+    "Josh": {
+      "bibel": {
+        "filename": "06-Josua.html",
+        "max_ch": 24,
+        "slug": "josua"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 24,
+          "ref_max_ch": 24,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 19,
+          "ref_max_ch": 24,
+          "sampled_verse_diffs": {
+            "24": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 33,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "06-Joshua.html",
+        "max_ch": 19,
+        "slug": "joshua"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "06-Josue.html",
+        "max_ch": 24,
+        "slug": "josue"
+      }
+    },
+    "Jude": {
+      "bibel": {
+        "filename": "75-Judas.html",
+        "max_ch": 1,
+        "slug": "judas"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 22,
+          "ref_max_ch": 1,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 24,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                25
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "72-Jude.html",
+        "max_ch": 22,
+        "slug": "jude"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "72-Jude.html",
+        "max_ch": 1,
+        "slug": "jude"
+      }
+    },
+    "Judg": {
+      "bibel": {
+        "filename": "07-Richter.html",
+        "max_ch": 21,
+        "slug": "richter"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 21,
+          "ref_max_ch": 21,
+          "sampled_verse_diffs": {
+            "21": {
+              "other_count": 25,
+              "other_only": [
+                25
+              ],
+              "ref_count": 24,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 21,
+          "ref_max_ch": 21,
+          "sampled_verse_diffs": {
+            "21": {
+              "other_count": 23,
+              "other_only": [],
+              "ref_count": 24,
+              "ref_only": [
+                24
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "07-Judges.html",
+        "max_ch": 21,
+        "slug": "judges"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "07-Judges.html",
+        "max_ch": 21,
+        "slug": "judges"
+      }
+    },
+    "Lam": {
+      "bibel": {
+        "filename": "25-Klagelieder.html",
+        "max_ch": 5,
+        "slug": "klagelieder"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 5,
+          "ref_max_ch": 5,
+          "sampled_verse_diffs": {
+            "5": {
+              "other_count": 21,
+              "other_only": [],
+              "ref_count": 22,
+              "ref_only": [
+                22
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "29-Lamentations.html",
+        "max_ch": 5,
+        "slug": "lamentations"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "29-Lamentations.html",
+        "max_ch": 5,
+        "slug": "lamentations"
+      }
+    },
+    "Lev": {
+      "bibel": {
+        "filename": "03-Levitikus.html",
+        "max_ch": 27,
+        "slug": "levitikus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 27,
+          "ref_max_ch": 27,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 27,
+          "ref_max_ch": 27,
+          "sampled_verse_diffs": {
+            "27": {
+              "other_count": 33,
+              "other_only": [],
+              "ref_count": 34,
+              "ref_only": [
+                34
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "03-Leviticus.html",
+        "max_ch": 27,
+        "slug": "leviticus"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "03-Leviticus.html",
+        "max_ch": 27,
+        "slug": "leviticus"
+      }
+    },
+    "Luke": {
+      "bibel": {
+        "filename": "52-Lukas.html",
+        "max_ch": 24,
+        "slug": "lukas"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 24,
+          "ref_max_ch": 24,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 24,
+          "ref_max_ch": 24,
+          "sampled_verse_diffs": {
+            "24": {
+              "other_count": 52,
+              "other_only": [],
+              "ref_count": 53,
+              "ref_only": [
+                53
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "49-Luke.html",
+        "max_ch": 24,
+        "slug": "luke"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "49-Luke.html",
+        "max_ch": 24,
+        "slug": "luke"
+      }
+    },
+    "Mal": {
+      "bibel": {
+        "filename": "39-Maleachi.html",
+        "max_ch": 3,
+        "slug": "maleachi"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 3,
+          "ref_max_ch": 4,
+          "sampled_verse_diffs": {
+            "3": {
+              "other_count": 24,
+              "other_only": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24
+              ],
+              "ref_count": 18,
+              "ref_only": []
+            },
+            "4": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 6,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 6,
+          "ref_max_ch": 4,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 22,
+              "other_only": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "ref_count": 14,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 35,
+              "other_only": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "ref_count": 17,
+              "ref_only": []
+            },
+            "3": {
+              "other_count": 38,
+              "other_only": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "ref_count": 18,
+              "ref_only": []
+            },
+            "4": {
+              "other_count": 37,
+              "other_only": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ],
+              "ref_count": 6,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "44-Malachi.html",
+        "max_ch": 6,
+        "slug": "malachi"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "44-Malachias.html",
+        "max_ch": 4,
+        "slug": "malachias"
+      }
+    },
+    "Mark": {
+      "bibel": {
+        "filename": "51-Markus.html",
+        "max_ch": 16,
+        "slug": "markus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "16": {
+              "other_count": 19,
+              "other_only": [],
+              "ref_count": 20,
+              "ref_only": [
+                20
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "48-Mark.html",
+        "max_ch": 16,
+        "slug": "mark"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "48-Mark.html",
+        "max_ch": 16,
+        "slug": "mark"
+      }
+    },
+    "Matt": {
+      "bibel": {
+        "filename": "50-Matthaeus.html",
+        "max_ch": 28,
+        "slug": "matthaeus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 28,
+          "ref_max_ch": 28,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 28,
+          "ref_max_ch": 28,
+          "sampled_verse_diffs": {
+            "28": {
+              "other_count": 19,
+              "other_only": [],
+              "ref_count": 20,
+              "ref_only": [
+                20
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "47-Matthew.html",
+        "max_ch": 28,
+        "slug": "matthew"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "47-Matthew.html",
+        "max_ch": 28,
+        "slug": "matthew"
+      }
+    },
+    "Mic": {
+      "bibel": {
+        "filename": "33-Micha.html",
+        "max_ch": 7,
+        "slug": "micha"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 7,
+          "ref_max_ch": 7,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 7,
+          "ref_max_ch": 7,
+          "sampled_verse_diffs": {
+            "7": {
+              "other_count": 19,
+              "other_only": [],
+              "ref_count": 20,
+              "ref_only": [
+                20
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "38-Micah.html",
+        "max_ch": 7,
+        "slug": "micah"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "38-Micheas.html",
+        "max_ch": 7,
+        "slug": "micheas"
+      }
+    },
+    "Nah": {
+      "bibel": {
+        "filename": "34-Nahum.html",
+        "max_ch": 3,
+        "slug": "nahum"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 14,
+              "other_only": [],
+              "ref_count": 15,
+              "ref_only": [
+                15
+              ]
+            },
+            "2": {
+              "other_count": 14,
+              "other_only": [
+                14
+              ],
+              "ref_count": 13,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "3": {
+              "other_count": 18,
+              "other_only": [],
+              "ref_count": 19,
+              "ref_only": [
+                19
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "39-Nahum.html",
+        "max_ch": 3,
+        "slug": "nahum"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "39-Nahum.html",
+        "max_ch": 3,
+        "slug": "nahum"
+      }
+    },
+    "Neh": {
+      "bibel": {
+        "filename": "16-Nehemia.html",
+        "max_ch": 13,
+        "slug": "nehemia"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 13,
+          "ref_max_ch": 13,
+          "sampled_verse_diffs": {
+            "3": {
+              "other_count": 38,
+              "other_only": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ],
+              "ref_count": 31,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 3,
+          "ref_max_ch": 13,
+          "sampled_verse_diffs": {
+            "13": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 31,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            },
+            "3": {
+              "other_count": 19,
+              "other_only": [],
+              "ref_count": 31,
+              "ref_only": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "16-Nehemiah.html",
+        "max_ch": 3,
+        "slug": "nehemiah"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "16-2_Esdras_Nehemias.html",
+        "max_ch": 13,
+        "slug": "2-esdras-nehemias"
+      }
+    },
+    "Num": {
+      "bibel": {
+        "filename": "04-Numeri.html",
+        "max_ch": 36,
+        "slug": "numeri"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 36,
+          "ref_max_ch": 36,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 36,
+          "ref_max_ch": 36,
+          "sampled_verse_diffs": {
+            "36": {
+              "other_count": 12,
+              "other_only": [],
+              "ref_count": 13,
+              "ref_only": [
+                13
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "04-Numbers.html",
+        "max_ch": 36,
+        "slug": "numbers"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "04-Numbers.html",
+        "max_ch": 36,
+        "slug": "numbers"
+      }
+    },
+    "Obad": {
+      "bibel": {
+        "filename": "31-Obadja.html",
+        "max_ch": 1,
+        "slug": "obadja"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 20,
+              "other_only": [],
+              "ref_count": 21,
+              "ref_only": [
+                21
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "36-Obadiah.html",
+        "max_ch": 1,
+        "slug": "obadiah"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "36-Abdias.html",
+        "max_ch": 1,
+        "slug": "abdias"
+      }
+    },
+    "Phil": {
+      "bibel": {
+        "filename": "60-Philipper.html",
+        "max_ch": 4,
+        "slug": "philipper"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_diffs": {
+            "4": {
+              "other_count": 22,
+              "other_only": [],
+              "ref_count": 23,
+              "ref_only": [
+                23
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "57-Philippians.html",
+        "max_ch": 4,
+        "slug": "philippians"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "57-Philippians.html",
+        "max_ch": 4,
+        "slug": "philippians"
+      }
+    },
+    "Phlm": {
+      "bibel": {
+        "filename": "67-Philemon.html",
+        "max_ch": 1,
+        "slug": "philemon"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 1,
+          "ref_max_ch": 1,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 24,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                25
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "64-Philemon.html",
+        "max_ch": 1,
+        "slug": "philemon"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "64-Philemon.html",
+        "max_ch": 1,
+        "slug": "philemon"
+      }
+    },
+    "Prov": {
+      "bibel": {
+        "filename": "20-Sprueche.html",
+        "max_ch": 31,
+        "slug": "sprueche"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 31,
+          "ref_max_ch": 31,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 31,
+          "ref_max_ch": 31,
+          "sampled_verse_diffs": {
+            "31": {
+              "other_count": 30,
+              "other_only": [],
+              "ref_count": 31,
+              "ref_only": [
+                31
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "22-Proverbs.html",
+        "max_ch": 31,
+        "slug": "proverbs"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "22-Proverbs.html",
+        "max_ch": 31,
+        "slug": "proverbs"
+      }
+    },
+    "Ps": {
+      "bibel": {
+        "filename": "19-Psalmen.html",
+        "max_ch": 150,
+        "slug": "psalmen"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 150,
+          "ref_max_ch": 150,
+          "sampled_verse_diffs": {
+            "150": {
+              "other_count": 6,
+              "other_only": [
+                6
+              ],
+              "ref_count": 5,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 12,
+              "other_only": [],
+              "ref_count": 13,
+              "ref_only": [
+                13
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 150,
+          "ref_max_ch": 150,
+          "sampled_verse_mismatch": false
+        }
+      },
+      "latin": {
+        "filename": "21-Psalms.html",
+        "max_ch": 150,
+        "slug": "psalms"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "21-Psalms.html",
+        "max_ch": 150,
+        "slug": "psalms"
+      }
+    },
+    "Rev": {
+      "bibel": {
+        "filename": "76-Offenbarung.html",
+        "max_ch": 22,
+        "slug": "offenbarung"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 22,
+          "ref_max_ch": 22,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 52,
+          "ref_max_ch": 22,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 58,
+              "other_only": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "ref_count": 20,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 48,
+              "other_only": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "ref_count": 29,
+              "ref_only": []
+            },
+            "22": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 21,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
+              ]
+            },
+            "3": {
+              "other_count": 36,
+              "other_only": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ],
+              "ref_count": 22,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "73-Revelation.html",
+        "max_ch": 52,
+        "slug": "revelation"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "73-Apocalypse.html",
+        "max_ch": 22,
+        "slug": "apocalypse"
+      }
+    },
+    "Rom": {
+      "bibel": {
+        "filename": "55-Roemer.html",
+        "max_ch": 16,
+        "slug": "roemer"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 16,
+          "ref_max_ch": 16,
+          "sampled_verse_diffs": {
+            "16": {
+              "other_count": 26,
+              "other_only": [],
+              "ref_count": 27,
+              "ref_only": [
+                27
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "52-Romans.html",
+        "max_ch": 16,
+        "slug": "romans"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "52-Romans.html",
+        "max_ch": 16,
+        "slug": "romans"
+      }
+    },
+    "Ruth": {
+      "bibel": {
+        "filename": "08-Rut.html",
+        "max_ch": 4,
+        "slug": "rut"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_diffs": {
+            "4": {
+              "other_count": 22,
+              "other_only": [
+                1
+              ],
+              "ref_count": 21,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 4,
+          "ref_max_ch": 4,
+          "sampled_verse_diffs": {
+            "4": {
+              "other_count": 21,
+              "other_only": [
+                1
+              ],
+              "ref_count": 21,
+              "ref_only": [
+                22
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "08-Ruth.html",
+        "max_ch": 4,
+        "slug": "ruth"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "08-Ruth.html",
+        "max_ch": 4,
+        "slug": "ruth"
+      }
+    },
+    "Sir": {
+      "bibel": {
+        "filename": "43-Sirach.html",
+        "max_ch": 51,
+        "slug": "sirach"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 51,
+          "ref_max_ch": 51,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 27,
+              "other_only": [],
+              "ref_count": 40,
+              "ref_only": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            },
+            "2": {
+              "other_count": 18,
+              "other_only": [],
+              "ref_count": 23,
+              "ref_only": [
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            "3": {
+              "other_count": 29,
+              "other_only": [],
+              "ref_count": 34,
+              "ref_only": [
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            },
+            "51": {
+              "other_count": 30,
+              "other_only": [],
+              "ref_count": 38,
+              "ref_only": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 41,
+          "ref_max_ch": 51,
+          "sampled_verse_diffs": {
+            "51": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 38,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "26-Sirach.html",
+        "max_ch": 41,
+        "slug": "sirach"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "26-Ecclesiasticus.html",
+        "max_ch": 51,
+        "slug": "ecclesiasticus"
+      }
+    },
+    "Song": {
+      "bibel": {
+        "filename": "22-Hoheslied.html",
+        "max_ch": 8,
+        "slug": "hoheslied"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 8,
+          "ref_max_ch": 8,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 17,
+              "other_only": [
+                17
+              ],
+              "ref_count": 16,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 8,
+          "ref_max_ch": 8,
+          "sampled_verse_diffs": {
+            "8": {
+              "other_count": 13,
+              "other_only": [],
+              "ref_count": 14,
+              "ref_only": [
+                14
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "24-Song_of_Solomon.html",
+        "max_ch": 8,
+        "slug": "song-of-solomon"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "24-Canticle_of_Canticles.html",
+        "max_ch": 8,
+        "slug": "canticle-of-canticles"
+      }
+    },
+    "Titus": {
+      "bibel": {
+        "filename": "66-Titus.html",
+        "max_ch": 3,
+        "slug": "titus"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": true,
+          "other_max_ch": 50,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 16,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            },
+            "2": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 15,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
+            },
+            "3": {
+              "other_count": 0,
+              "other_only": [],
+              "ref_count": 15,
+              "ref_only": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "63-Titus.html",
+        "max_ch": 50,
+        "slug": "titus"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "63-Titus.html",
+        "max_ch": 3,
+        "slug": "titus"
+      }
+    },
+    "Tob": {
+      "bibel": {
+        "filename": "42-Tobit.html",
+        "max_ch": 14,
+        "slug": "tobit"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 14,
+          "ref_max_ch": 14,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 22,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                23,
+                24,
+                25
+              ]
+            },
+            "14": {
+              "other_count": 15,
+              "other_only": [],
+              "ref_count": 17,
+              "ref_only": [
+                16,
+                17
+              ]
+            },
+            "2": {
+              "other_count": 14,
+              "other_only": [],
+              "ref_count": 23,
+              "ref_only": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            "3": {
+              "other_count": 17,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 14,
+          "ref_max_ch": 14,
+          "sampled_verse_diffs": {
+            "14": {
+              "other_count": 16,
+              "other_only": [],
+              "ref_count": 17,
+              "ref_only": [
+                17
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "17-Tobit.html",
+        "max_ch": 14,
+        "slug": "tobit"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "17-Tobias.html",
+        "max_ch": 14,
+        "slug": "tobias"
+      }
+    },
+    "Wis": {
+      "bibel": {
+        "filename": "41-Weisheit.html",
+        "max_ch": 19,
+        "slug": "weisheit"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 19,
+          "ref_max_ch": 19,
+          "sampled_verse_diffs": {
+            "19": {
+              "other_count": 22,
+              "other_only": [
+                21,
+                22
+              ],
+              "ref_count": 20,
+              "ref_only": []
+            },
+            "2": {
+              "other_count": 24,
+              "other_only": [],
+              "ref_count": 25,
+              "ref_only": [
+                25
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 19,
+          "ref_max_ch": 19,
+          "sampled_verse_diffs": {
+            "19": {
+              "other_count": 19,
+              "other_only": [],
+              "ref_count": 20,
+              "ref_only": [
+                20
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "25-Wisdom.html",
+        "max_ch": 19,
+        "slug": "wisdom"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "25-Wisdom.html",
+        "max_ch": 19,
+        "slug": "wisdom"
+      }
+    },
+    "Zech": {
+      "bibel": {
+        "filename": "38-Sacharja.html",
+        "max_ch": 14,
+        "slug": "sacharja"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 14,
+          "ref_max_ch": 14,
+          "sampled_verse_diffs": {
+            "1": {
+              "other_count": 17,
+              "other_only": [],
+              "ref_count": 21,
+              "ref_only": [
+                18,
+                19,
+                20,
+                21
+              ]
+            },
+            "2": {
+              "other_count": 17,
+              "other_only": [
+                14,
+                15,
+                16,
+                17
+              ],
+              "ref_count": 13,
+              "ref_only": []
+            }
+          },
+          "sampled_verse_mismatch": true
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 14,
+          "ref_max_ch": 14,
+          "sampled_verse_diffs": {
+            "14": {
+              "other_count": 20,
+              "other_only": [],
+              "ref_count": 21,
+              "ref_only": [
+                21
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "43-Zechariah.html",
+        "max_ch": 14,
+        "slug": "zechariah"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "43-Zacharias.html",
+        "max_ch": 14,
+        "slug": "zacharias"
+      }
+    },
+    "Zeph": {
+      "bibel": {
+        "filename": "36-Zefanja.html",
+        "max_ch": 3,
+        "slug": "zefanja"
+      },
+      "diffs": {
+        "bibel_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_mismatch": false
+        },
+        "latin_vs_ref": {
+          "chapter_count_mismatch": false,
+          "other_max_ch": 3,
+          "ref_max_ch": 3,
+          "sampled_verse_diffs": {
+            "3": {
+              "other_count": 19,
+              "other_only": [],
+              "ref_count": 20,
+              "ref_only": [
+                20
+              ]
+            }
+          },
+          "sampled_verse_mismatch": true
+        }
+      },
+      "latin": {
+        "filename": "41-Zephaniah.html",
+        "max_ch": 3,
+        "slug": "zephaniah"
+      },
+      "ref": {
+        "dataset": "bible",
+        "filename": "41-Sophonias.html",
+        "max_ch": 3,
+        "slug": "sophonias"
+      }
+    }
+  },
+  "sanity_checks": {
+    "Daniel_chapter_counts": {
+      "bibel": 12,
+      "bible": 14,
+      "latin": 3
+    },
+    "Job31": {
+      "bibel_job31_verses": 40,
+      "bible_job31_verses": 40,
+      "latin_job31_verses": 40
+    }
+  }
+}
