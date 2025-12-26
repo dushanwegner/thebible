@@ -10,6 +10,8 @@ if (!defined('ABSPATH')) exit;
 
 if (!defined('THEBIBLE_VERSION')) {
     define('THEBIBLE_VERSION', '1.25.12.25.13');
+=======
+    define('THEBIBLE_VERSION', '1.25.12.25.15');
 }
 
 // Load include classes before hooks are registered
