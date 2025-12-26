@@ -2,14 +2,14 @@
 /*
 * Plugin Name: The Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template.
-* Version: 1.25.12.26.01
+* Version: 1.25.12.25.13
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('THEBIBLE_VERSION')) {
-    define('THEBIBLE_VERSION', '1.25.12.26.01');
+    define('THEBIBLE_VERSION', '1.25.12.25.13');
 }
 
 // Load include classes before hooks are registered
@@ -17,6 +17,8 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd-admin.php
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-votd-widget.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-meta.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-og-image.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-reference.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-qa.php';
 
 class TheBible_Plugin {
     const QV_FLAG = 'thebible';
@@ -1227,56 +1229,7 @@ class TheBible_Plugin {
     }
 
     public static function handle_template_redirect() {
-        $flag = get_query_var(self::QV_FLAG);
-        if (!$flag) return;
-
-        // Serve Open Graph image when requested
-        $og = get_query_var(self::QV_OG);
-        if ($og) {
-            TheBible_OG_Image::render();
-            exit;
-        }
-
-        $book_slug = get_query_var(self::QV_BOOK);
-        if ($book_slug) {
-            $slug = get_query_var(self::QV_SLUG);
-            if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
-            set_query_var(self::QV_SLUG, $slug);
-
-            $canonical = self::canonical_book_slug_from_url($book_slug, $slug);
-            if ($canonical !== null && $canonical !== $book_slug) {
-                $ch = get_query_var(self::QV_CHAPTER);
-                $vf = get_query_var(self::QV_VFROM);
-                $vt = get_query_var(self::QV_VTO);
-
-                $path = '/' . trim($slug, '/') . '/' . $canonical . '/';
-                if ($ch) {
-                    $path .= $ch;
-                    if ($vf) {
-                        $path .= ':' . $vf;
-                        if ($vt && $vt > $vf) {
-                            $path .= '-' . $vt;
-                        }
-                    }
-                }
-
-                $canonical_url = home_url($path);
-                $current = home_url(add_query_arg([]));
-                if (trailingslashit($canonical_url) !== trailingslashit($current)) {
-                    wp_redirect($canonical_url, 301);
-                    exit;
-                }
-
-                $book_slug = $canonical;
-                set_query_var(self::QV_BOOK, $book_slug);
-            }
-
-            self::render_book($book_slug);
-            exit;
-        }
-
-        self::render_index();
-        exit;
+        self::handle_request();
     }
 
     private static function extract_verse_text_from_html($html, $book_slug, $ch, $vf, $vt) {
@@ -1594,17 +1547,20 @@ class TheBible_Plugin {
         // Build highlight/scroll targets from URL like /book/20:2-4 or /book/20
         $targets = [];
         $chapter_scroll_id = null;
-        $vf = absint(get_query_var(self::QV_VFROM));
-        $vt = absint(get_query_var(self::QV_VTO));
+        $vf_raw = get_query_var(self::QV_VFROM);
+        $vt_raw = get_query_var(self::QV_VTO);
         $book_slug = self::slugify($entry['short_name']);
-        if ($ch && $vf) {
-            if (!$vt || $vt < $vf) { $vt = $vf; }
-            for ($i = $vf; $i <= $vt; $i++) {
-                $targets[] = $book_slug . '-' . $ch . '-' . $i;
-            }
-        } elseif ($ch && !$vf) {
-            // Chapter-only: scroll to chapter heading id like slug-ch-{ch}
-            $chapter_scroll_id = $book_slug . '-ch-' . $ch;
+
+        $ref = TheBible_Reference::parse_chapter_and_range($ch, $vf_raw, $vt_raw);
+        if (is_wp_error($ref)) {
+            self::render_404();
+            return;
+        }
+
+        if (!empty($ref['vf'])) {
+            $targets = TheBible_Reference::highlight_ids_for_range($book_slug, $ref['ch'], $ref['vf'], $ref['vt']);
+        } else {
+            $chapter_scroll_id = TheBible_Reference::chapter_scroll_id($book_slug, $ref['ch']);
         }
 
         // Inject navigation helpers and optional highlight/scroll behavior
@@ -2524,167 +2480,8 @@ class TheBible_Plugin {
             'Interlinear QA',
             'manage_options',
             'thebible_interlinear_qa',
-            [ __CLASS__, 'render_interlinear_qa_page' ]
+            [ 'TheBible_QA', 'render_interlinear_qa_page' ]
         );
-    }
-
-    private static function get_interlinear_qa_cases_from_file() {
-        $file = plugin_dir_path(__FILE__) . 'interlinear-regression-urls.txt';
-        if (!file_exists($file)) {
-            return null;
-        }
-        $raw = file_get_contents($file);
-        if (!is_string($raw) || $raw === '') {
-            return null;
-        }
-        $lines = preg_split('/\r\n|\r|\n/', $raw);
-        if (!is_array($lines) || empty($lines)) {
-            return null;
-        }
-        $cases = [];
-        foreach ($lines as $line) {
-            $line = trim((string)$line);
-            if ($line === '' || strpos($line, '#') === 0) {
-                continue;
-            }
-            $url = $line;
-            $label = $url;
-            $path = parse_url($url, PHP_URL_PATH);
-            if (is_string($path) && $path !== '') {
-                $label = trim($path, '/');
-                if ($label === '') {
-                    $label = $url;
-                }
-            }
-            $cases[] = [
-                'label' => $label,
-                'url' => $url,
-            ];
-        }
-        return $cases;
-    }
-
-    private static function get_interlinear_qa_cases() {
-        $base = home_url('/');
-        $cases = [];
-
-        $cases[] = [
-            'label' => 'Good alignment: Job 31 (Deutsch + Latin)',
-            'url' => $base . 'bibel-latin/hiob/31/',
-        ];
-        $cases[] = [
-            'label' => 'Good alignment: Job 31 (English + Latin)',
-            'url' => $base . 'bible-latin/job/31/',
-        ];
-
-        $cases[] = [
-            'label' => 'Mismatch: Daniel 13 (Deutsch + Latin) — should show notices (no 404)',
-            'url' => $base . 'bibel-latin/daniel/13/',
-        ];
-        $cases[] = [
-            'label' => 'Reference: Daniel 13 (English single)',
-            'url' => $base . 'bible/daniel/13/',
-        ];
-        $cases[] = [
-            'label' => 'Contained (German): Additions to Daniel ch 1 (Susanna) single',
-            'url' => $base . 'bibel/zusaetze-daniel/1/',
-        ];
-        $cases[] = [
-            'label' => 'Contained (German): Additions to Daniel ch 2 (Bel and the Dragon) single',
-            'url' => $base . 'bibel/zusaetze-daniel/2/',
-        ];
-
-        $cases[] = [
-            'label' => 'Contained (German): Additions to Esther ch 1 single',
-            'url' => $base . 'bibel/zusaetze-esther/1/',
-        ];
-        $cases[] = [
-            'label' => 'Contained (German): Prayer of Manasseh ch 1 single',
-            'url' => $base . 'bibel/gebet-manasse/1/',
-        ];
-
-        return $cases;
-    }
-
-    private static function interlinear_qa_self_test() {
-        $cases = self::get_interlinear_qa_cases();
-        $errors = [];
-        if (!is_array($cases) || empty($cases)) {
-            $errors[] = 'No cases defined.';
-            return $errors;
-        }
-        foreach ($cases as $i => $c) {
-            if (!is_array($c)) {
-                $errors[] = 'Case #' . intval($i) . ' is not an array.';
-                continue;
-            }
-            $label = $c['label'] ?? null;
-            $url = $c['url'] ?? null;
-            if (!is_string($label) || trim($label) === '') {
-                $errors[] = 'Case #' . intval($i) . ' has no label.';
-            }
-            if (!is_string($url) || trim($url) === '') {
-                $errors[] = 'Case #' . intval($i) . ' has no url.';
-                continue;
-            }
-            if (strpos($url, 'http://') !== 0 && strpos($url, 'https://') !== 0) {
-                $errors[] = 'Case #' . intval($i) . ' url is not absolute.';
-            }
-        }
-        return $errors;
-    }
-
-    public static function render_interlinear_qa_page() {
-        if ( ! current_user_can( 'manage_options' ) ) return;
-
-        $cases = self::get_interlinear_qa_cases_from_file();
-        $using_file = true;
-        if (!is_array($cases) || empty($cases)) {
-            $cases = self::get_interlinear_qa_cases();
-            $using_file = false;
-        }
-        $errors = self::interlinear_qa_self_test();
-
-        echo '<div class="wrap">';
-        echo '<h1>Interlinear QA</h1>';
-
-        if ($using_file) {
-            echo '<p><em>Source:</em> interlinear-regression-urls.txt</p>';
-        } else {
-            echo '<p><em>Source:</em> built-in fallback list (interlinear-regression-urls.txt missing/unreadable)</p>';
-        }
-
-        if (!empty($errors)) {
-            echo '<div class="notice notice-error"><p><strong>Self test failed:</strong> ' . esc_html(implode(' | ', $errors)) . '</p></div>';
-        } else {
-            echo '<div class="notice notice-success"><p><strong>Self test:</strong> OK</p></div>';
-        }
-
-        echo '<p><button type="button" class="button button-primary" id="thebible-open-all">Open all in new tabs (2s delay)</button></p>';
-        echo '<ol id="thebible-qa-list">';
-        foreach ($cases as $c) {
-            $label = is_array($c) && isset($c['label']) ? (string)$c['label'] : '';
-            $url = is_array($c) && isset($c['url']) ? (string)$c['url'] : '';
-            if ($label === '' || $url === '') continue;
-            echo '<li><a class="thebible-qa-link" target="_blank" rel="noopener noreferrer" href="' . esc_url($url) . '">' . esc_html($label) . '</a><br><code>' . esc_html($url) . '</code></li>';
-        }
-        echo '</ol>';
-
-        echo '<script>';
-        echo '(function(){';
-        echo 'var btn=document.getElementById("thebible-open-all");';
-        echo 'if(!btn) return;';
-        echo 'btn.addEventListener("click",function(){';
-        echo 'var links=document.querySelectorAll("#thebible-qa-list a.thebible-qa-link");';
-        echo 'var delay=2000;';
-        echo 'for(var i=0;i<links.length;i++){';
-        echo '(function(u,idx){ setTimeout(function(){ try{ window.open(u,"_blank"); }catch(e){} }, idx*delay); })(links[i].href,i);';
-        echo '}';
-        echo '});';
-        echo '})();';
-        echo '</script>';
-
-        echo '</div>';
     }
 
     public static function admin_enqueue($hook) {
