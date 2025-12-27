@@ -46,6 +46,32 @@ trait TheBible_SelfTest_Trait {
             return method_exists(__CLASS__, 'render_bible_page') && method_exists(__CLASS__, 'handle_request');
         });
 
+        $results[] = self::selftest_check('text_utils_cases', function() {
+            if (!class_exists('TheBible_Text_Utils')) {
+                return new WP_Error('thebible_selftest_text_utils_missing', 'Text utils class missing (TheBible_Text_Utils).');
+            }
+            if (!method_exists('TheBible_Text_Utils', 'normalize_whitespace') || !method_exists('TheBible_Text_Utils', 'clean_verse_text_for_output')) {
+                return new WP_Error('thebible_selftest_text_utils_incomplete', 'Text utils methods missing.');
+            }
+
+            $s = "Hello\xC2\xA0world";
+            $norm = TheBible_Text_Utils::normalize_whitespace($s);
+            if ($norm !== 'Hello world') {
+                return new WP_Error('thebible_selftest_text_utils_norm_failed', 'normalize_whitespace did not normalize NBSP.');
+            }
+
+            $q = TheBible_Text_Utils::clean_verse_text_for_output('»Test', false, '»', '«');
+            if (!is_string($q) || $q === '') {
+                return new WP_Error('thebible_selftest_text_utils_quote_failed', 'clean_verse_text_for_output returned empty output.');
+            }
+            // After balancing/normalization, the output should contain either an inner or outer closing guillemet.
+            if (strpos($q, '«') === false && strpos($q, '‹') === false) {
+                return new WP_Error('thebible_selftest_text_utils_quote_failed', 'clean_verse_text_for_output did not synthesize a closing quote.');
+            }
+
+            return true;
+        });
+
         $results[] = self::selftest_check('autolinker_cases', function() {
             if (!method_exists(__CLASS__, 'autolink_content_for_slug')) {
                 return new WP_Error('thebible_selftest_autolink_missing', 'Auto-linker helper missing (autolink_content_for_slug).');

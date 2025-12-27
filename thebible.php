@@ -21,6 +21,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-reference.php'
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-qa.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-sync-report.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-text-utils.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-utils.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-render-interlinear.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-selftest.php';
@@ -50,6 +51,9 @@ class TheBible_Plugin {
     private static $index_slug = null;
     private static $osis_mapping = null;
 
+    /**
+     * Plugin bootstrap: registers hooks, routes, widgets, admin pages, and test endpoints.
+     */
     public static function init() {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
         add_action('init', [__CLASS__, 'maybe_flush_rewrite_rules'], 20);
@@ -869,6 +873,9 @@ class TheBible_Plugin {
         self::handle_request();
     }
 
+    /**
+     * Extract verse text for a given book slug + chapter/range from a dataset HTML file.
+     */
     public static function extract_verse_text_from_html($html, $book_slug, $ch, $vf, $vt) {
         if (!is_string($html) || $html === '' || !is_string($book_slug) || $book_slug === '') {
             return '';
@@ -980,110 +987,11 @@ class TheBible_Plugin {
         return TheBible_Text_Utils::normalize_whitespace($s);
     }
 
+    /**
+     * Public helper for widgets/OG/etc: normalize whitespace and clean quotation marks.
+     */
     public static function clean_verse_text_for_output($s, $wrap_outer = false, $qL = '»', $qR = '«') {
-        // Convenience helper for external callers (e.g., widgets, OG images):
-        // normalize whitespace and apply the internal quotation cleaner.
-        $s = self::normalize_whitespace($s);
-        return self::clean_verse_quotes($s, $wrap_outer, $qL, $qR);
-    }
-
-    private static function clean_verse_quotes($s, $wrap_outer = false, $qL = '»', $qR = '«') {
-        // General quotation mark cleaner for verse text.
-        // Rules:
-        // - If the verse block contains both » and «, convert all of them
-        //   to single inner guillemets › and ‹.
-        // - If it has only opening-style » and no «, append a matching « at the end,
-        //   then apply the above conversion.
-        // - If it has only closing-style « and no », prepend a matching » at the start,
-        //   then apply the above conversion.
-        // - Final rule: if the cleaned text would begin with "»›" and end with "‹«",
-        //   collapse those pairs to single outer quotes » and «.
-
-        $s = (string) $s;
-        if ($s === '') return $s;
-
-        // (4) Strip hidden/control/combining characters that fonts may have trouble with.
-        // We already normalized many Unicode spaces in normalize_whitespace(); here we
-        // remove remaining control (\p{C}) and combining mark (\p{M}) codepoints,
-        // then drop any other character that is not a letter, number, punctuation,
-        // symbol, or whitespace.
-        $s = preg_replace('/[\p{C}\p{M}]+/u', '', $s);
-        $s = preg_replace('/[^\p{L}\p{N}\p{P}\p{S}\s]/u', '', $s);
-
-        $has_left  = (strpos($s, '«') !== false);
-        $has_right = (strpos($s, '»') !== false);
-
-        // (1) When only a single side is present, synthesize the missing partner so
-        // we always operate on a balanced pair.
-        if ($has_right && !$has_left) {
-            // Only » present: add a closing « at the very end
-            $s .= '«';
-            $has_left = true;
-        } elseif ($has_left && !$has_right) {
-            // Only « present: add an opening » at the very start
-            $s = '»' . $s;
-            $has_right = true;
-        }
-
-        // (2) If there is both » and «, normalize them to inner guillemets.
-        if ($has_left && $has_right) {
-            // Now that we have a pair, normalize all outer guillemets to inner ones
-            $s = str_replace(['«', '»'], ['‹', '›'], $s);
-        }
-
-        // (3) Post-pass: ONLY if text both begins with "»›" AND ends with "‹«",
-        // collapse these outer+inner pairs back to single outer quotes.
-        $len = self::u_strlen($s);
-        if ($len >= 2) {
-            $starts = (self::u_substr($s, 0, 2) === '»›');
-            $ends   = (self::u_substr($s, -2) === '‹«');
-            if ($starts && $ends) {
-                $s = '»' . self::u_substr($s, 2); // collapse leading »› -> »
-                // recompute length after leading change
-                $len = self::u_strlen($s);
-                if ($len >= 2 && self::u_substr($s, -2) === '‹«') {
-                    $s = self::u_substr($s, 0, $len - 2) . '«'; // collapse trailing ‹« -> «
-                }
-            }
-        }
-
-        // Normalize surrounding whitespace once more after quote adjustments
-        $s = trim($s);
-
-        // (5) If the quote ends with a space + m- or n-dash immediately before
-        // a guillemet (inner or outer), strip the space and dash but keep the
-        // guillemet. This covers cases like "… und der Propheten. –«".
-        $s = preg_replace('/\s*[–—]\s*([«‹»›])\s*$/u', '$1', $s);
-
-        // Also, if the quote ends directly with an m- or n-dash (no closing
-        // guillemet), strip that dash and any trailing spaces.
-        $s = preg_replace('/[–—]\s*$/u', '', $s);
-        $s = trim($s);
-
-        // Final safety / wrapping behavior
-        $len = self::u_strlen($s);
-        // First, if the text begins with an outer+inner pair "»›" and ends with
-        // "‹«", collapse those boundary pairs back to a single outer quote on
-        // each side. This avoids visual combinations like »›...‹« at the edges.
-        if ($len >= 4 && self::u_substr($s, 0, 2) === '»›' && self::u_substr($s, -2) === '‹«') {
-            $s = '»' . self::u_substr($s, 2, $len - 4) . '«';
-            $len = self::u_strlen($s);
-        }
-        if ($wrap_outer) {
-            // If already wrapped with the requested outer quotes, do not wrap again.
-            if ($len >= 2 && self::u_substr($s, 0, 1) === $qL && self::u_substr($s, -1) === $qR) {
-                // no-op
-            }
-            // If wrapped in inner guillemets ›...‹, promote them to the requested outer quotes.
-            elseif ($len >= 2 && self::u_substr($s, 0, 1) === '›' && self::u_substr($s, -1) === '‹') {
-                $s = $qL . self::u_substr($s, 1, $len - 2) . $qR;
-            } else {
-                // Otherwise, wrap the whole text once using qL/qR.
-                $s = $qL . $s . $qR;
-            }
-        }
-
-        return $s;
+        return TheBible_Text_Utils::clean_verse_text_for_output($s, $wrap_outer, $qL, $qR);
     }
 
     private static function render_index() {
@@ -1547,45 +1455,15 @@ class TheBible_Plugin {
     }
 
     public static function admin_enqueue($hook) {
-        // Only enqueue on our settings pages (hook varies by WP version/menu title)
-        // Match any hook containing 'thebible'
-        if (strpos($hook, 'thebible') === false) {
-            return;
-        }
-        if (function_exists('wp_enqueue_media')) {
-            wp_enqueue_media();
-        }
-        // Enqueue our admin media picker script (depends on wp.media via jquery)
-        wp_enqueue_script(
-            'thebible-admin-media',
-            plugin_dir_url(__FILE__) . 'assets/admin-media.js',
-            ['jquery'],
-            '1.0.1',
-            true
-        );
+        TheBible_Admin_Utils::admin_enqueue($hook);
     }
 
     public static function allow_font_uploads($mimes) {
-        if (!is_array($mimes)) { $mimes = []; }
-        // Common font MIME types
-        $mimes['ttf'] = 'font/ttf';
-        $mimes['otf'] = 'font/otf';
-        $mimes['woff'] = 'font/woff';
-        $mimes['woff2'] = 'font/woff2';
-        // Some hosts map fonts as octet-stream; allow anyway to select in media library
-        if (!isset($mimes['ttf'])) { $mimes['ttf'] = 'application/octet-stream'; }
-        if (!isset($mimes['otf'])) { $mimes['otf'] = 'application/octet-stream'; }
-        return $mimes;
+        return TheBible_Admin_Utils::allow_font_uploads($mimes);
     }
 
     public static function allow_font_filetype($data, $file, $filename, $mimes, $real_mime) {
-        if (!current_user_can('manage_options')) return $data;
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        if (in_array($ext, ['ttf','otf','woff','woff2'], true)) {
-            $type = ($ext === 'otf') ? 'font/otf' : (($ext === 'ttf') ? 'font/ttf' : (($ext==='woff2')?'font/woff2':'font/woff'));
-            return [ 'ext' => $ext, 'type' => $type, 'proper_filename' => $data['proper_filename'] ];
-        }
-        return $data;
+        return TheBible_Admin_Utils::allow_font_filetype($data, $file, $filename, $mimes, $real_mime);
     }
 
     public static function render_settings_page() {
