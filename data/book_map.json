@@ -10,6 +10,8 @@
 
   "job": { "bible": "Job", "bibel": "Hiob", "latin": "Job" },
   "psalms": { "bible": "Psalms", "bibel": "Psalmen", "latin": "Psalms" },
+  "psalm": { "bible": "Psalms", "bibel": "Psalmen", "latin": "Psalms" },
+  "psalmen": { "bible": "Psalms", "bibel": "Psalmen", "latin": "Psalms" },
   "proverbs": { "bible": "Proverbs", "bibel": "Sprueche", "latin": "Proverbs" },
   "ecclesiastes": { "bible": "Ecclesiastes", "bibel": "Prediger", "latin": "Ecclesiastes" },
   "canticle-of-canticles": { "bible": "Canticle_of_Canticles", "bibel": "Hoheslied", "latin": "Song_of_Solomon" },

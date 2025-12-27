@@ -19,6 +19,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-meta.php
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-og-image.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-reference.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-qa.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-sync-report.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-render-interlinear.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-selftest.php';
@@ -80,6 +81,7 @@ class TheBible_Plugin {
 
         add_action('add_meta_boxes', ['TheBible_VOTD_Admin', 'add_votd_meta_box']);
         add_action('save_post', ['TheBible_VOTD_Admin', 'save_votd_meta'], 10, 2);
+        add_action('save_post', ['TheBible_VOTD_Admin', 'flush_on_votd_save'], 10, 3);
 
         add_filter('the_content', [__CLASS__, 'filter_content_auto_link_bible_refs'], 20);
 
@@ -1565,6 +1567,15 @@ class TheBible_Plugin {
             'manage_options',
             'thebible_interlinear_qa',
             [ 'TheBible_QA', 'render_interlinear_qa_page' ]
+        );
+
+        add_submenu_page(
+            'thebible',
+            'Sync Status',
+            'Sync Status',
+            'manage_options',
+            'thebible_sync',
+            [ 'TheBible_Sync_Report', 'render_sync_status_page' ]
         );
     }
 

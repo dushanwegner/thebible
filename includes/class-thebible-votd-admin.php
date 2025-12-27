@@ -575,6 +575,14 @@ class TheBible_VOTD_Admin {
         self::rebuild_votd_cache();
     }
 
+    public static function flush_on_votd_save($post_id, $post, $update) {
+        if ($post->post_type !== 'thebible_votd') {
+            return;
+        }
+        // Rebuild cache whenever a VOTD entry is saved (published or updated)
+        self::rebuild_votd_cache();
+    }
+
     private static function rebuild_votd_cache() {
         $by_date = [];
         $all = [];
