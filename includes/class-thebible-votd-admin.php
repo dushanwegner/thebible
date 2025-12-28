@@ -583,7 +583,7 @@ class TheBible_VOTD_Admin {
         self::rebuild_votd_cache();
     }
 
-    private static function rebuild_votd_cache() {
+    public static function rebuild_votd_cache() {
         $by_date = [];
         $all = [];
 

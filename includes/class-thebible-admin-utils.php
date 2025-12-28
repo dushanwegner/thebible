@@ -17,7 +17,7 @@ class TheBible_Admin_Utils {
         // Enqueue our admin media picker script (depends on wp.media via jquery)
         wp_enqueue_script(
             'thebible-admin-media',
-            plugin_dir_url(dirname(__FILE__)) . 'assets/admin-media.js',
+            plugin_dir_url(__FILE__) . '../assets/admin-media.js',
             ['jquery'],
             '1.0.1',
             true
