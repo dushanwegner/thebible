@@ -29,6 +29,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-footer-rendere
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-data-paths.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-index-loader.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-mappings-loader.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-osis-utils.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-render-interlinear.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-selftest.php';
@@ -500,67 +501,13 @@ class TheBible_Plugin {
     }
 
     private static function osis_for_dataset_book_slug($dataset_slug, $dataset_book_slug) {
-        $dataset_slug = is_string($dataset_slug) ? trim($dataset_slug) : '';
-        $dataset_book_slug = is_string($dataset_book_slug) ? self::slugify($dataset_book_slug) : '';
-        if ($dataset_slug === '' || $dataset_book_slug === '') {
-            return null;
-        }
         self::load_osis_mapping();
-        if (!is_array(self::$osis_mapping) || empty(self::$osis_mapping['books']) || !is_array(self::$osis_mapping['books'])) {
-            return null;
-        }
-
-        foreach (self::$osis_mapping['books'] as $osis => $entry) {
-            if (!is_string($osis) || $osis === '' || !is_array($entry)) {
-                continue;
-            }
-            if ($dataset_slug === 'bibel') {
-                $list = $entry['bibel'] ?? null;
-                if (is_array($list)) {
-                    foreach ($list as $s) {
-                        if (is_string($s) && self::slugify($s) === $dataset_book_slug) {
-                            return $osis;
-                        }
-                    }
-                }
-                continue;
-            }
-            $mapped = $entry[$dataset_slug] ?? null;
-            if (is_string($mapped) && $mapped !== '' && self::slugify($mapped) === $dataset_book_slug) {
-                return $osis;
-            }
-        }
-        return null;
+        return TheBible_Osis_Utils::osis_for_dataset_book_slug(self::$osis_mapping, $dataset_slug, $dataset_book_slug);
     }
 
     private static function dataset_book_slug_for_osis($dataset_slug, $osis) {
-        $dataset_slug = is_string($dataset_slug) ? trim($dataset_slug) : '';
-        $osis = is_string($osis) ? trim($osis) : '';
-        if ($dataset_slug === '' || $osis === '') {
-            return null;
-        }
         self::load_osis_mapping();
-        if (!is_array(self::$osis_mapping) || empty(self::$osis_mapping['books']) || !is_array(self::$osis_mapping['books'])) {
-            return null;
-        }
-        $entry = self::$osis_mapping['books'][$osis] ?? null;
-        if (!is_array($entry)) {
-            return null;
-        }
-        if ($dataset_slug === 'bibel') {
-            $list = $entry['bibel'] ?? null;
-            if (is_array($list) && !empty($list)) {
-                $first = $list[0] ?? null;
-                return is_string($first) && $first !== '' ? self::slugify($first) : null;
-            }
-            return null;
-        }
-        $mapped = $entry[$dataset_slug] ?? null;
-        if (!is_string($mapped) || $mapped === '') {
-            return null;
-        }
-        $s = self::slugify($mapped);
-        return $s !== '' ? $s : null;
+        return TheBible_Osis_Utils::dataset_book_slug_for_osis(self::$osis_mapping, $dataset_slug, $osis);
     }
 
     public static function resolve_book_for_dataset($canonical_key, $dataset_slug) {
