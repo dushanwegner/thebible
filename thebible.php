@@ -30,6 +30,8 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-data-paths.php
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-index-loader.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-mappings-loader.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-osis-utils.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-canonicalization.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-abbreviations-loader.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-render-interlinear.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-selftest.php';
@@ -549,38 +551,8 @@ class TheBible_Plugin {
     }
 
     private static function canonicalize_key_from_dataset_book_slug($dataset_slug, $dataset_book_slug) {
-        if (!is_string($dataset_slug) || $dataset_slug === '') {
-            return null;
-        }
-        if (!is_string($dataset_book_slug) || $dataset_book_slug === '') {
-            return null;
-        }
-
         self::load_book_map();
-        if (!is_array(self::$book_map) || empty(self::$book_map)) {
-            return null;
-        }
-
-        $dataset_slug = trim($dataset_slug);
-        $dataset_book_slug = self::slugify($dataset_book_slug);
-        if ($dataset_book_slug === '') {
-            return null;
-        }
-
-        foreach (self::$book_map as $canon_key => $map_entry) {
-            if (!is_string($canon_key) || $canon_key === '' || !is_array($map_entry)) {
-                continue;
-            }
-            $mapped = $map_entry[$dataset_slug] ?? null;
-            if (!is_string($mapped) || $mapped === '') {
-                continue;
-            }
-            if (self::slugify($mapped) === $dataset_book_slug) {
-                return (string) $canon_key;
-            }
-        }
-
-        return null;
+        return TheBible_Canonicalization::canonicalize_key_from_dataset_book_slug(self::$book_map, $dataset_slug, $dataset_book_slug);
     }
 
     public static function list_canonical_books() {
@@ -601,25 +573,9 @@ class TheBible_Plugin {
         if (isset(self::$abbr_maps[$slug])) {
             return self::$abbr_maps[$slug];
         }
-        $map = [];
-        $lang = ($slug === 'bibel') ? 'de' : 'en';
-        $file = plugin_dir_path(__FILE__) . 'data/' . $slug . '/abbreviations.' . $lang . '.json';
-        if (file_exists($file)) {
-            $raw = file_get_contents($file);
-            $data = json_decode($raw, true);
-            if (is_array($data) && !empty($data['books']) && is_array($data['books'])) {
-                foreach ($data['books'] as $short => $variants) {
-                    if (!is_array($variants)) continue;
-                    foreach ($variants as $v) {
-                        $key = trim(mb_strtolower((string)$v, 'UTF-8'));
-                        if ($key === '') continue;
-                        // First writer wins; avoid clobbering in case of collisions.
-                        if (!isset($map[$key])) {
-                            $map[$key] = (string)$short;
-                        }
-                    }
-                }
-            }
+        $map = TheBible_Abbreviations_Loader::load_abbreviation_map($slug);
+        if (!is_array($map)) {
+            $map = [];
         }
         self::$abbr_maps[$slug] = $map;
         return $map;
