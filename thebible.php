@@ -2,14 +2,14 @@
 /*
 * Plugin Name: The Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template.
-* Version: 1.25.12.28.01
+* Version: 1.25.12.26.01
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('THEBIBLE_VERSION')) {
-    define('THEBIBLE_VERSION', '1.25.12.28.01');
+    define('THEBIBLE_VERSION', '1.25.12.26.01');
 }
 
 // Load include classes before hooks are registered
@@ -27,6 +27,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-export.p
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-front-meta.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-footer-renderer.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-data-paths.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-index-loader.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-render-interlinear.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-selftest.php';
@@ -457,35 +458,14 @@ class TheBible_Plugin {
         self::$slug_map = [];
         self::$index_slug = $slug;
         $csv = self::index_csv_path();
-        if (!file_exists($csv)) return;
-        if (($fh = fopen($csv, 'r')) !== false) {
-            // skip header
-            $header = fgetcsv($fh);
-            while (($row = fgetcsv($fh)) !== false) {
-                if (count($row) < 3) continue;
-                $order = intval($row[0]);
-                $short = $row[1];
-                $display = '';
-                $filename = '';
-                // New format: order, short_name, display_name, filename, ...
-                if (count($row) >= 4) {
-                    $display = isset($row[2]) ? $row[2] : '';
-                    $filename = isset($row[3]) ? $row[3] : (isset($row[2]) ? $row[2] : '');
-                } else {
-                    // Old format: order, short_name, filename, ...
-                    $filename = $row[2];
-                }
-                $entry = [
-                    'order' => $order,
-                    'short_name' => $short,
-                    'display_name' => $display,
-                    'filename' => $filename,
-                ];
-                self::$books[] = $entry;
-                $slug = self::slugify($short);
-                self::$slug_map[$slug] = $entry;
+        $parsed = TheBible_Index_Loader::load_index($csv);
+        if (is_array($parsed)) {
+            if (isset($parsed['books']) && is_array($parsed['books'])) {
+                self::$books = $parsed['books'];
             }
-            fclose($fh);
+            if (isset($parsed['slug_map']) && is_array($parsed['slug_map'])) {
+                self::$slug_map = $parsed['slug_map'];
+            }
         }
     }
 
