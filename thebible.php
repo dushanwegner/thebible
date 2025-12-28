@@ -25,6 +25,8 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-utils.ph
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-export.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-front-meta.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-footer-renderer.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-data-paths.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-render-interlinear.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-selftest.php';
@@ -428,29 +430,15 @@ class TheBible_Plugin {
     }
 
     private static function data_root_dir() {
-        // New structure: data/{slug}/ with html/ and text/ subfolders
-        $slug = get_query_var(self::QV_SLUG);
-        if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
-        set_query_var(self::QV_SLUG, $slug);
-        $root = plugin_dir_path(__FILE__) . 'data/' . $slug . '/';
-        if (is_dir($root)) return $root;
-        return null;
+        return TheBible_Data_Paths::data_root_dir();
     }
 
     private static function html_dir() {
-        $root = self::data_root_dir();
-        if ($root) {
-            $h = trailingslashit($root) . 'html/';
-            if (is_dir($h)) return $h;
-        }
-        // Back-compat: old layout data/{slug}_books_html/
-        $slug = get_query_var(self::QV_SLUG);
-        if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
-        $old = plugin_dir_path(__FILE__) . 'data/' . $slug . '_books_html/';
-        if (is_dir($old)) return $old;
-        // Fallback to default English
-        $fallback = plugin_dir_path(__FILE__) . 'data/bible_books_html/';
-        return $fallback;
+        return TheBible_Data_Paths::html_dir();
+    }
+
+    private static function text_dir() {
+        return TheBible_Data_Paths::text_dir();
     }
 
     private static function index_csv_path() {
@@ -1486,45 +1474,7 @@ class TheBible_Plugin {
     }
 
     private static function render_footer_html() {
-        // Prefer new markdown footer at dataset root, fallback to old copyright.txt in html dir
-        $raw = '';
-        $root = self::data_root_dir();
-        if ($root) {
-            $md = trailingslashit($root) . 'copyright.md';
-            if (file_exists($md)) {
-                $raw = (string) file_get_contents($md);
-            }
-        }
-        if ($raw === '') {
-            $txt_path = self::html_dir() . 'copyright.txt';
-            if (file_exists($txt_path)) { $raw = (string) file_get_contents($txt_path); }
-        }
-        if (!is_string($raw) || $raw === '') return '';
-        // Very light Markdown to HTML: allow links and simple headings; escape everything else
-        $safe = esc_html($raw);
-        // Convert [text](url) style links
-        $safe = preg_replace('/\[(.*?)\]\((https?:\/\/[^\s)]+)\)/', '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>', $safe);
-        // Split into lines and build blocks: headings or paragraphs
-        $lines = preg_split('/\r?\n/', $safe);
-        $blocks = [];
-        $para = [];
-        $flush_para = function() use (&$para, &$blocks) {
-            if (!empty($para)) {
-                // Join paragraph lines with spaces
-                $text = trim(preg_replace('/\s+/', ' ', implode(' ', array_map('trim', $para))));
-                if ($text !== '') { $blocks[] = '<p>' . $text . '</p>'; }
-                $para = [];
-            }
-        };
-        foreach ($lines as $ln) {
-            if (preg_match('/^###\s+(.*)$/', $ln, $m)) { $flush_para(); $blocks[] = '<h3 class="thebible-footer-title">' . $m[1] . '</h3>'; continue; }
-            if (preg_match('/^##\s+(.*)$/', $ln, $m))  { $flush_para(); $blocks[] = '<h2 class="thebible-footer-title">' . $m[1] . '</h2>'; continue; }
-            if (preg_match('/^#\s+(.*)$/', $ln, $m))   { $flush_para(); $blocks[] = '<h1 class="thebible-footer-title">' . $m[1] . '</h1>'; continue; }
-            if (trim($ln) === '') { $flush_para(); continue; }
-            $para[] = $ln;
-        }
-        $flush_para();
-        return '<footer class="thebible-footer">' . implode('', $blocks) . '</footer>';
+        return TheBible_Footer_Renderer::render_footer_html(self::data_root_dir(), self::html_dir());
     }
 }
 
