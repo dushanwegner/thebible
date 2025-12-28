@@ -24,6 +24,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-text-utils.php
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-utils.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-admin-export.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-front-meta.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-render-interlinear.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-selftest.php';
@@ -1477,49 +1478,11 @@ class TheBible_Plugin {
     }
 
     public static function print_custom_css() {
-        $is_bible = get_query_var( self::QV_FLAG );
-        if ( ! $is_bible ) return;
-        $footer_css = get_option( 'thebible_footer_css', '' );
-        $out = '';
-        if ( is_string($footer_css) && $footer_css !== '' ) { $out .= $footer_css . "\n"; }
-        if ( $out !== '' ) {
-            echo '<style id="thebible-custom-css">' . $out . '</style>';
-        }
+        TheBible_Front_Meta::print_custom_css();
     }
 
     public static function print_og_meta() {
-        $flag = get_query_var(self::QV_FLAG);
-        if (!$flag) return;
-        $book = get_query_var(self::QV_BOOK);
-        $ch = absint(get_query_var(self::QV_CHAPTER));
-        $vf = absint(get_query_var(self::QV_VFROM));
-        $vt = absint(get_query_var(self::QV_VTO));
-        if (!$book || !$ch || !$vf) return;
-        if (!$vt || $vt < $vf) $vt = $vf;
-
-        $entry = self::get_book_entry_by_slug($book);
-        if (!$entry) return;
-        $label = isset($entry['display_name']) && $entry['display_name'] !== '' ? $entry['display_name'] : self::pretty_label($entry['short_name']);
-        $title = $label . ' ' . $ch . ':' . ($vf === $vt ? $vf : ($vf . '-' . $vt));
-
-        $base_slug = get_query_var(self::QV_SLUG);
-        if (!is_string($base_slug) || $base_slug==='') $base_slug = 'bible';
-        $path = '/' . trim($base_slug,'/') . '/' . trim($book,'/') . '/' . $ch . ':' . $vf . ($vt>$vf?('-'.$vt):'');
-        $url = home_url($path);
-        $og_url = add_query_arg(self::QV_OG, '1', $url);
-        $desc = self::extract_verse_text($entry, $ch, $vf, $vt);
-        $desc = wp_strip_all_tags($desc);
-
-        echo "\n";
-        echo '<meta property="og:title" content="' . esc_attr($title) . '" />' . "\n";
-        echo '<meta property="og:type" content="article" />' . "\n";
-        echo '<meta property="og:url" content="' . esc_url($url) . '" />' . "\n";
-        echo '<meta property="og:description" content="' . esc_attr($desc) . '" />' . "\n";
-        echo '<meta property="og:image" content="' . esc_url($og_url) . '" />' . "\n";
-        echo '<meta name="twitter:card" content="summary_large_image" />' . "\n";
-        echo '<meta name="twitter:title" content="' . esc_attr($title) . '" />' . "\n";
-        echo '<meta name="twitter:description" content="' . esc_attr($desc) . '" />' . "\n";
-        echo '<meta name="twitter:image" content="' . esc_url($og_url) . '" />' . "\n";
+        TheBible_Front_Meta::print_og_meta();
     }
 
     private static function render_footer_html() {
