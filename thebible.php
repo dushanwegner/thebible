@@ -28,6 +28,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-front-meta.php
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-footer-renderer.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-data-paths.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-index-loader.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-mappings-loader.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-render-interlinear.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-thebible-selftest.php';
@@ -482,36 +483,20 @@ class TheBible_Plugin {
         if (self::$book_map !== null) {
             return;
         }
-        $file = plugin_dir_path(__FILE__) . 'data/book_map.json';
-        $map = [];
-        if (file_exists($file)) {
-            $raw = file_get_contents($file);
-            if (is_string($raw) && $raw !== '') {
-                $data = json_decode($raw, true);
-                if (is_array($data)) {
-                    $map = $data;
-                }
-            }
+        self::$book_map = TheBible_Mappings_Loader::load_book_map();
+        if (!is_array(self::$book_map)) {
+            self::$book_map = [];
         }
-        self::$book_map = $map;
     }
 
     private static function load_osis_mapping() {
         if (self::$osis_mapping !== null) {
             return;
         }
-        $file = plugin_dir_path(__FILE__) . 'includes/osis-mapping.json';
-        $map = [];
-        if (file_exists($file)) {
-            $raw = file_get_contents($file);
-            if (is_string($raw) && $raw !== '') {
-                $data = json_decode($raw, true);
-                if (is_array($data)) {
-                    $map = $data;
-                }
-            }
+        self::$osis_mapping = TheBible_Mappings_Loader::load_osis_mapping();
+        if (!is_array(self::$osis_mapping)) {
+            self::$osis_mapping = [];
         }
-        self::$osis_mapping = $map;
     }
 
     private static function osis_for_dataset_book_slug($dataset_slug, $dataset_book_slug) {
