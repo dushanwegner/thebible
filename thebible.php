@@ -77,6 +77,9 @@ class TheBible_Plugin {
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
 
+        add_filter('upload_mimes', [__CLASS__, 'allow_font_uploads']);
+        add_filter('wp_check_filetype_and_ext', [__CLASS__, 'allow_font_filetype'], 10, 5);
+
         add_action('add_meta_boxes', ['TheBible_Admin_Meta', 'add_bible_meta_box']);
         add_action('save_post', ['TheBible_Admin_Meta', 'save_bible_meta'], 10, 2);
 

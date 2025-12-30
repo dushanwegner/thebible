@@ -188,6 +188,29 @@ class TheBible_OG_Image {
         return $used_h;
     }
 
+    private static function maybe_read_local_upload_url($url) {
+        if (!is_string($url) || $url === '') {
+            return '';
+        }
+        $uploads = wp_get_upload_dir();
+        if (empty($uploads['baseurl']) || empty($uploads['basedir'])) {
+            return '';
+        }
+        $baseurl = rtrim((string) $uploads['baseurl'], '/');
+        $basedir = rtrim((string) $uploads['basedir'], '/');
+        if ($baseurl === '' || $basedir === '') {
+            return '';
+        }
+        if (strpos($url, $baseurl . '/') !== 0) {
+            return '';
+        }
+        $candidate = $basedir . substr($url, strlen($baseurl));
+        if (!is_string($candidate) || $candidate === '' || !file_exists($candidate)) {
+            return '';
+        }
+        return (string) @file_get_contents($candidate);
+    }
+
     public static function render() {
         $enabled = get_option('thebible_og_enabled', '1');
         if ($enabled !== '1' && $enabled !== 1) { status_header(404); exit; }
@@ -308,6 +331,8 @@ class TheBible_OG_Image {
         $im = imagecreatetruecolor($w, $h);
         $bgc = self::hex_to_color($im, $bg);
         imagefilledrectangle($im, 0, 0, $w, $h, $bgc);
+        imagealphablending($im, true);
+        imagesavealpha($im, true);
 
         if ($bg_url) {
             $resp = wp_remote_get($bg_url, ['timeout' => 5]);
@@ -323,6 +348,8 @@ class TheBible_OG_Image {
                     imagedestroy($bg_img);
                     imagedestroy($im);
                     $im = $dst;
+                    imagealphablending($im, true);
+                    imagesavealpha($im, true);
                     $overlay = imagecolorallocatealpha($im, 0, 0, 0, 80);
                     imagefilledrectangle($im, 0, 0, $w, $h, $overlay);
                 }
@@ -350,8 +377,11 @@ class TheBible_OG_Image {
         if ($line_h_main < 1.0 || $line_h_main > 3.0) { $line_h_main = 1.35; }
         $icon_im = null; $icon_w = 0; $icon_h = 0;
         if ($icon_url) {
-            $resp = wp_remote_get($icon_url, ['timeout' => 5]);
-            $blob = is_wp_error($resp) ? '' : wp_remote_retrieve_body($resp);
+            $blob = self::maybe_read_local_upload_url($icon_url);
+            if ($blob === '') {
+                $resp = wp_remote_get($icon_url, ['timeout' => 5]);
+                $blob = is_wp_error($resp) ? '' : wp_remote_retrieve_body($resp);
+            }
             if ($blob) {
                 $tmp = @imagecreatefromstring($blob);
                 if ($tmp) {
