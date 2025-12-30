@@ -43,6 +43,13 @@ class TheBible_Admin_Settings {
         $og_refpos = (string) get_option('thebible_og_ref_position','bottom');
         $og_refalign = (string) get_option('thebible_og_ref_align','left');
 
+        $votd_rss_title = (string) get_option('thebible_votd_rss_title', 'Verse of the Day');
+        $votd_rss_lang_first = (string) get_option('thebible_votd_rss_lang_first', 'bible');
+        $votd_rss_lang_last = (string) get_option('thebible_votd_rss_lang_last', '');
+        $votd_rss_date_format = (string) get_option('thebible_votd_rss_date_format', 'site');
+        $votd_rss_desc_tpl = (string) get_option('thebible_votd_rss_description_tpl', '{date} — {verse}');
+        $votd_rss_days = (int) get_option('thebible_votd_rss_days', 7);
+
         // Handle footer save (all-at-once)
         if ( isset($_POST['thebible_footer_nonce_all']) && wp_verify_nonce( $_POST['thebible_footer_nonce_all'], 'thebible_footer_save_all' ) && current_user_can('manage_options') ) {
             foreach ($known as $fs => $label) {
@@ -245,6 +252,48 @@ class TheBible_Admin_Settings {
                                 <input type="hidden" name="thebible_slugs" id="thebible_slugs" value="<?php echo esc_attr( implode(',', $active ) ); ?>">
                                 <script>(function(){function sync(){var boxes=document.querySelectorAll('input[name="thebible_slugs_list[]"]');var out=[];boxes.forEach(function(b){if(b.checked) out.push(b.value);});document.getElementById('thebible_slugs').value=out.join(',');}document.addEventListener('change',function(e){if(e.target && e.target.name==='thebible_slugs_list[]'){sync();}});document.addEventListener('DOMContentLoaded',sync);})();</script>
                                 <p class="description">Select which bibles are publicly accessible. Others remain installed but routed pages are disabled.</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row"><label>Verse of the Day RSS</label></th>
+                            <td>
+                                <p><strong>Feed URL:</strong> <code><?php echo esc_html( home_url('/bible-votd.rss') ); ?></code></p>
+
+                                <p style="margin:.5em 0 .2em;"><label for="thebible_votd_rss_title">Feed title</label></p>
+                                <input type="text" class="regular-text" name="thebible_votd_rss_title" id="thebible_votd_rss_title" value="<?php echo esc_attr($votd_rss_title); ?>" />
+
+                                <p style="margin:.8em 0 .2em;"><label>Languages</label></p>
+                                <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+                                    <label for="thebible_votd_rss_lang_first">First</label>
+                                    <select name="thebible_votd_rss_lang_first" id="thebible_votd_rss_lang_first">
+                                        <?php foreach ( $active as $slug ): $slug = sanitize_key($slug); if ($slug==='') continue; ?>
+                                            <option value="<?php echo esc_attr($slug); ?>" <?php selected($votd_rss_lang_first === $slug); ?>><?php echo esc_html($slug); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <label for="thebible_votd_rss_lang_last">Second (optional)</label>
+                                    <select name="thebible_votd_rss_lang_last" id="thebible_votd_rss_lang_last">
+                                        <option value="" <?php selected($votd_rss_lang_last === ''); ?>>— none —</option>
+                                        <?php foreach ( $active as $slug ): $slug = sanitize_key($slug); if ($slug==='') continue; ?>
+                                            <option value="<?php echo esc_attr($slug); ?>" <?php selected($votd_rss_lang_last === $slug); ?>><?php echo esc_html($slug); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <p class="description">If a second language is selected, the feed item link will point to the interlinear URL (<code>first-second</code>).</p>
+
+                                <p style="margin:.8em 0 .2em;"><label for="thebible_votd_rss_date_format">Date format</label></p>
+                                <select name="thebible_votd_rss_date_format" id="thebible_votd_rss_date_format">
+                                    <option value="site" <?php selected($votd_rss_date_format === 'site'); ?>>Site default</option>
+                                    <option value="de_numeric" <?php selected($votd_rss_date_format === 'de_numeric'); ?>>German numeric (e.g. 1.4.2025)</option>
+                                    <option value="ymd" <?php selected($votd_rss_date_format === 'ymd'); ?>>ISO (YYYY-MM-DD)</option>
+                                </select>
+
+                                <p style="margin:.8em 0 .2em;"><label for="thebible_votd_rss_days">Number of days</label></p>
+                                <input type="number" min="1" max="31" name="thebible_votd_rss_days" id="thebible_votd_rss_days" value="<?php echo esc_attr($votd_rss_days); ?>" style="width:6em;"> <span class="description">Default: 7</span>
+
+                                <p style="margin:.8em 0 .2em;"><label for="thebible_votd_rss_description_tpl">Description template</label></p>
+                                <textarea name="thebible_votd_rss_description_tpl" id="thebible_votd_rss_description_tpl" class="large-text" rows="4"><?php echo esc_textarea($votd_rss_desc_tpl); ?></textarea>
+                                <p class="description">Available placeholders: <code>{date}</code>, <code>{verse}</code>, <code>{text1}</code>, <code>{text2}</code>, <code>{url}</code></p>
                             </td>
                         </tr>
                         <tr>
