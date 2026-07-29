@@ -426,6 +426,8 @@ html[data-theme="dark"] .dwv-modal,html[data-theme="night"] .dwv-modal{backgroun
 .dwv-body::after{content:"";position:sticky;bottom:0;display:block;height:26px;margin-top:-26px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;opacity:0;transition:opacity .15s ease}
 html[data-theme="dark"] .dwv-body::after,html[data-theme="night"] .dwv-body::after{background:linear-gradient(to bottom,transparent,var(--bg-2))}
 .dwv-body[data-more="1"]::after{opacity:1}
+.dwv-passage{margin:0 0 8px;font-family:var(--font-sans);font-size:.72rem;font-weight:var(--fw-medium,600);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute)}
+.dwv-passage:not(:first-child){margin-top:16px;padding-top:12px;border-top:1px solid var(--rule)}
 .dwv-verse{display:flex;gap:8px;font-size:.85rem;line-height:1.5;margin-bottom:9px;font-family:var(--font-sans)}
 .dwv-num{flex:0 0 auto;color:var(--ink-mute);font-size:.75rem;padding-top:.15em;font-variant-numeric:tabular-nums}
 .dwv-status{margin:0;color:var(--ink-soft);font-size:.9rem}
@@ -459,10 +461,23 @@ html[data-theme="dark"] .dwv-body::after,html[data-theme="night"] .dwv-body::aft
     titleEl.textContent=a.getAttribute('data-dwv-ref')||'';
     openLink.href=a.href;openLink.textContent=L.open;
     body.innerHTML='<p class="dwv-status">'+esc(L.load)+'</p>';
-    fetch(a.getAttribute('data-dwv-json'),{credentials:'omit'}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){
-      if(!modal)return;var vs=(d&&d.verses)||[];
-      if(!vs.length){body.innerHTML='<p class="dwv-status">'+esc(L.err)+'</p>';return;}
-      var h='';for(var i=0;i<vs.length;i++){h+='<div class="dwv-verse"><span class="dwv-num">'+esc(vs[i].verse)+'</span><span>'+esc(vs[i].text)+'</span></div>';}
+    // data-dwv-json may hold several '|'-joined passage URLs (a cross-chapter or
+    // multi-segment reading); fetch all in order and render each as its own block.
+    var urls=(a.getAttribute('data-dwv-json')||'').split('|').filter(Boolean);
+    Promise.all(urls.map(function(u){return fetch(u,{credentials:'omit'}).then(function(r){if(!r.ok)throw 0;return r.json();});})).then(function(list){
+      if(!modal)return;
+      var multi=list.length>1,h='',any=false;
+      for(var p=0;p<list.length;p++){
+        var d=list[p],vs=(d&&d.verses)||[];if(!vs.length)continue;any=true;
+        if(multi){
+          // Passage sub-header from the actual verses shown (never the raw spec).
+          var bk=(d._meta&&d._meta.book&&d._meta.book.name)||'',ch=(d._meta&&d._meta.chapter)||'';
+          var a0=vs[0].verse,b0=vs[vs.length-1].verse;
+          h+='<p class="dwv-passage">'+esc(bk+' '+ch+':'+a0+(b0!==a0?'-'+b0:''))+'</p>';
+        }
+        for(var i=0;i<vs.length;i++){h+='<div class="dwv-verse"><span class="dwv-num">'+esc(vs[i].verse)+'</span><span>'+esc(vs[i].text)+'</span></div>';}
+      }
+      if(!any){body.innerHTML='<p class="dwv-status">'+esc(L.err)+'</p>';return;}
       body.innerHTML=h;fade();
     }).catch(function(){if(modal)body.innerHTML='<p class="dwv-status">'+esc(L.err)+'</p>';});
   }
