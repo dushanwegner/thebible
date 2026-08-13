@@ -19,6 +19,34 @@
     var chapterScrollId = bar.getAttribute('data-chapter-scroll-id');
     var highlightIds = parseHighlightIds(highlightAttr);
 
+    /**
+     * Bring an arrival target to rest below the sticky bar.
+     *
+     * Uses scrollIntoView rather than a computed scrollTo on purpose. The bar's
+     * height is NOT final on first paint — measured at 64px here and 90px a
+     * frame later — so any offset the script works out up front is wrong by
+     * however much the bar still had to grow, and the verse ends up tucked
+     * under its edge. scroll-margin-top is evaluated by the browser at scroll
+     * time, from --dwbible-sticky-h as it stands then, so the correct offset is
+     * whatever CSS says at the moment of the scroll (see _dwbible-verses.scss).
+     *
+     * Waiting for fonts first: a late web font relays the bar and would move
+     * the target out from under us mid-animation.
+     */
+    function arriveAt(el) {
+        if (!el) return;
+        var go = function () {
+            requestAnimationFrame(function () {
+                el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            });
+        };
+        if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === 'function') {
+            document.fonts.ready.then(go, go);
+        } else {
+            go();
+        }
+    }
+
     // Scroll offsets helper used by both initial scroll and sticky logic
     function computeOffset(extra) {
         var ab = document.getElementById('wpadminbar');
@@ -49,18 +77,11 @@
             }
         });
         if (first) {
-            var r = first.getBoundingClientRect();
-            var y = window.pageYOffset + r.top - computeOffset(25);
-            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            arriveAt(first);
         }
     } else if (chapterScrollId) {
         // Chapter-only: scroll to chapter heading
-        var el = document.getElementById(chapterScrollId);
-        if (el) {
-            var r2 = el.getBoundingClientRect();
-            var y2 = window.pageYOffset + r2.top - computeOffset(25);
-            window.scrollTo({ top: Math.max(0, y2), behavior: 'smooth' });
-        }
+        arriveAt(document.getElementById(chapterScrollId));
     }
     // Hash-based verse scroll (e.g. arriving from the language switcher) is
     // handled by the browser's native anchor scroll + CSS scroll-margin-top on

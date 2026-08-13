@@ -147,13 +147,24 @@
 
 /* Verse styling + interlinear layout */
 .dwbible {
-  /* Anchor-scroll offset: when the URL has a verse hash (e.g. from the
-     language switcher), the browser's native anchor scroll lands below
-     the sticky bar instead of under it. --dwbible-sticky-h is set by JS. */
+  /* How far below the sticky bar a verse comes to rest when you ARRIVE at it —
+     from a shared link, a pryr.es code, or the language switcher. One value for
+     every arrival path, because they are the same moment: 0.5rem left the verse
+     tucked against the bar's edge, which reads as if the page had not finished
+     moving. */
+  --dwbible-arrival-gap: 2rem;
+  /* Anchor-scroll offset. The browser evaluates scroll-margin-top AT SCROLL
+     TIME, which is why this belongs in CSS rather than in a number the script
+     measured earlier: --dwbible-sticky-h is set by JS and the bar's height is
+     not final on first paint. Applied to the interlinear GROUP as well as the
+     individual lines, because the group is what the script scrolls to — a
+     verse is its Latin and its translation together, and landing on the Latin
+     alone would push the translation half under the bar. */
 }
 .dwbible p.verse[id],
-.dwbible .dwbible-interlinear-entry[id] {
-  scroll-margin-top: calc(var(--dwbible-sticky-h, 48px) + 0.5rem);
+.dwbible .dwbible-interlinear-entry[id],
+.dwbible .dwbible-interlinear-verse {
+  scroll-margin-top: calc(var(--dwbible-sticky-h, 48px) + var(--dwbible-arrival-gap));
 }
 .dwbible {
   /* Used for JS-driven verse highlighting */
