@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.13.03
+* Version: 1.26.08.13.04
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.13.03');
+    define('DWBIBLE_VERSION', '1.26.08.13.04');
 }
 
 // Load include classes before hooks are registered
@@ -1807,7 +1807,7 @@ class DwBible_Plugin {
         // ─── Machine-readable footer line (visible; serves humans and AI agents) ───
         $site_url = home_url();
         $out .= '<p class="dwbible-index-api">';
-        $out .= '<span class="dwbible-index-api-label">' . esc_html__( 'Machine-readable', 'dwbible' ) . '</span> ';
+        $out .= '<span class="lp-eyebrow lp-eyebrow--accent dwbible-index-api-label">' . esc_html__( 'Machine-readable', 'dwbible' ) . '</span> ';
         // The combo interlinear slugs (e.g. latin-bible) have no JSON twin —
         // only single datasets do — so point at the primary dataset's index.
         $out .= '<a href="' . esc_url($site_url . '/llms.txt') . '">/llms.txt</a>';
