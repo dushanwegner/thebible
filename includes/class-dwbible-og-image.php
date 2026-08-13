@@ -404,6 +404,11 @@ class DwBible_OG_Image {
         $logo_dx_opt = (int) get_option('dwbible_og_logo_pad_adjust_x', (int)get_option('dwbible_og_logo_pad_adjust',0));
         $logo_dy_opt = (int) get_option('dwbible_og_logo_pad_adjust_y', 0);
         $lh_main_opt = (string) get_option('dwbible_og_line_height_main','1.35');
+        // Read here rather than where it is used, because the cache key below
+        // must include it: an image already on disk is served without ever
+        // reaching the drawing code, so a style option missing from the key is
+        // a style option that silently stops taking effect.
+        $lhv_opt = (string) get_option('dwbible_og_line_height_vern', '');
 
         // Build a cache key from the request and relevant style options
         $cache_parts = [
@@ -503,7 +508,7 @@ class DwBible_OG_Image {
         if ($line_h_main < 1.0 || $line_h_main > 3.0) { $line_h_main = 1.35; }
         // Vernacular line height: a tad looser than the Latin by default (empty option → main+0.2);
         // an explicit factor overrides. Same 1.0–3.0 sanity floor/ceiling.
-        $lhv_opt = (string) get_option('dwbible_og_line_height_vern', '');
+        // $lhv_opt was read with the other cache-key options above.
         $line_h_vern = $lhv_opt === '' ? ($line_h_main + 0.2) : floatval($lhv_opt);
         if ($line_h_vern < 1.0 || $line_h_vern > 3.0) { $line_h_vern = min(3.0, $line_h_main + 0.2); }
         $icon_im = null; $icon_w = 0; $icon_h = 0;
