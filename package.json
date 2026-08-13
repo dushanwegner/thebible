@@ -6,6 +6,7 @@
   "scripts": {
     "prebuild:css": "node tools/check-sass-version.js",
     "build:css": "sass --no-source-map --style=expanded assets/dwbible.scss assets/dwbible.css",
+    "check:css": "npm run build:css && git diff --exit-code -- assets/dwbible.css",
     "watch:css": "sass --watch --no-source-map --style=expanded assets/dwbible.scss:assets/dwbible.css"
   },
   "devDependencies": {
