@@ -2,20 +2,47 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.13.02
+* Version: 1.26.08.13.03
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.13.02');
+    define('DWBIBLE_VERSION', '1.26.08.13.03');
 }
 
 // Load include classes before hooks are registered
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-meta.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-og-image.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-qr-image.php';
+
+/**
+ * Tell dwcache that our image parameters change WHICH RESPONSE this is.
+ *
+ * dwcache builds its cache key from the URL with every query parameter outside
+ * an allow-list stripped, so without this `/verse/?dwbible_qr=1` and `/verse/`
+ * are the same key — and that breaks in both directions at once:
+ *
+ *   - the image gets STORED as the verse page (one download replaces the page
+ *     with a picture for everybody), and
+ *   - once the verse page is cached, a request for the image is SERVED that
+ *     cached page instead, because dwcache answers at template_redirect:-9999,
+ *     long before this plugin's router at :1.
+ *
+ * DONOTCACHEPAGE in the image handlers fixes only the first half — it stops the
+ * write, not the read. Making these parameters part of the key is what
+ * separates the two responses, and both halves are needed.
+ *
+ * Both failures were live on 2026-08-13: a scanned QR code landed on the verse
+ * URL and was served the QR image back.
+ */
+add_filter('dwcache_allowed_query_params', function ($params) {
+    return array_merge((array) $params, array(
+        'dwbible_qr', 'dwbible_qr_download',
+        'dwbible_og', 'dwbible_og_download', 'dwbible_og_nocache',
+    ));
+});
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-reference.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-qa.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-sync-report.php';
