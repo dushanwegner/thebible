@@ -2,19 +2,20 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.07.29.01
+* Version: 1.26.08.13.01
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.07.29.01');
+    define('DWBIBLE_VERSION', '1.26.08.13.01');
 }
 
 // Load include classes before hooks are registered
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-meta.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-og-image.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-qr-image.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-reference.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-qa.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-sync-report.php';
@@ -67,6 +68,8 @@ class DwBible_Plugin {
     const QV_VTO = 'dwbible_vto';
     const QV_SLUG = 'dwbible_slug';
     const QV_OG   = 'dwbible_og';
+    /** Serves the verse's pryr.es QR code — see DwBible_QR_Image. */
+    const QV_QR   = 'dwbible_qr';
     /** The canonical Bible SECTION slug in every language's URL — Latin, "Latin Prayer":
      *  /{lang}/biblia/{latin-book}/{ch}:{v}. Not a dataset; a route-only virtual slug. */
     const CANONICAL_SECTION = 'biblia';
@@ -527,6 +530,7 @@ class DwBible_Plugin {
         $vars[] = self::QV_VTO;
         $vars[] = self::QV_SLUG;
         $vars[] = self::QV_OG;
+        $vars[] = self::QV_QR;
         $vars[] = self::QV_SITEMAP;
         $vars[] = self::QV_SELFTEST;
         $vars[] = self::QV_FORMAT;

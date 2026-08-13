@@ -30,6 +30,16 @@ trait DwBible_Router_Trait {
             exit;
         }
 
+        // Serve the verse's QR code (the pryr.es short link) when requested.
+        // Sits beside the OG image deliberately: same trigger shape, same
+        // point in the router, and both are pictures OF this verse — one to
+        // post, one to print.
+        $qr = get_query_var(self::QV_QR);
+        if ($qr) {
+            DwBible_QR_Image::render();
+            exit;
+        }
+
         // Sitemaps must be checked before book — per-book sitemaps set both
         // QV_SITEMAP and QV_BOOK, so sitemap takes priority.
         $sitemap = get_query_var(self::QV_SITEMAP);
