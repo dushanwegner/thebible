@@ -197,7 +197,7 @@ trait DwBible_Book_TOC_Trait {
             <?php if ( $toc_subtitle !== '' ): ?>
               <p class="dwlp-prayers-head__latin"><?php echo esc_html( $toc_subtitle ); ?></p>
             <?php endif; ?>
-            <p class="dwbible-toc-meta">Liber <?php echo esc_html( self::int_to_roman( $order ?: 1 ) ); ?> &middot; <?php echo esc_html( $chapter_count ); ?> <?php echo $chapter_count === 1 ? 'caput' : 'capita'; ?></p>
+            <p class="lp-eyebrow dwbible-toc-meta">Liber <?php echo esc_html( self::int_to_roman( $order ?: 1 ) ); ?> &middot; <?php echo esc_html( $chapter_count ); ?> <?php echo $chapter_count === 1 ? 'caput' : 'capita'; ?></p>
           </header>
 
           <?php // Chapter field — the canonical LP indexed list (.lp-rowlist / .lp-row),
