@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.13.05
+* Version: 1.26.08.13.06
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.13.05');
+    define('DWBIBLE_VERSION', '1.26.08.13.06');
 }
 
 // Load include classes before hooks are registered
@@ -1740,7 +1740,7 @@ class DwBible_Plugin {
             // ─── Book group: name label + book list ───
             $out .= '<section class="dwbible-category">';
             $out .= '<div class="dwbible-category-label">';
-            $out .= '<h3 class="dwbible-category-name lp-rowlist-head">' . esc_html( __( $cat['label'], 'dwbible' ) ) . '</h3>'; // phpcs:ignore WordPress.WP.I18n
+            $out .= '<h3 class="lp-eyebrow dwbible-category-name lp-rowlist-head">' . esc_html( __( $cat['label'], 'dwbible' ) ) . '</h3>'; // phpcs:ignore WordPress.WP.I18n
             $out .= '</div>';
             $out .= '<div class="dwbible-tiles lp-rowlist">';
 
