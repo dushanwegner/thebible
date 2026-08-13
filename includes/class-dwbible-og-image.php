@@ -285,6 +285,17 @@ class DwBible_OG_Image {
     }
 
     public static function render() {
+        // Never let this image be stored as the verse PAGE. dwcache opens its
+        // buffer at template_redirect:0 and this router runs at :1, and its
+        // cache key drops `dwbible_og` along with every other parameter outside
+        // its allow-list — so the key is the bare verse URL. One click on
+        // "Image" would otherwise replace the verse with a picture of itself
+        // for every visitor until the cache expired. (Found 2026-08-13 while
+        // adding the QR download, which had the identical fault.)
+        if (!defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
+
         $enabled = get_option('dwbible_og_enabled', '1');
         if ($enabled !== '1' && $enabled !== 1) { status_header(404); exit; }
         if (!function_exists('imagecreatetruecolor')) { status_header(500); exit; }

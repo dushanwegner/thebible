@@ -33,6 +33,27 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class DwBible_QR_Image {
 
     public static function render() {
+        // ── THIS MUST BE FIRST, AND IT IS NOT DECORATION ──────────────────
+        //
+        // dwcache opens its output buffer at template_redirect:0; this router
+        // runs at template_redirect:1, so by the time we emit an image the
+        // buffer is already capturing it. And dwcache's cache KEY drops every
+        // query parameter outside its allow-list — `dwbible_qr` among them — so
+        // the key for this request is the bare verse URL.
+        //
+        // Without this line the consequence is not a stale image, it is that
+        // ONE person downloading a QR code replaces the verse page itself with
+        // a picture, for everybody, until the cache expires. That is exactly
+        // what happened on 2026-08-13: scanning a code landed on the verse URL
+        // and got served the QR image back.
+        //
+        // nocache_headers() alone does NOT prevent this — see the dw-wp-1
+        // reference; PHP's cache-control signalling is inert at the nginx layer
+        // and dwcache keys on the URL, not on headers.
+        if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+            define( 'DONOTCACHEPAGE', true );
+        }
+
         // dwqr owns the codes and the encoder. Without it there is nothing to
         // draw — and a 404 is the honest answer, not a broken image.
         if ( ! class_exists( 'DWQR_Shortlink' ) || ! class_exists( 'DWQR_Encoder' ) ) {
@@ -61,7 +82,13 @@ class DwBible_QR_Image {
 
         $payload = DWQR_Shortlink::qr_payload( $code );
 
-        $format = isset( $_GET['format'] ) ? strtolower( sanitize_key( wp_unslash( $_GET['format'] ) ) ) : 'svg';
+        // The format rides on dwbible_qr itself — `?dwbible_qr=png` — rather than
+        // on a `format` parameter. `format` is NOT ours: dwtheme registers it
+        // site-wide for the AI output surface (`?format=text` / `?format=json`),
+        // so borrowing the name gave a request two meanings and the image came
+        // out SVG no matter what was asked for. A parameter that already means
+        // something on this site cannot be given a second meaning here.
+        $format = strtolower( sanitize_key( (string) get_query_var( DwBible_Plugin::QV_QR ) ) );
         if ( ! in_array( $format, array( 'svg', 'png' ), true ) ) {
             $format = 'svg';
         }
