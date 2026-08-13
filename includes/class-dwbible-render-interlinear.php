@@ -485,10 +485,24 @@ trait DwBible_Interlinear_Trait {
 
         foreach ($verses as $v) {
             $primary_id_set = false;
+            // The verse's own short link, so the toolbar can copy it without a
+            // round trip. That matters more than it looks: a clipboard write
+            // that happens after an await is refused by Safari, so the address
+            // has to already be in the page when the button is pressed.
+            $shortlink = '';
+            if (class_exists('DWQR_Shortlink')) {
+                $lang = function_exists('dwi18n_current') ? dwi18n_current() : 'en';
+                $code = DWQR_Shortlink::code_for_verse($canonical_key, $ch, $v, $lang);
+                if ($code !== '') {
+                    $shortlink = DWQR_Shortlink::short_url($code);
+                }
+            }
+
             $out .= '<div class="dwbible-interlinear-verse dwbible-interlinear-verse--v' . esc_attr((string)$v) . '"'
                 . ' data-verse="' . esc_attr((string)$v) . '"'
                 . ' data-book="' . esc_attr($canonical_key) . '"'
                 . ' data-ch="' . esc_attr((string)$ch) . '"'
+                . ($shortlink !== '' ? ' data-shortlink="' . esc_attr($shortlink) . '"' : '')
                 . '>';
             foreach ($active_dataset_indices as $idx) {
                 $dataset = $datasets[$idx] ?? '';
