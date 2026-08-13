@@ -222,7 +222,12 @@
 .dwbible.dwbible-interlinear .dwbible-interlinear-b,
 .dwbible.dwbible-interlinear .dwbible-interlinear-c {
   opacity: 0.9;
-  font-size: 0.95em;
+  /* The vernacular gloss reads at --fs-small, the same rung the LP design
+     layer sets for these lines. This plugin's own default must give the
+     SAME answer as the surface that renders it — two files disagreeing
+     about the size of one line is the drift, whichever one happens to win
+     on specificity. */
+  font-size: var(--fs-small, 0.875rem);
 }
 .dwbible.dwbible-interlinear .dwbible-interlinear-b .verse-num,
 .dwbible.dwbible-interlinear .dwbible-interlinear-c .verse-num {
