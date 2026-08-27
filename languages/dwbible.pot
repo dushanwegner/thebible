@@ -41,6 +41,18 @@ msgstr ""
 msgid "Filter books by name, abbreviation, or reference"
 msgstr ""
 
+#: includes/class-dwbible-menu-search.php
+msgid "Book or Matthew 5:41…"
+msgstr ""
+
+#: includes/class-dwbible-menu-search.php
+msgid "Search the Bible by book or reference"
+msgstr ""
+
+#: includes/class-dwbible-menu-search.php
+msgid "Search the Bible"
+msgstr ""
+
 #: dwbible.php:1420
 msgid "No books match that."
 msgstr ""

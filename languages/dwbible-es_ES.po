@@ -39,6 +39,15 @@ msgstr "Mateo, Mt o Mateo 5,41…"
 msgid "Filter books by name, abbreviation, or reference"
 msgstr "Filtrar libros por nombre, abreviatura o referencia"
 
+msgid "Book or Matthew 5:41…"
+msgstr "Libro o Mateo 5,41…"
+
+msgid "Search the Bible by book or reference"
+msgstr "Buscar en la Biblia por libro o referencia"
+
+msgid "Search the Bible"
+msgstr "Buscar en la Biblia"
+
 msgid "No books match that."
 msgstr "Ningún libro coincide."
 

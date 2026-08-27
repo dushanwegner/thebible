@@ -221,26 +221,10 @@ trait DwBible_Router_Trait {
         // (Latin, the internal/English key, or a vernacular name) to the internal data key, then the
         // canonical URL slug is that key's Latin form. So /bible/acts/ + /bible/apostelgeschichte/
         // both 301 to /bible/actus-apostolorum/. Unknown slugs 404.
-        $internal_key = DwBible_Plugin::key_from_any_book_slug($book_slug);
+        $internal_key = self::internal_key_from_any_book($book_slug, $slug);
         if ($internal_key === null) {
-            // Fall back to the legacy per-dataset resolver (abbreviations, fuzzy names). Try the URL's
-            // own combo first, then EVERY web dataset — so an abbreviation from any language ("apg",
-            // "joh", "1kor", "mt") resolves regardless of the URL's locale (max "intuitive typing"
-            // flexibility). First hit wins; still 404 if truly unknown.
-            $legacy = self::canonical_book_slug_from_url($book_slug, $slug);
-            if (!$legacy) {
-                foreach (['bibel', 'bible', 'spanish', 'french', 'italian', 'latin'] as $ds) {
-                    $legacy = self::canonical_book_slug_from_url($book_slug, $ds);
-                    if ($legacy) {
-                        break;
-                    }
-                }
-            }
-            if (!$legacy) {
-                self::render_404();
-                exit;
-            }
-            $internal_key = DwBible_Plugin::key_from_any_book_slug($legacy) ?? $legacy;
+            self::render_404();
+            exit;
         }
         $canonical = DwBible_Plugin::latin_slug_for_key($internal_key);
 
@@ -337,6 +321,76 @@ trait DwBible_Router_Trait {
         // Always use multilingual renderer (1 dataset is the special case)
         self::render_multilingual_book($book_slug, $slug);
         exit; // prevent WP from continuing
+    }
+
+    /**
+     * Resolve ANY written form of a book to its internal data key.
+     *
+     * One answer for "what book is this?", wherever the question arrives from:
+     * a URL segment (/bible/apostelgeschichte/) or a reader's typed query
+     * (the drawer's Bible search → `?q=`). Latin, the internal/English key, a
+     * vernacular name, an abbreviation from ANY language ("apg", "joh", "1kor",
+     * "mt") — the dataset-specific resolver is tried for the request's own
+     * combo first, then for every web dataset, so a name resolves regardless of
+     * the URL's locale (max "intuitive typing" flexibility). First hit wins.
+     *
+     * @param string $raw_book Book as written (slug, name, or abbreviation).
+     * @param string $slug     Dataset/combo slug of the request ('bible', 'latin-bibel', …).
+     * @return string|null Internal book key, or null when it is not a book we have.
+     */
+    private static function internal_key_from_any_book($raw_book, $slug) {
+        if (!is_string($raw_book) || $raw_book === '') { return null; }
+
+        $key = DwBible_Plugin::key_from_any_book_slug($raw_book);
+        if ($key !== null) { return $key; }
+
+        $legacy = self::canonical_book_slug_from_url($raw_book, $slug);
+        if (!$legacy) {
+            foreach (['bibel', 'bible', 'spanish', 'french', 'italian', 'latin'] as $ds) {
+                $legacy = self::canonical_book_slug_from_url($raw_book, $ds);
+                if ($legacy) { break; }
+            }
+        }
+        if (!$legacy) { return null; }
+
+        return DwBible_Plugin::key_from_any_book_slug($legacy) ?? $legacy;
+    }
+
+    /**
+     * `?q=` — a reader's typed Bible search, answered before the index renders.
+     *
+     * The query comes from a Bible search box (the drawer's Bible row; a shared
+     * link). It is not a new kind of lookup: the citation half is split off by
+     * the shared grammar, the book half goes through the SAME resolver a typed
+     * URL uses, and the answer is a redirect to the canonical page — so ranges,
+     * the Malachias 4 shim and every abbreviation keep working with no second
+     * implementation.
+     *
+     * Unresolvable (junk, or a prefix that fits several books) is NOT a 404 and
+     * not a redirect: the caller renders the index, whose filter opens already
+     * filled with `q` — the same question answered as a list of candidates.
+     *
+     * @return bool True if a redirect was issued (the caller must stop).
+     */
+    private static function maybe_redirect_query() {
+        $raw = isset($_GET['q']) ? sanitize_text_field(wp_unslash((string) $_GET['q'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if (trim($raw) === '') { return false; }
+
+        $slug = get_query_var(self::QV_SLUG);
+        if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
+
+        $parsed = DwBible_Reference::parse_query($raw);
+        $key    = self::internal_key_from_any_book($parsed['name'], $slug);
+        if ($key === null) { return false; }
+
+        $path = '/' . trim($slug, '/') . '/' . DwBible_Plugin::latin_slug_for_key($key) . '/';
+        if ($parsed['ref'] !== '') { $path .= $parsed['ref'] . '/'; }
+
+        // 302, not 301: the destination of a query is a lookup RESULT, not a
+        // permanent alias of this URL — the same text may resolve elsewhere as
+        // the data grows, and no cache should outlive that.
+        wp_redirect(home_url($path), 302);
+        exit;
     }
 
     /**

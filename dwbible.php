@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.27.02
+* Version: 1.26.08.27.03
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.27.02');
+    define('DWBIBLE_VERSION', '1.26.08.27.03');
 }
 
 // Load include classes before hooks are registered
@@ -65,6 +65,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-router.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-selftest.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-autolink.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-nav-helpers.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-menu-search.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-json-api.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-jsonld.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dwbible-i18n.php';
@@ -1360,6 +1361,10 @@ class DwBible_Plugin {
     }
 
     private static function render_index() {
+        // A typed query is answered before anything is drawn: `?q=` that names
+        // one book redirects to it (see maybe_redirect_query); one that does not
+        // falls through and the filter below opens holding it.
+        if (self::maybe_redirect_query()) { return; }
         self::load_index();
         status_header(200);
         header('Cache-Control: public, max-age=86400');
@@ -1692,6 +1697,12 @@ class DwBible_Plugin {
             ? 'Vulgata · ' . $translation_names[$active_lang]['name'] . ' (' . $translation_names[$active_lang]['code'] . ')'
             : 'Vulgata Clementina (LA)';
 
+        // `?q=` arrives from the drawer's Bible search (and from any shared
+        // link). The router sends the reader here only when it could NOT resolve
+        // the query to a single book — so the filter opens already filled and
+        // they see the candidates rather than a 404.
+        $q = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['q'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
         // ─── Page head: title · Vulgate+translation subtitle ───
         $out  = '<div class="dwbible dwbible-index">';
         $out .= '<header class="dwbible-index-head">';
@@ -1703,8 +1714,10 @@ class DwBible_Plugin {
         $out .= '</div>';
         // Subtle search toggle, flush right in the title row: reveals the book
         // filter on demand (kept out of the way until wanted).
-        $out .= '<button type="button" class="dwbible-index-search-toggle" aria-label="' . esc_attr__( 'Filter books', 'dwbible' ) . '" aria-expanded="false">';
-        $out .= '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+        $out .= '<button type="button" class="dwbible-index-search-toggle" aria-label="' . esc_attr__( 'Filter books', 'dwbible' ) . '" aria-expanded="' . ( $q === '' ? 'false' : 'true' ) . '">';
+        // The canonical wgnrstyle `search` glyph (24 grid, stroke 1.6) — the same
+        // mark the drawer's Bible row carries, so one search means one shape.
+        $out .= '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.3 15.3L20 20"/></svg>';
         $out .= '</button>';
         $out .= '</div>'; // .dwbible-index-headrow
         $out .= '</header>';
@@ -1716,8 +1729,8 @@ class DwBible_Plugin {
         // path is discoverable without a second line of instructions. It is
         // translated, so each language shows its own book name and separator
         // ("Matthäus, Mt oder Matthäus 5,41…").
-        $out .= '<div class="dwbible-filter-wrap" hidden>';
-        $out .= '<input type="search" class="dwbible-filter" placeholder="' . esc_attr__( 'Matthew, Mt, or Matthew 5:41…', 'dwbible' ) . '" aria-label="' . esc_attr__( 'Filter books by name, abbreviation, or reference', 'dwbible' ) . '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />';
+        $out .= '<div class="dwbible-filter-wrap"' . ( $q === '' ? ' hidden' : '' ) . '>';
+        $out .= '<input type="search" class="dwbible-filter" value="' . esc_attr( $q ) . '" placeholder="' . esc_attr__( 'Matthew, Mt, or Matthew 5:41…', 'dwbible' ) . '" aria-label="' . esc_attr__( 'Filter books by name, abbreviation, or reference', 'dwbible' ) . '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />';
         $out .= '<p class="dwbible-filter-empty" role="status" hidden>' . esc_html__( 'No books match that.', 'dwbible' ) . '</p>';
         $out .= '</div>';
 
@@ -1832,7 +1845,11 @@ class DwBible_Plugin {
         // contents. Nothing about the citation is resolved here; the server
         // already owns /{book}/{ch}:{v}[-{v}] (canonicalisation, ranges, the
         // Malachias 4 shim, and 404s for what does not exist).
-        $out .= <<<'JS'
+        //
+        // The citation GRAMMAR is not written here: __DWBIBLE_CITATION__ below is
+        // replaced with DwBible_Reference::CITATION_PATTERN, the same string the
+        // server parses `?q=` with. One grammar, two runtimes.
+        $js = <<<'JS'
 <script>
 (function(){
   var root = document.querySelector('.dwbible-index');
@@ -1866,13 +1883,11 @@ class DwBible_Plugin {
       .replace(/[^a-z0-9]/g, '');
   }
 
-  // Split "<book> <chapter>[:<verse>[-<verse>]]" into its two halves. The verse
-  // part is optional AND may be half-typed ("Matthew 5:"), so the row keeps
-  // pointing somewhere sensible on every keystroke. Separators: : , . and the
-  // hyphen/dash family for ranges. A leading book number stays with the name
-  // ("1 Cor 13" -> name "1 Cor", chapter 13) because only a TRAILING run of
-  // digits can be the chapter — the pattern is anchored at the end.
-  var CITATION = /^(.*?)[\s.]*(\d+)\s*(?:[:,.]\s*(\d+)?(?:\s*[-–—]\s*(\d+)?)?)?\s*$/;
+  // The typed-citation grammar, handed over from PHP (DwBible_Reference).
+  // It splits "<book> <chapter>[:<verse>[-<verse>]]" into its two halves; the
+  // verse part is optional AND may be half-typed ("Matthew 5:"), so the row
+  // keeps pointing somewhere sensible on every keystroke.
+  var CITATION = new RegExp(__DWBIBLE_CITATION__);
 
   // -> { q: normalized book query, ref: canonical citation suffix ('' if none) }
   function parseQuery(raw){
@@ -1959,9 +1974,19 @@ class DwBible_Plugin {
       }
     });
   }
+
+  // Arriving with ?q= the server could not resolve to one book: the field is
+  // already open and filled (see build_index_html), so run the filter over it.
+  if (input.value) { apply(); }
 })();
 </script>
 JS;
+        // One grammar, two runtimes — see DwBible_Reference::CITATION_PATTERN.
+        $out .= str_replace(
+            '__DWBIBLE_CITATION__',
+            wp_json_encode( DwBible_Reference::CITATION_PATTERN ),
+            $js
+        );
 
         $out .= '</div>';
         return $out;
@@ -2510,7 +2535,7 @@ JS;
     }
 
     /** Return all registered bible slugs (e.g. ['bible','bibel','latin','latin-bibel',...]). */
-    private static function get_registered_slugs(): array {
+    public static function get_registered_slugs(): array {
         $raw = get_option( 'dwbible_slugs', 'bible,bibel' );
         $base = array_filter( array_map( 'trim', explode( ',', is_string( $raw ) ? $raw : 'bible,bibel' ) ) );
         $combos = [];
