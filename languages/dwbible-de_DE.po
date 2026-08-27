@@ -33,11 +33,11 @@ msgstr "Katholische Briefe & Offenbarung"
 msgid "Filter books"
 msgstr "Bücher filtern"
 
-msgid "Filter books…"
-msgstr "Bücher filtern…"
+msgid "Matthew, Mt, or Matthew 5:41…"
+msgstr "Matthäus, Mt oder Matthäus 5,41…"
 
-msgid "Filter books by name or abbreviation"
-msgstr "Bücher nach Name oder Abkürzung filtern"
+msgid "Filter books by name, abbreviation, or reference"
+msgstr "Bücher nach Name, Abkürzung oder Stelle filtern"
 
 msgid "No books match that."
 msgstr "Keine Bücher gefunden."

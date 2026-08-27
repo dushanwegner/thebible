@@ -34,11 +34,11 @@ msgid "Filter books"
 msgstr ""
 
 #: dwbible.php:1419
-msgid "Filter books…"
+msgid "Matthew, Mt, or Matthew 5:41…"
 msgstr ""
 
 #: dwbible.php:1419
-msgid "Filter books by name or abbreviation"
+msgid "Filter books by name, abbreviation, or reference"
 msgstr ""
 
 #: dwbible.php:1420

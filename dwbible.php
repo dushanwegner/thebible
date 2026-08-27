@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.27.01
+* Version: 1.26.08.27.02
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.27.01');
+    define('DWBIBLE_VERSION', '1.26.08.27.02');
 }
 
 // Load include classes before hooks are registered
@@ -1711,8 +1711,13 @@ class DwBible_Plugin {
 
         // ─── On-page filter (client-side; hidden until the title search toggle
         //     reveals it; see the script at the foot) ───
+        // The placeholder teaches the three accepted forms by example — full
+        // name, abbreviation, and a chapter:verse citation — so the citation
+        // path is discoverable without a second line of instructions. It is
+        // translated, so each language shows its own book name and separator
+        // ("Matthäus, Mt oder Matthäus 5,41…").
         $out .= '<div class="dwbible-filter-wrap" hidden>';
-        $out .= '<input type="search" class="dwbible-filter" placeholder="' . esc_attr__( 'Filter books…', 'dwbible' ) . '" aria-label="' . esc_attr__( 'Filter books by name or abbreviation', 'dwbible' ) . '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />';
+        $out .= '<input type="search" class="dwbible-filter" placeholder="' . esc_attr__( 'Matthew, Mt, or Matthew 5:41…', 'dwbible' ) . '" aria-label="' . esc_attr__( 'Filter books by name, abbreviation, or reference', 'dwbible' ) . '" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />';
         $out .= '<p class="dwbible-filter-empty" role="status" hidden>' . esc_html__( 'No books match that.', 'dwbible' ) . '</p>';
         $out .= '</div>';
 
@@ -1819,6 +1824,14 @@ class DwBible_Plugin {
         // Pure DOM filtering — prefix-matches the query against each tile's
         // data-search tokens, hides non-matching books and any group/testament
         // left empty. Never makes a request. norm() mirrors search_normalize().
+        //
+        // A query may end in a CITATION ("Matthew 5:41", "Mt 5,41", "1 Cor 13",
+        // "Io 3:16-18"): the name half filters the books exactly as before, and
+        // the citation half is appended to each surviving row's href — so the
+        // row leads straight to the verse instead of the book's table of
+        // contents. Nothing about the citation is resolved here; the server
+        // already owns /{book}/{ch}:{v}[-{v}] (canonicalisation, ranges, the
+        // Malachias 4 shim, and 404s for what does not exist).
         $out .= <<<'JS'
 <script>
 (function(){
@@ -1826,10 +1839,25 @@ class DwBible_Plugin {
   if (!root) return;
   var input = root.querySelector('.dwbible-filter');
   if (!input) return;
-  var tiles = [].slice.call(root.querySelectorAll('.dwbible-tile'));
   var groups = [].slice.call(root.querySelectorAll('.dwbible-category'));
   var testaments = [].slice.call(root.querySelectorAll('.dwbible-testament'));
   var empty = root.querySelector('.dwbible-filter-empty');
+
+  // Each row, plus the pristine text/href to restore when no citation is typed.
+  // The href is normalized to one trailing slash — a citation is appended to it.
+  var tiles = [].slice.call(root.querySelectorAll('.dwbible-tile')).map(function(el){
+    var nameEl = el.querySelector('.dwbible-tile-name');
+    var href = el.getAttribute('href') || '';
+    return {
+      el: el,
+      nameEl: nameEl,
+      name: nameEl ? nameEl.textContent : '',
+      href: href ? href.replace(/\/+$/, '') + '/' : '',
+      label: el.getAttribute('aria-label') || '',
+      tokens: (el.getAttribute('data-search') || '').split(' '),
+      ref: '' // the citation this row currently carries
+    };
+  });
 
   function norm(s){
     return (s || '').toLowerCase()
@@ -1838,10 +1866,43 @@ class DwBible_Plugin {
       .replace(/[^a-z0-9]/g, '');
   }
 
+  // Split "<book> <chapter>[:<verse>[-<verse>]]" into its two halves. The verse
+  // part is optional AND may be half-typed ("Matthew 5:"), so the row keeps
+  // pointing somewhere sensible on every keystroke. Separators: : , . and the
+  // hyphen/dash family for ranges. A leading book number stays with the name
+  // ("1 Cor 13" -> name "1 Cor", chapter 13) because only a TRAILING run of
+  // digits can be the chapter — the pattern is anchored at the end.
+  var CITATION = /^(.*?)[\s.]*(\d+)\s*(?:[:,.]\s*(\d+)?(?:\s*[-–—]\s*(\d+)?)?)?\s*$/;
+
+  // -> { q: normalized book query, ref: canonical citation suffix ('' if none) }
+  function parseQuery(raw){
+    var s = (raw || '').trim();
+    var m = CITATION.exec(s);
+    if (m && norm(m[1])){
+      var ref = m[2];
+      if (m[3]) { ref += ':' + m[3] + (m[4] ? '-' + m[4] : ''); }
+      return { q: norm(m[1]), ref: ref };
+    }
+    return { q: norm(s), ref: '' };
+  }
+
+  // With a citation the row names the VERSE it now leads to ("Matthaeus 5:41")
+  // and its href carries the same reference; without one it is a book row again.
+  // Writes only on a real change — otherwise every keystroke would rewrite three
+  // attributes on all 73 rows for nothing.
+  function decorate(t, ref){
+    if (t.ref === ref) return;
+    t.ref = ref;
+    if (t.nameEl) { t.nameEl.textContent = ref ? t.name + ' ' + ref : t.name; }
+    t.el.setAttribute('href', ref ? t.href + ref + '/' : t.href);
+    t.el.setAttribute('aria-label', ref ? t.label + ' ' + ref : t.label);
+  }
+
   function apply(){
-    var q = norm(input.value);
+    var parsed = parseQuery(input.value);
+    var q = parsed.q, ref = parsed.ref;
     if (!q){
-      tiles.forEach(function(t){ t.hidden = false; });
+      tiles.forEach(function(t){ t.el.hidden = false; decorate(t, ''); });
       groups.forEach(function(g){ g.hidden = false; });
       testaments.forEach(function(s){ s.hidden = false; });
       if (empty) empty.hidden = true;
@@ -1849,12 +1910,12 @@ class DwBible_Plugin {
     }
     var any = false;
     tiles.forEach(function(t){
-      var toks = (t.getAttribute('data-search') || '').split(' ');
       var hit = false;
-      for (var i = 0; i < toks.length; i++){
-        if (toks[i] && toks[i].lastIndexOf(q, 0) === 0){ hit = true; break; }
+      for (var i = 0; i < t.tokens.length; i++){
+        if (t.tokens[i] && t.tokens[i].lastIndexOf(q, 0) === 0){ hit = true; break; }
       }
-      t.hidden = !hit;
+      t.el.hidden = !hit;
+      decorate(t, hit ? ref : '');
       if (hit) any = true;
     });
     groups.forEach(function(g){
@@ -1867,6 +1928,19 @@ class DwBible_Plugin {
   }
 
   input.addEventListener('input', apply);
+
+  // Enter goes to the first row still standing — the point of typing a citation
+  // is to land on the verse without reaching for the mouse.
+  input.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' || e.isComposing) return; // never steal an IME confirm
+    for (var i = 0; i < tiles.length; i++){
+      if (!tiles[i].el.hidden){
+        e.preventDefault();
+        window.location.href = tiles[i].el.getAttribute('href');
+        return;
+      }
+    }
+  });
 
   // Search toggle in the title: reveal/focus the filter; re-click hides + resets.
   var toggle = root.querySelector('.dwbible-index-search-toggle');

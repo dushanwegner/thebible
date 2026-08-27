@@ -33,11 +33,11 @@ msgstr "Epístolas católicas y Apocalipsis"
 msgid "Filter books"
 msgstr "Filtrar libros"
 
-msgid "Filter books…"
-msgstr "Filtrar libros…"
+msgid "Matthew, Mt, or Matthew 5:41…"
+msgstr "Mateo, Mt o Mateo 5,41…"
 
-msgid "Filter books by name or abbreviation"
-msgstr "Filtrar libros por nombre o abreviatura"
+msgid "Filter books by name, abbreviation, or reference"
+msgstr "Filtrar libros por nombre, abreviatura o referencia"
 
 msgid "No books match that."
 msgstr "Ningún libro coincide."
