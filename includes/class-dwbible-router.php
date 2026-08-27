@@ -244,6 +244,29 @@ trait DwBible_Router_Trait {
         }
         $canonical = DwBible_Plugin::latin_slug_for_key($internal_key);
 
+        // MALACHIAS 4 — the one book whose chapter division differs from the
+        // printed Clementine. Our data (and dwlectionary, and the Nova Vulgata)
+        // carry the Elijah prophecy as 3:19-24; every printed Vulgate and every
+        // Douay-Rheims numbers the same six verses 4:1-6. A reader holding a 1962
+        // missal therefore asks for a chapter that does not exist here.
+        //
+        // Rather than 404 them, translate the citation: chapter 4 verse v is our
+        // 3:(v+18). Done by rewriting the query vars BEFORE the canonical URL is
+        // built, so the 301 below fires on its own — no second redirect path to
+        // keep in step with this one. A verse past 4:6 maps past 3:24 and 404s,
+        // which is correct: it does not exist in either numbering.
+        if ($canonical === 'malachias' && (int) get_query_var(self::QV_CHAPTER) === 4) {
+            $mal_vf = (int) get_query_var(self::QV_VFROM);
+            $mal_vt = (int) get_query_var(self::QV_VTO);
+            set_query_var(self::QV_CHAPTER, 3);
+            // A bare /malachias/4/ lands on 3:19, where that chapter begins —
+            // the content the reader asked for, not the top of our chapter 3.
+            set_query_var(self::QV_VFROM, $mal_vf ? $mal_vf + 18 : 19);
+            if ($mal_vt) {
+                set_query_var(self::QV_VTO, $mal_vt + 18);
+            }
+        }
+
         // Build the FULL canonical URL — /{lang}/biblia/{latin-book}/{ch}:{v} — and 301 whenever the
         // current request differs in ANY way: the section word (bible/bibel/… → biblia), the book
         // slug (English/vernacular → Latin), or the verse separator (/ or , → :). The home_url filter
