@@ -111,9 +111,32 @@ function check(name, cond, detail) {
   r = await type('Io 3:16');
   check('latin name', r.count >= 1 && r.first.href.endsWith('3:16/'), JSON.stringify(r));
 
+  // An ambiguous name matches several books, and each takes as much of the
+  // citation as IT can hold: 1 John has a chapter 3, the other two epistles are
+  // one chapter long, so they offer the book rather than a chapter they lack.
   r = await type('ioannis 3');
-  check('ambiguous name → every match carries the citation',
-        r.count === 3 && r.all.every((h) => h.endsWith('/3/')), JSON.stringify(r.all));
+  check('ambiguous name → each match carries what it can hold',
+        r.count === 3 && r.all.filter((h) => h.endsWith('/3/')).length === 1
+          && r.all.filter((h) => /-john\/$/.test(h)).length === 2, JSON.stringify(r.all));
+
+  // A row promises only what its book can hold: a verse that does not exist
+  // falls back to its chapter, a chapter that does not exist to the book. A row
+  // reading "Ioannes 3:16666" would be a link to nowhere.
+  const FIT = [
+    ['john 3:16',     'Ioannes 3:16',   '/john/3:16/'],
+    ['john 3:16666',  'Ioannes 3',      '/john/3/'],
+    ['john 99:1',     'Ioannes',        '/john/'],
+    ['john 99',       'Ioannes',        '/john/'],
+    ['luke 24:13-35', 'Lucas 24:13-35', '/luke/24:13-35/'],
+    ['luke 24:13-99', 'Lucas 24:13',    '/luke/24:13/'],
+    ['luke 24:13-3',  'Lucas 24:13',    '/luke/24:13/'],
+  ];
+  for (const [q, name, href] of FIT) {
+    r = await type(q);
+    check(`"${q}" → the row reads "${name}"`,
+          r.first && r.first.name === name && r.first.href.endsWith(href),
+          JSON.stringify(r.first));
+  }
 
   r = await type('zzz 5:41');
   check('unknown book → empty state', r.count === 0 && r.empty, JSON.stringify(r));

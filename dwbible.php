@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.28.04
+* Version: 1.26.08.28.05
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.28.04');
+    define('DWBIBLE_VERSION', '1.26.08.28.05');
 }
 
 // Load include classes before hooks are registered
@@ -1800,6 +1800,9 @@ class DwBible_Plugin {
         // filter runs 100% client-side. The rail's Bible search fetches the
         // same vocabulary, so a word that finds a book here finds it there.
         $tokens_by_book = self::search_tokens_by_book();
+        // …and how long each book is, so a row can refuse to promise a verse
+        // that does not exist (the same question the rail's field asks).
+        $verses_by_book = self::verse_counts_by_book();
 
         // ─── Translation model — "alongside the Latin" ──────────────────────
         // Every vernacular edition is an INTERLINEAR paired with the Latin
@@ -1945,7 +1948,9 @@ class DwBible_Plugin {
                 // The row IS the canonical LP list primitive (.lp-row + slots);
                 // .dwbible-tile* kept alongside for the book-search JS + the
                 // vernacular-gloss overlay. --num gives the shared mono ordinal.
-                $out .= '<a href="' . esc_url($url) . '" class="dwbible-tile lp-row lp-row--num" data-search="' . esc_attr($data_search) . '" aria-label="' . esc_attr($label) . '">';
+                $book_verses = ( $book_key !== null && isset($verses_by_book[$book_key]) ) ? implode(',', $verses_by_book[$book_key]) : '';
+
+                $out .= '<a href="' . esc_url($url) . '" class="dwbible-tile lp-row lp-row--num" data-search="' . esc_attr($data_search) . '" data-verses="' . esc_attr($book_verses) . '" aria-label="' . esc_attr($label) . '">';
                 $out .= '<span class="dwbible-tile-name lp-row__term">' . esc_html($name) . '</span>';
                 if ( $alt_meaningful ) {
                     $out .= '<span class="dwbible-tile-alt lp-row__gloss">' . esc_html($alt_name) . '</span>';
@@ -2011,6 +2016,11 @@ class DwBible_Plugin {
       href: href ? href.replace(/\/+$/, '') + '/' : '',
       label: el.getAttribute('aria-label') || '',
       tokens: (el.getAttribute('data-search') || '').split(' '),
+      // How long this book is, chapter by chapter — so the row can decline to
+      // promise a verse the book does not have.
+      verses: (el.getAttribute('data-verses') || '').split(',')
+        .map(function(n){ return parseInt(n, 10) || 0; })
+        .filter(function(n){ return n > 0; }),
       ref: '' // the citation this row currently carries
     };
   });
@@ -2035,7 +2045,7 @@ class DwBible_Plugin {
 
   function apply(){
     var parsed = parseQuery(input.value);
-    var q = parsed.q, ref = parsed.ref;
+    var q = parsed.q;
     if (!q){
       tiles.forEach(function(t){ t.el.hidden = false; decorate(t, ''); });
       groups.forEach(function(g){ g.hidden = false; });
@@ -2050,7 +2060,10 @@ class DwBible_Plugin {
         if (t.tokens[i] && t.tokens[i].lastIndexOf(q, 0) === 0){ hit = true; break; }
       }
       t.el.hidden = !hit;
-      decorate(t, hit ? ref : '');
+      // Each row is decorated with as much of the citation as THIS book can
+      // hold: "John 3:16666" leaves Ioannes reading "Ioannes 3", because a row
+      // that promises a verse the book has not got is a link to nowhere.
+      decorate(t, hit ? window.DwBibleSearch.fit(t.verses, parsed) : '');
       if (hit) any = true;
     });
     groups.forEach(function(g){

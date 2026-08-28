@@ -219,6 +219,25 @@ function check(name, cond, detail) {
   const hl = await page.getAttribute('[data-highlight-ids]', 'data-highlight-ids');
   check('the verse is the page highlight target', hl === '["matthew-5-41"]', String(hl));
 
+  // — A citation that cannot exist lands where it CAN: submitted, not just shown —
+  await openDrawer(BASE);
+  await page.click('.dw-nav-action');
+  await page.fill('.dw-nav-panel input[name="q"]', 'John 3:16666');
+  await Promise.all([
+    page.waitForURL(/ioannes\/3\/?$/, { timeout: 15000 }),
+    page.press('.dw-nav-panel input[name="q"]', 'Enter'),
+  ]);
+  check('a verse that cannot exist lands on its chapter', /ioannes\/3\/?$/.test(page.url()), page.url());
+
+  await openDrawer(BASE);
+  await page.click('.dw-nav-action');
+  await page.fill('.dw-nav-panel input[name="q"]', 'John 99:1');
+  await Promise.all([
+    page.waitForURL(/ioannes\/?$/, { timeout: 15000 }),
+    page.press('.dw-nav-panel input[name="q"]', 'Enter'),
+  ]);
+  check('a chapter that cannot exist lands on the book', /ioannes\/?$/.test(page.url()), page.url());
+
   // — A book name alone reaches the book —
   await openDrawer(BASE);
   await page.click('.dw-nav-action');

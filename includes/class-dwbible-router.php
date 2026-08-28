@@ -394,14 +394,54 @@ trait DwBible_Router_Trait {
         $key    = self::internal_key_from_any_book($parsed['name'], $slug);
         if ($key === null) { return false; }
 
+        // Only as far as the book can actually be followed. "John 3:16666" names
+        // a real book and no such verse, so it goes to John 3; "John 99" to
+        // John. The rule and its twin: assets/dwbible-search.js → fit(), which
+        // is what the index rows and the rail's field show as you type. A link
+        // that promises a verse the book has not got is a link to nowhere.
         $path = '/' . trim($slug, '/') . '/' . DwBible_Plugin::latin_slug_for_key($key) . '/';
-        if ($parsed['ref'] !== '') { $path .= $parsed['ref'] . '/'; }
+        $ref  = self::fit_reference_to_book($key, $parsed['ref']);
+        if ($ref !== '') { $path .= $ref . '/'; }
 
         // 302, not 301: the destination of a query is a lookup RESULT, not a
         // permanent alias of this URL — the same text may resolve elsewhere as
         // the data grows, and no cache should outlive that.
         wp_redirect(home_url($path), 302);
         exit;
+    }
+
+    /**
+     * The largest part of a citation this book can actually be sent to.
+     *
+     * The PHP twin of assets/dwbible-search.js → fit(): a verse that does not
+     * exist falls back to its chapter, a chapter that does not exist to the
+     * book, and a half-finished range end is dropped. Two runtimes, one rule —
+     * so what a reader is shown while typing is where they land on Enter.
+     *
+     * @param string $key The book's canonical key.
+     * @param string $ref 'ch[:v[-v]]' as typed ('' for none).
+     * @return string The ref to follow, '' for "just the book".
+     */
+    private static function fit_reference_to_book($key, $ref) {
+        if ( ! is_string($ref) || $ref === '' ) { return ''; }
+        if ( ! preg_match('/^(\d+)(?::(\d+)(?:-(\d+))?)?$/', $ref, $m) ) { return ''; }
+
+        $ch = (int) $m[1];
+        $v  = isset($m[2]) && $m[2] !== '' ? (int) $m[2] : null;
+        $vt = isset($m[3]) && $m[3] !== '' ? (int) $m[3] : null;
+
+        $counts = DwBible_Plugin::verse_counts_by_book();
+        $book   = isset($counts[$key]) ? $counts[$key] : [];
+
+        // A book we have no lengths for is trusted, exactly as in the browser.
+        if ( ! $book ) { return $ref; }
+        if ( $ch < 1 || $ch > count($book) ) { return ''; }
+
+        $n = (int) $book[$ch - 1];
+        if ( $v === null || $n <= 0 ) { return (string) $ch; }
+        if ( $v < 1 || $v > $n ) { return (string) $ch; }
+        if ( $vt === null || $vt > $n || $vt < $v ) { return $ch . ':' . $v; }
+        return $ch . ':' . $v . '-' . $vt;
     }
 
     /**
