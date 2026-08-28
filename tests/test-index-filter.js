@@ -111,6 +111,25 @@ function check(name, cond, detail) {
   r = await type('Io 3:16');
   check('latin name', r.count >= 1 && r.first.href.endsWith('3:16/'), JSON.stringify(r));
 
+  // A NUMBERED book is findable by its own name, not only by its number: the
+  // English index writes "1. John", and the strip that makes "john" a token for
+  // it wants the dot as well as a space (dwbible#5). The Gospel still leads,
+  // because the rows are in canonical order and Enter takes the first.
+  r = await type('john');
+  check('"john" finds the Gospel AND the three epistles',
+        r.count === 4 && /\/john\/$/.test(r.first.href) && r.first.name === 'Ioannes', JSON.stringify(r.all));
+
+  r = await type('john 3:16');
+  check('…and each of them offers what it can hold',
+        r.count === 4 && r.first.name === 'Ioannes 3:16'
+          && r.all.filter((h) => h.endsWith('3:16/')).length === 2, JSON.stringify(r.all));
+
+  // The roman-numeral half of that strip still requires whitespace: a dot must
+  // not turn "Iudith" or "Iob" into a numbered book.
+  r = await type('iudith');
+  check('a name that merely begins with roman letters is untouched',
+        r.count === 1 && r.first.name === 'Iudith', JSON.stringify(r.first));
+
   // An ambiguous name matches several books, and each takes as much of the
   // citation as IT can hold: 1 John has a chapter 3, the other two epistles are
   // one chapter long, so they offer the book rather than a chapter they lack.

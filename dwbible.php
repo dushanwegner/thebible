@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.28.05
+* Version: 1.26.08.28.06
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.28.05');
+    define('DWBIBLE_VERSION', '1.26.08.28.06');
 }
 
 // Load include classes before hooks are registered
@@ -1726,10 +1726,18 @@ class DwBible_Plugin {
         $tokens = [];
         $full = preg_replace('/[^a-z0-9]/', '', $n);
         if ($full !== '') { $tokens[] = $full; }
-        // A leading number or roman numeral that is its OWN token (space after)
-        // is a book number, not part of the name — strip it for a second token.
-        // (Names like "Iudith"/"Iob" have no space, so their leading I stays.)
-        $stripped = preg_replace('/^(?:\d+|[ivxlcdm]+)\s+/', '', $n);
+        // A leading number or roman numeral that is its OWN token is a book
+        // NUMBER, not part of the name — strip it for a second token, so the
+        // epistle is findable by its own first letter.
+        //
+        // The number may be followed by a DOT as well as a space: the English
+        // index writes "1. John", and requiring whitespace alone left those
+        // three epistles with no bare "john" token at all — typing "john" found
+        // the Gospel and nothing else (dwbible#5). A roman numeral still needs
+        // whitespace, because a dot cannot tell "I. Cor" from a word that
+        // merely begins with those letters.
+        // (Names like "Iudith"/"Iob" have neither, so their leading I stays.)
+        $stripped = preg_replace('/^(?:\d+[.\s]+|[ivxlcdm]+\s+)/', '', $n);
         $stripped = preg_replace('/[^a-z0-9]/', '', $stripped);
         if ($stripped !== '' && $stripped !== $full) { $tokens[] = $stripped; }
         return $tokens;
