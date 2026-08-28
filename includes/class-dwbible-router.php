@@ -16,6 +16,10 @@ trait DwBible_Router_Trait {
             self::serve_unified_index();
             exit;
         }
+        if ( $format === 'bible-books' ) {
+            self::serve_book_vocabulary();
+            exit;
+        }
 
         $selftest = get_query_var(self::QV_SELFTEST);
         if (!empty($selftest)) {

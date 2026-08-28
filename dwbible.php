@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.28.01
+* Version: 1.26.08.28.02
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.28.01');
+    define('DWBIBLE_VERSION', '1.26.08.28.02');
 }
 
 // Load include classes before hooks are registered
@@ -482,6 +482,13 @@ class DwBible_Plugin {
         }
         // /bible-index.json — unified index: all books × all translations in one fetch
         add_rewrite_rule( '^bible-index\.json$', 'index.php?' . self::QV_FORMAT . '=bible-index&' . self::QV_FLAG . '=1', 'top' );
+        // /bible-books.json — the SEARCH VOCABULARY alone (~4 KB): what the rail's
+        // Bible search fetches once, so it can tell as the reader types whether
+        // what they wrote names a book. Deliberately not bible-index.json, which
+        // is 140 KB of names, URLs and chapter counts for a question that needs
+        // none of them. Language-independent: every language's names are tokens
+        // in the same list.
+        add_rewrite_rule( '^bible-books\.json$', 'index.php?' . self::QV_FORMAT . '=bible-books&' . self::QV_FLAG . '=1', 'top' );
 
         // ── HTML routes ─────────────────────────────────────────────────
         foreach ($slugs as $slug) {
@@ -1585,6 +1592,59 @@ class DwBible_Plugin {
      * with the leading number/roman-numeral token removed, so the epistle name
      * itself ("corinthios") is matchable from its first letter.
      */
+    /**
+     * THE SEARCH VOCABULARY: every prefix-token that names a book, by order.
+     *
+     * One vocabulary, two surfaces. The Bible index embeds a book's tokens on
+     * its row so the on-page filter runs in the browser; the rail's Bible
+     * search fetches the whole set (/bible-books.json) so it can tell, as the
+     * reader types, whether what they wrote names a book at all. A word that
+     * finds a book in one of them must find it in the other, so neither builds
+     * this list itself.
+     *
+     * Every configured language's name for the book, plus its slug, each
+     * reduced to a normalized token (and a number-stripped twin for numbered
+     * books) — plus the curated abbreviations that are NOT a prefix of any full
+     * name, chiefly the Gospels (Mt / Mk·Mc / Lk·Lc / Jn).
+     *
+     * @return array<int,string> canonical order => space-separated tokens
+     */
+    public static function search_tokens_by_order() {
+        static $cache = null;
+        if ( $cache !== null ) { return $cache; }
+
+        $names_by_order = [];
+        foreach (['latin', 'bible', 'bibel', 'spanish', 'french', 'italian'] as $ds) {
+            foreach (self::load_dataset_index($ds) as $b) {
+                $o = intval($b['order']);
+                if (!empty($b['display_name'])) { $names_by_order[$o][] = $b['display_name']; }
+                if (!empty($b['short_name']))   { $names_by_order[$o][] = $b['short_name']; }
+            }
+        }
+
+        $extra_abbr = [
+            47 => ['mt'],
+            48 => ['mk', 'mc'],
+            49 => ['lk', 'lc'],
+            50 => ['jn'],
+        ];
+
+        $out = [];
+        foreach ($names_by_order as $order => $names) {
+            $tok = [];
+            foreach ($names as $n) {
+                foreach (self::search_tokens_for_name($n) as $tk) { $tok[$tk] = true; }
+            }
+            if (isset($extra_abbr[$order])) {
+                foreach ($extra_abbr[$order] as $ab) { $tok[$ab] = true; }
+            }
+            $out[$order] = implode(' ', array_keys($tok));
+        }
+
+        $cache = $out;
+        return $cache;
+    }
+
     private static function search_tokens_for_name($name) {
         $n = self::search_normalize($name); // keeps spaces
         $tokens = [];
@@ -1658,26 +1718,12 @@ class DwBible_Plugin {
         $base_url   = home_url('/' . $current_slug . '/');
         $testaments = self::testament_meta();
 
-        // All configured language names per canonical order — lets the on-page
-        // filter match a book typed in ANY language (plus its slug). Loaded
-        // once; embedded into each tile's data-search so filtering stays 100%
-        // client-side (never hits the server).
-        $names_by_order = [];
-        foreach (['latin', 'bible', 'bibel', 'spanish', 'french', 'italian'] as $ds) {
-            foreach (self::load_dataset_index($ds) as $b) {
-                $o = intval($b['order']);
-                if (!empty($b['display_name'])) { $names_by_order[$o][] = $b['display_name']; }
-                if (!empty($b['short_name']))   { $names_by_order[$o][] = $b['short_name']; }
-            }
-        }
-        // Common abbreviations that are NOT a prefix of any full name — chiefly
-        // the Gospels (Mt / Mk·Mc / Lk·Lc / Jn). Keyed by canonical order.
-        $extra_abbr = [
-            47 => ['mt'],
-            48 => ['mk', 'mc'],
-            49 => ['lk', 'lc'],
-            50 => ['jn'],
-        ];
+        // The search vocabulary — every language's name for each book, its slug
+        // and its curated abbreviations — built once, in the one place that
+        // knows it (search_tokens_by_order), and embedded on each row so the
+        // filter runs 100% client-side. The rail's Bible search fetches the
+        // same vocabulary, so a word that finds a book here finds it there.
+        $tokens_by_order = self::search_tokens_by_order();
 
         // ─── Translation model — "alongside the Latin" ──────────────────────
         // Every vernacular edition is an INTERLINEAR paired with the Latin
@@ -1804,19 +1850,17 @@ class DwBible_Plugin {
                     $label .= ' / ' . $alt_name;
                 }
 
-                // Prefix-search tokens: every language's name + the slug + any
-                // curated abbreviation, each reduced to a normalized token (and
-                // a number-stripped twin for numbered books). Embedded on the
-                // tile so the filter runs entirely in the browser.
+                // This book's slice of the shared vocabulary, plus the two names
+                // this edition happens to show (they are already in it for every
+                // configured language, but a display name can differ from the
+                // dataset's own — so add them and let the set dedupe).
                 $tok_set = [];
-                $candidate_names = isset($names_by_order[$order]) ? $names_by_order[$order] : [];
-                $candidate_names[] = $name;
-                if ( $alt_name !== '' ) { $candidate_names[] = $alt_name; }
-                foreach ( $candidate_names as $cn ) {
-                    foreach ( self::search_tokens_for_name($cn) as $tk ) { $tok_set[$tk] = true; }
+                foreach ( explode(' ', isset($tokens_by_order[$order]) ? $tokens_by_order[$order] : '') as $tk ) {
+                    if ( $tk !== '' ) { $tok_set[$tk] = true; }
                 }
-                if ( isset($extra_abbr[$order]) ) {
-                    foreach ( $extra_abbr[$order] as $ab ) { $tok_set[$ab] = true; }
+                foreach ( [$name, $alt_name] as $cn ) {
+                    if ( $cn === '' ) { continue; }
+                    foreach ( self::search_tokens_for_name($cn) as $tk ) { $tok_set[$tk] = true; }
                 }
                 $data_search = implode(' ', array_keys($tok_set));
 
@@ -1852,7 +1896,7 @@ class DwBible_Plugin {
         // ─── Client-side filter behaviour ───────────────────────────────────
         // Pure DOM filtering — prefix-matches the query against each tile's
         // data-search tokens, hides non-matching books and any group/testament
-        // left empty. Never makes a request. norm() mirrors search_normalize().
+        // left empty. Never makes a request.
         //
         // A query may end in a CITATION ("Matthew 5:41", "Mt 5,41", "1 Cor 13",
         // "Io 3:16-18"): the name half filters the books exactly as before, and
@@ -1862,9 +1906,10 @@ class DwBible_Plugin {
         // already owns /{book}/{ch}:{v}[-{v}] (canonicalisation, ranges, the
         // Malachias 4 shim, and 404s for what does not exist).
         //
-        // The citation GRAMMAR is not written here: __DWBIBLE_CITATION__ below is
-        // replaced with DwBible_Reference::CITATION_PATTERN, the same string the
-        // server parses `?q=` with. One grammar, two runtimes.
+        // The citation GRAMMAR is not written here: it comes from
+        // assets/dwbible-search.js (window.DwBibleSearch), which is handed
+        // DwBible_Reference::CITATION_PATTERN — the same string the server
+        // parses `?q=` with. One grammar, three places that must agree.
         $js = <<<'JS'
 <script>
 (function(){
@@ -1892,30 +1937,11 @@ class DwBible_Plugin {
     };
   });
 
-  function norm(s){
-    return (s || '').toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/æ/g, 'ae').replace(/œ/g, 'oe').replace(/ß/g, 'ss')
-      .replace(/[^a-z0-9]/g, '');
-  }
-
-  // The typed-citation grammar, handed over from PHP (DwBible_Reference).
-  // It splits "<book> <chapter>[:<verse>[-<verse>]]" into its two halves; the
-  // verse part is optional AND may be half-typed ("Matthew 5:"), so the row
-  // keeps pointing somewhere sensible on every keystroke.
-  var CITATION = new RegExp(__DWBIBLE_CITATION__);
-
-  // -> { q: normalized book query, ref: canonical citation suffix ('' if none) }
-  function parseQuery(raw){
-    var s = (raw || '').trim();
-    var m = CITATION.exec(s);
-    if (m && norm(m[1])){
-      var ref = m[2];
-      if (m[3]) { ref += ':' + m[3] + (m[4] ? '-' + m[4] : ''); }
-      return { q: norm(m[1]), ref: ref };
-    }
-    return { q: norm(s), ref: '' };
-  }
+  // The grammar — normalizing a typed word, and splitting
+  // "<book> <chapter>[:<verse>[-<verse>]]" into its two halves — belongs to
+  // assets/dwbible-search.js, which the rail's Bible field uses too. One
+  // definition, so a word that finds a book in one field finds it in the other.
+  var parseQuery = window.DwBibleSearch.parse;
 
   // With a citation the row names the VERSE it now leads to ("Matthaeus 5:41")
   // and its href carries the same reference; without one it is a book row again.
@@ -1997,12 +2023,7 @@ class DwBible_Plugin {
 })();
 </script>
 JS;
-        // One grammar, two runtimes — see DwBible_Reference::CITATION_PATTERN.
-        $out .= str_replace(
-            '__DWBIBLE_CITATION__',
-            wp_json_encode( DwBible_Reference::CITATION_PATTERN ),
-            $js
-        );
+        $out .= $js;
 
         $out .= '</div>';
         return $out;

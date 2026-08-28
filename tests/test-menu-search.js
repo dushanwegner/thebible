@@ -125,8 +125,33 @@ function check(name, cond, detail) {
   }));
   check('re-click closes it', closed.expanded === 'false' && closed.hidden === true, JSON.stringify(closed));
 
+  // — Live feedback: does what I typed name a book? —
+  // The vocabulary is one cached fetch, made on the reader's first sign of
+  // interest and never on page load.
+  const vocabHits = [];
+  page.on('request', (r) => { if (r.url().includes('bible-books.json')) vocabHits.push(r.url()); });
+
+  async function resolves(text) {
+    await page.fill('.dw-nav-panel input[name="q"]', text);
+    await page.waitForTimeout(120);
+    return page.evaluate(() => document.querySelector('form.dw-nav-search').classList.contains('is-resolved'));
+  }
+
+  await page.click('.dw-nav-action'); // reopen (the re-click above closed it)
+  await page.waitForTimeout(400);     // the vocabulary lands
+
+  check('a book name is recognised', await resolves('John'), 'John');
+  check('a partial name is recognised', await resolves('Joh'), 'Joh');
+  check('a name with a citation is recognised', await resolves('John 1:42'), 'John 1:42');
+  check('an abbreviation is recognised', await resolves('mt 5,41'), 'mt 5,41');
+  check('a name in another language is recognised', await resolves('Matthäus'), 'Matthäus');
+  check('a made-up name is NOT recognised', !(await resolves('Zaphod 1:1')), 'Zaphod 1:1');
+  check('gibberish is NOT recognised', !(await resolves('xyzzy')), 'xyzzy');
+  check('an empty field is NOT recognised', !(await resolves('')), 'empty');
+  check('the vocabulary was fetched exactly once', vocabHits.length <= 1, JSON.stringify(vocabHits));
+
   // — The whole chain: a citation reaches the verse —
-  await page.click('.dw-nav-action');
+  // (the panel is still open from the checks above)
   await page.fill('.dw-nav-panel input[name="q"]', 'Matthew 5:41');
   await Promise.all([
     page.waitForURL(/matthaeus\/5:41\/?$/, { timeout: 15000 }),

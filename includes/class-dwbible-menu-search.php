@@ -65,8 +65,20 @@ class DwBible_Menu_Search {
 	public static function panel( $action_url ) {
 		$icon = function_exists( 'dwtheme_menu_icon' ) ? dwtheme_menu_icon( 'search' ) : '';
 
-		$html  = '<form class="dw-nav-search" role="search" method="get" action="' . esc_url( $action_url ) . '">';
-		$html .= $icon; // hard-coded library glyph
+		// data-dwbible-vocab is what assets/dwbible-search.js wires itself to: the
+		// one cached file that lets the field say, as the reader types, whether
+		// what they wrote names a book. Without JS the form is unchanged.
+		$html  = '<form class="dw-nav-search" role="search" method="get" action="' . esc_url( $action_url ) . '"';
+		$html .= ' data-dwbible-vocab="' . esc_url( home_url( '/bible-books.json' ) ) . '">';
+		// The field's mark: ONE slot, two states. It is the magnifier until what
+		// the reader wrote names a book, and then it is the check — so the
+		// answer costs no second glyph beside the browser's own clear button,
+		// and nothing moves under the caret. Both are library markup.
+		$check = function_exists( 'dwtheme_menu_icon' ) ? dwtheme_menu_icon( 'check' ) : '';
+		$html .= '<span class="dw-nav-search__mark" aria-hidden="true">';
+		$html .= '<span class="dw-nav-search__mark-search">' . $icon . '</span>';
+		$html .= '<span class="dw-nav-search__mark-ok">' . $check . '</span>';
+		$html .= '</span>';
 		$html .= '<input type="search" name="q"';
 		// A shorter placeholder than the index filter's: the field is a rail
 		// row wide (~179px at 14px), and a clipped example teaches nothing.
@@ -100,3 +112,36 @@ class DwBible_Menu_Search {
 }
 
 add_filter( 'dwtheme_navrow_action', [ 'DwBible_Menu_Search', 'navrow_action' ], 10, 2 );
+
+/**
+ * The search module (grammar + the field's behaviour).
+ *
+ * In the HEAD, not the footer: the Bible index's own filter is inline in the
+ * page body and calls into the same grammar, so the module has to exist by the
+ * time that script runs. It is ~2 KB and fetches nothing until a reader opens
+ * the field.
+ */
+add_action( 'wp_enqueue_scripts', function () {
+	if ( is_admin() ) { return; }
+
+	// __DIR__ is the plugin's includes/ — the asset lives one level up, beside
+	// the plugin file, and plugins_url() needs a path INSIDE the plugin root to
+	// resolve against (pointing it at this directory yields includes/assets/…).
+	$root = dirname( __DIR__ );
+	$rel  = 'assets/dwbible-search.js';
+	$path = $root . '/' . $rel;
+	if ( ! file_exists( $path ) ) { return; }
+
+	wp_enqueue_script(
+		'dwbible-search',
+		plugins_url( $rel, $root . '/dwbible.php' ),
+		[],
+		(string) filemtime( $path ),
+		false // head
+	);
+	wp_localize_script( 'dwbible-search', 'dwbibleSearchCfg', [
+		// ONE grammar: the server parses `?q=` with this same string.
+		'pattern'  => DwBible_Reference::CITATION_PATTERN,
+		'vocabUrl' => home_url( '/bible-books.json' ),
+	] );
+}, 20 );

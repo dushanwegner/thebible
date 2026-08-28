@@ -335,6 +335,34 @@ trait DwBible_JSON_API_Trait {
      * french, and italian — including the divergent German slugs (e.g.
      * sprueche, matthaeus) and the Italian book-order offset.
      */
+    /**
+     * /bible-books.json — the search VOCABULARY, and nothing else.
+     *
+     * Every prefix-token that names a book, in every configured language, as a
+     * flat list. It answers exactly one question, the one the rail's Bible
+     * search asks on every keystroke: does what the reader wrote name a book?
+     * — so it carries no names, no URLs and no chapter counts (that is
+     * bible-index.json, 140 KB, and the wrong tool for a highlight).
+     *
+     * Language-independent on purpose: every language's names are already
+     * tokens in the same list, so one cached file serves all five locales.
+     * Cached like the rest of the API — the vocabulary only changes when a
+     * dataset does.
+     */
+    private static function serve_book_vocabulary() {
+        $tokens = array_values( DwBible_Plugin::search_tokens_by_order() );
+
+        self::send_json_headers();
+        echo wp_json_encode( [
+            '_meta' => [
+                'content' => 'Search vocabulary — every token that names a book, all languages',
+                'usage'   => 'Prefix-match a normalized query against any token; a hit means the query names a book.',
+                'books'   => count( $tokens ),
+            ],
+            'tokens' => $tokens,
+        ] );
+    }
+
     private static function serve_unified_index() {
         // All six editions the site serves (la/en/de/fr/es/it). Any dataset whose
         // index.json is absent on disk is skipped below, so this list is safe even
