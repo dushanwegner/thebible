@@ -376,6 +376,13 @@ trait DwBible_Router_Trait {
         $raw = isset($_GET['q']) ? sanitize_text_field(wp_unslash((string) $_GET['q'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         if (trim($raw) === '') { return false; }
 
+        // A lookup is not a page: never store this response. `q` is also part of
+        // dwcache's key (see the filter in dwbible.php) so this request can never
+        // be ANSWERED with the plain index either — the two halves of the same
+        // bug, which is exactly how the QR image once got stored as a verse page.
+        if (!defined('DONOTCACHEPAGE')) { define('DONOTCACHEPAGE', true); }
+        nocache_headers();
+
         $slug = get_query_var(self::QV_SLUG);
         if (!is_string($slug) || $slug === '') { $slug = 'bible'; }
 

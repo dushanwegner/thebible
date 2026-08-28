@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.27.03
+* Version: 1.26.08.28.01
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.27.03');
+    define('DWBIBLE_VERSION', '1.26.08.28.01');
 }
 
 // Load include classes before hooks are registered
@@ -41,6 +41,15 @@ add_filter('dwcache_allowed_query_params', function ($params) {
     return array_merge((array) $params, array(
         'dwbible_qr', 'dwbible_qr_download',
         'dwbible_og', 'dwbible_og_download', 'dwbible_og_nocache',
+        // `q` — a typed Bible search (the drawer's Bible row). The SAME two
+        // failures apply to it, and it was live for minutes on 2026-08-28:
+        // `/biblia/?q=zzzz` was stored as the index, so every visitor got the
+        // book list with someone else's query in the filter. In the key it is
+        // its own response; and because a lookup is never worth storing (the
+        // values are unbounded — a crawler could fill the disk with them), the
+        // router also marks the request DONOTCACHEPAGE, which stops the write.
+        // Key = the read half, DONOTCACHEPAGE = the write half. Both needed.
+        'q',
     ));
 });
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-reference.php';
@@ -1367,7 +1376,14 @@ class DwBible_Plugin {
         if (self::maybe_redirect_query()) { return; }
         self::load_index();
         status_header(200);
-        header('Cache-Control: public, max-age=86400');
+        // The book list is static for a day — but a page rendered for a `?q=`
+        // the resolver could not place is that reader's answer, not the index,
+        // and nothing between here and them may keep it.
+        if (isset($_GET['q']) && trim((string) wp_unslash($_GET['q'])) !== '') { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            nocache_headers();
+        } else {
+            header('Cache-Control: public, max-age=86400');
+        }
         $content = self::build_index_html();
         $footer = self::render_footer_html();
         if ($footer !== '') { $content .= $footer; }
