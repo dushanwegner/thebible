@@ -350,16 +350,32 @@ trait DwBible_JSON_API_Trait {
      * dataset does.
      */
     private static function serve_book_vocabulary() {
-        $tokens = array_values( DwBible_Plugin::search_tokens_by_order() );
+        // Both maps are keyed by the book's canonical identity and emitted in the
+        // same sequence, so tokens[i] and verses[i] are the same book.
+        $tokens = DwBible_Plugin::search_tokens_by_book();
+        $verses = DwBible_Plugin::verse_counts_by_book();
+        ksort( $tokens );
+
+        $out_tokens = [];
+        $out_verses = [];
+        foreach ( $tokens as $key => $line ) {
+            $out_tokens[] = $line;
+            // Verses per chapter, comma-joined: the shortest honest way to say
+            // "chapter 4 has 54 verses" 1,334 times. An empty string means the
+            // numbers are unknown for that book, and the reader is not told a
+            // citation is wrong on the strength of data we do not have.
+            $out_verses[] = isset( $verses[ $key ] ) ? implode( ',', $verses[ $key ] ) : '';
+        }
 
         self::send_json_headers();
         echo wp_json_encode( [
             '_meta' => [
-                'content' => 'Search vocabulary — every token that names a book, all languages',
-                'usage'   => 'Prefix-match a normalized query against any token; a hit means the query names a book.',
-                'books'   => count( $tokens ),
+                'content' => 'Search vocabulary — every token that names a book (all languages), and how long each book is',
+                'usage'   => 'Prefix-match a normalized query against any token; a hit means the query names a book. verses[i] is that book\'s verse count per chapter, so a citation can be checked for being POSSIBLE before it is followed.',
+                'books'   => count( $out_tokens ),
             ],
-            'tokens' => $tokens,
+            'tokens' => $out_tokens,
+            'verses' => $out_verses,
         ] );
     }
 

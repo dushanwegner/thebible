@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.28.02
+* Version: 1.26.08.28.03
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.28.02');
+    define('DWBIBLE_VERSION', '1.26.08.28.03');
 }
 
 // Load include classes before hooks are registered
@@ -1593,7 +1593,71 @@ class DwBible_Plugin {
      * itself ("corinthios") is matchable from its first letter.
      */
     /**
-     * THE SEARCH VOCABULARY: every prefix-token that names a book, by order.
+     * HOW LONG EACH BOOK IS: verses per chapter, by canonical book key.
+     *
+     * The Latin spine is the versification the whole site is aligned to (all
+     * six editions carry the same 35,808 verses), so the counts are read from
+     * it — `data/latin/json/<book>/index.json`, which states a verseCount per
+     * chapter. 73 small reads, ~16 ms, behind a day-long cache.
+     *
+     * It exists so the rail's Bible field can tell a citation that MEANS
+     * something from one that only looks like one: "John 4:9999" has the shape
+     * of a reference and names a real book, and there is no such verse.
+     *
+     * Keyed like the vocabulary — by the book's own identity, never by a
+     * dataset's order number (see search_tokens_by_book for what that costs).
+     *
+     * @return array<string,array<int,int>> book key => [verses in ch1, ch2, …]
+     */
+    public static function verse_counts_by_book() {
+        static $cache = null;
+        if ( $cache !== null ) { return $cache; }
+
+        $out = [];
+        $dir = dwbible_data_dir() . 'latin/json/';
+        $idx = $dir . 'index.json';
+        if ( ! file_exists( $idx ) ) { $cache = $out; return $out; }
+
+        $books = json_decode( (string) file_get_contents( $idx ), true );
+        $books = is_array( $books ) && ! empty( $books['books'] ) ? $books['books'] : [];
+
+        foreach ( $books as $b ) {
+            $slug = isset( $b['slug'] ) ? (string) $b['slug'] : '';
+            if ( $slug === '' ) { continue; }
+            $key = self::key_from_any_book_slug( $slug );
+            if ( $key === null ) { continue; }
+
+            $file = $dir . $slug . '/index.json';
+            if ( ! file_exists( $file ) ) { continue; }
+            $book = json_decode( (string) file_get_contents( $file ), true );
+            if ( ! is_array( $book ) || empty( $book['chapters'] ) ) { continue; }
+
+            $counts = [];
+            foreach ( $book['chapters'] as $ch ) {
+                $n = isset( $ch['verseCount'] ) ? (int) $ch['verseCount'] : 0;
+                if ( $n > 0 ) { $counts[] = $n; }
+            }
+            if ( ! $counts ) { continue; }
+
+            // MALACHIAS 4 — the router answers it (the Elijah prophecy is 3:19-24
+            // here and 4:1-6 in every printed Vulgate; see the shim in
+            // class-dwbible-router). A reader holding a 1962 missal types the
+            // chapter that does not exist in our data, and the field must not
+            // call implausible what the site itself resolves. Six verses,
+            // exactly the six the shim maps.
+            if ( $slug === 'malachias' && count( $counts ) === 3 ) {
+                $counts[] = 6;
+            }
+
+            $out[ $key ] = $counts;
+        }
+
+        $cache = $out;
+        return $cache;
+    }
+
+    /**
+     * THE SEARCH VOCABULARY: every prefix-token that names a book, by BOOK.
      *
      * One vocabulary, two surfaces. The Bible index embeds a book's tokens on
      * its row so the on-page filter runs in the browser; the rail's Bible
@@ -1607,38 +1671,50 @@ class DwBible_Plugin {
      * books) — plus the curated abbreviations that are NOT a prefix of any full
      * name, chiefly the Gospels (Mt / Mk·Mc / Lk·Lc / Jn).
      *
-     * @return array<int,string> canonical order => space-separated tokens
+     * ⚠️ KEYED BY THE BOOK'S OWN IDENTITY, never by a dataset's order number.
+     * The six indexes do NOT agree on order, and grouping names by order files
+     * a language's name under a DIFFERENT book: the Italian "Malachia" landed
+     * on 2 Machabees and the Italian "Aggeo" on Malachias, so the index filter
+     * matched those — silently, for as long as the filter has existed. Every
+     * name is resolved to its canonical key instead, which is the one thing all
+     * six indexes agree on.
+     *
+     * @return array<string,string> canonical book key => space-separated tokens
      */
-    public static function search_tokens_by_order() {
+    public static function search_tokens_by_book() {
         static $cache = null;
         if ( $cache !== null ) { return $cache; }
 
-        $names_by_order = [];
+        // Curated abbreviations that no full name has as a prefix, by canonical key.
+        $extra_abbr = [
+            'matthew' => ['mt'],
+            'mark'    => ['mk', 'mc'],
+            'luke'    => ['lk', 'lc'],
+            'john'    => ['jn'],
+        ];
+
+        $names = [];
         foreach (['latin', 'bible', 'bibel', 'spanish', 'french', 'italian'] as $ds) {
             foreach (self::load_dataset_index($ds) as $b) {
-                $o = intval($b['order']);
-                if (!empty($b['display_name'])) { $names_by_order[$o][] = $b['display_name']; }
-                if (!empty($b['short_name']))   { $names_by_order[$o][] = $b['short_name']; }
+                $short = isset($b['short_name']) ? (string) $b['short_name'] : '';
+                if ($short === '') { continue; }
+                $key = self::key_from_any_book_slug(self::slugify($short));
+                if ($key === null) { continue; }
+                $names[$key][] = $short;
+                if (!empty($b['display_name'])) { $names[$key][] = (string) $b['display_name']; }
             }
         }
 
-        $extra_abbr = [
-            47 => ['mt'],
-            48 => ['mk', 'mc'],
-            49 => ['lk', 'lc'],
-            50 => ['jn'],
-        ];
-
         $out = [];
-        foreach ($names_by_order as $order => $names) {
+        foreach ($names as $key => $list) {
             $tok = [];
-            foreach ($names as $n) {
+            foreach ($list as $n) {
                 foreach (self::search_tokens_for_name($n) as $tk) { $tok[$tk] = true; }
             }
-            if (isset($extra_abbr[$order])) {
-                foreach ($extra_abbr[$order] as $ab) { $tok[$ab] = true; }
+            if (isset($extra_abbr[$key])) {
+                foreach ($extra_abbr[$key] as $ab) { $tok[$ab] = true; }
             }
-            $out[$order] = implode(' ', array_keys($tok));
+            $out[$key] = implode(' ', array_keys($tok));
         }
 
         $cache = $out;
@@ -1720,10 +1796,10 @@ class DwBible_Plugin {
 
         // The search vocabulary — every language's name for each book, its slug
         // and its curated abbreviations — built once, in the one place that
-        // knows it (search_tokens_by_order), and embedded on each row so the
+        // knows it (search_tokens_by_book), and embedded on each row so the
         // filter runs 100% client-side. The rail's Bible search fetches the
         // same vocabulary, so a word that finds a book here finds it there.
-        $tokens_by_order = self::search_tokens_by_order();
+        $tokens_by_book = self::search_tokens_by_book();
 
         // ─── Translation model — "alongside the Latin" ──────────────────────
         // Every vernacular edition is an INTERLINEAR paired with the Latin
@@ -1855,7 +1931,9 @@ class DwBible_Plugin {
                 // configured language, but a display name can differ from the
                 // dataset's own — so add them and let the set dedupe).
                 $tok_set = [];
-                foreach ( explode(' ', isset($tokens_by_order[$order]) ? $tokens_by_order[$order] : '') as $tk ) {
+                $book_key = self::key_from_any_book_slug( $book_slug );
+                $book_tok = ( $book_key !== null && isset($tokens_by_book[$book_key]) ) ? $tokens_by_book[$book_key] : '';
+                foreach ( explode(' ', $book_tok) as $tk ) {
                     if ( $tk !== '' ) { $tok_set[$tk] = true; }
                 }
                 foreach ( [$name, $alt_name] as $cn ) {

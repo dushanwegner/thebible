@@ -140,14 +140,49 @@ function check(name, cond, detail) {
   await page.click('.dw-nav-action'); // reopen (the re-click above closed it)
   await page.waitForTimeout(400);     // the vocabulary lands
 
-  check('a book name is recognised', await resolves('John'), 'John');
-  check('a partial name is recognised', await resolves('Joh'), 'Joh');
-  check('a name with a citation is recognised', await resolves('John 1:42'), 'John 1:42');
-  check('an abbreviation is recognised', await resolves('mt 5,41'), 'mt 5,41');
-  check('a name in another language is recognised', await resolves('Matthäus'), 'Matthäus');
-  check('a made-up name is NOT recognised', !(await resolves('Zaphod 1:1')), 'Zaphod 1:1');
-  check('gibberish is NOT recognised', !(await resolves('xyzzy')), 'xyzzy');
-  check('an empty field is NOT recognised', !(await resolves('')), 'empty');
+  // A citation is plausible when the book EXISTS and could hold those numbers.
+  // Both separators, ranges, and the states a reader passes through on the way.
+  const CASES = [
+    ['John', true, 'a book name'],
+    ['Joh', true, 'a partial name'],
+    ['Matthäus', true, 'a name in another language'],
+    ['mt 5,41', true, 'an abbreviation with a comma'],
+    ['John 1:42', true, 'a name with a citation'],
+    ['John 4:54', true, 'the last verse of a chapter'],
+    ['John 4:55', false, 'one verse past the end'],
+    ['John 4:9999', false, 'a verse that cannot exist'],
+    ['John 4,9999', false, 'the same, with a comma'],
+    ['John 21', true, 'the last chapter'],
+    ['John 22', false, 'one chapter past the end'],
+    ['John 0', false, 'chapter zero'],
+    ['John 0:1', false, 'verse in chapter zero'],
+    ['Luke 24:13-35', true, 'a range'],
+    ['Luke 24:13-99', false, 'a range past the end'],
+    ['Luke 24:13-3', true, 'a range end still being typed'],
+    ['John 4:', true, 'a separator with no verse yet'],
+    ['John 4:1-', true, 'a dash with no end yet'],
+    // The Psalter is VULGATE-numbered here: the 176-verse psalm is 118, not 119.
+    ['Psalms 118:176', true, 'the long psalm, Vulgate-numbered'],
+    ['Psalms 119:176', false, 'the same verse under Hebrew numbering'],
+    ['Psalms 150', true, 'the last psalm'],
+    ['Psalms 151', false, 'a psalm that does not exist'],
+    // Malachias 4 exists for the reader (the router maps it to 3:19-24), so the
+    // field must not call implausible what the site itself answers.
+    ['Malachias 4:6', true, 'the Malachias-4 shim the router honours'],
+    ['Malachias 4:7', false, 'one verse past that shim'],
+    // Names filed under the wrong book by a dataset's order number used to
+    // match the wrong book entirely.
+    ['Malachia 4:6', true, 'the Italian name of Malachias'],
+    ['Aggeo 2:23', true, 'the Italian name of Aggeus'],
+    ['Aggeo 4:1', false, 'a chapter Aggeus does not have'],
+    ['Zaphod 1:1', false, 'a made-up name'],
+    ['xyzzy', false, 'gibberish'],
+    ['', false, 'an empty field'],
+  ];
+  for (const [q, want, what] of CASES) {
+    const got = await resolves(q);
+    check(`${want ? 'plausible' : 'not plausible'}: ${what}`, got === want, JSON.stringify(q) + ' → ' + got);
+  }
   check('the vocabulary was fetched exactly once', vocabHits.length <= 1, JSON.stringify(vocabHits));
 
   // — The whole chain: a citation reaches the verse —
