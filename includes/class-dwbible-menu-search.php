@@ -51,6 +51,36 @@ class DwBible_Menu_Search {
 	}
 
 	/**
+	 * The vocabulary's URL — STAMPED, so a reader is never left judging a
+	 * citation against last week's data.
+	 *
+	 * /bible-books.json answers with `Cache-Control: public, max-age=86400`,
+	 * which is right for a file that changes about never — but only if the URL
+	 * changes when the content does. It did not, once: the day verse counts
+	 * were added to the payload, every browser that had already fetched the old
+	 * one kept it for a day and went on judging book names alone, because a
+	 * book with no lengths is trusted. The stamp is the plugin's version (the
+	 * shape of the payload) plus the mtime of the dataset index (the data in
+	 * it), so either kind of change is a new URL and the old copy is simply
+	 * never asked for again.
+	 *
+	 * @return string
+	 */
+	public static function vocabulary_url() {
+		$stamp = defined( 'DWBIBLE_VERSION' ) ? (string) DWBIBLE_VERSION : '0';
+
+		if ( function_exists( 'dwbible_data_dir' ) ) {
+			$idx = dwbible_data_dir() . 'latin/json/index.json';
+			if ( file_exists( $idx ) ) {
+				clearstatcache( true, $idx );
+				$stamp .= '.' . (int) filemtime( $idx );
+			}
+		}
+
+		return add_query_arg( 'v', $stamp, home_url( '/bible-books.json' ) );
+	}
+
+	/**
 	 * The panel disclosed under the row: the search field itself.
 	 *
 	 * `.dw-nav-search` is the theme's field-in-a-nav-panel object: every
@@ -69,7 +99,7 @@ class DwBible_Menu_Search {
 		// one cached file that lets the field say, as the reader types, whether
 		// what they wrote names a book. Without JS the form is unchanged.
 		$html  = '<form class="dw-nav-search" role="search" method="get" action="' . esc_url( $action_url ) . '"';
-		$html .= ' data-dwbible-vocab="' . esc_url( home_url( '/bible-books.json' ) ) . '">';
+		$html .= ' data-dwbible-vocab="' . esc_url( self::vocabulary_url() ) . '">';
 		// The field's mark: ONE slot, two states. It is the magnifier until what
 		// the reader wrote names a book, and then it is the check — so the
 		// answer costs no second glyph beside the browser's own clear button,
@@ -141,7 +171,6 @@ add_action( 'wp_enqueue_scripts', function () {
 	);
 	wp_localize_script( 'dwbible-search', 'dwbibleSearchCfg', [
 		// ONE grammar: the server parses `?q=` with this same string.
-		'pattern'  => DwBible_Reference::CITATION_PATTERN,
-		'vocabUrl' => home_url( '/bible-books.json' ),
+		'pattern' => DwBible_Reference::CITATION_PATTERN,
 	] );
 }, 20 );

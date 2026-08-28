@@ -185,6 +185,29 @@ function check(name, cond, detail) {
   }
   check('the vocabulary was fetched exactly once', vocabHits.length <= 1, JSON.stringify(vocabHits));
 
+  // A payload that grows a field must arrive at a NEW address, or a browser
+  // holding the old one keeps answering with it for a day — which is exactly
+  // how verse checking looked "not implemented" while it was live: a book with
+  // no lengths is trusted, so an old payload silently judges book names alone.
+  const vocabUrl = await page.getAttribute('form.dw-nav-search', 'data-dwbible-vocab');
+  check('the vocabulary URL is stamped', /[?&]v=\d[\d.]*/.test(vocabUrl || ''), String(vocabUrl));
+
+  const payload = await page.evaluate(async (u) => {
+    const r = await fetch(u, { credentials: 'omit' });
+    if (!r.ok) { return { ok: false, status: r.status }; }
+    const d = await r.json();
+    const tokens = d.tokens || [];
+    const verses = d.verses || [];
+    return {
+      ok: true,
+      books: tokens.length,
+      withVerses: verses.filter((v) => String(v).length).length,
+      johnChapters: (verses[tokens.findIndex((t) => t.split(' ').indexOf('john') === 1)] || '').split(',').length,
+    };
+  }, vocabUrl);
+  check('every book in the payload carries its verse counts',
+        payload.ok && payload.books === 73 && payload.withVerses === payload.books, JSON.stringify(payload));
+
   // — The whole chain: a citation reaches the verse —
   // (the panel is still open from the checks above)
   await page.fill('.dw-nav-panel input[name="q"]', 'Matthew 5:41');

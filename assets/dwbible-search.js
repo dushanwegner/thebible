@@ -15,9 +15,12 @@
  *        /bible-books.json, made the first time a reader opens the field and
  *        never again. A query never reaches the origin — the same shape
  *        dwsearch uses on dushanwegner.com.
- * INPUT  window.dwbibleSearchCfg = { pattern, vocabUrl } (localized from PHP —
- *        the pattern is DwBible_Reference::CITATION_PATTERN, so the grammar
- *        has one definition for the server, the index filter and this field).
+ * INPUT  window.dwbibleSearchCfg = { pattern } (localized from PHP — it is
+ *        DwBible_Reference::CITATION_PATTERN, so the grammar has one definition
+ *        for the server, the index filter and this field), and the field's own
+ *        data-dwbible-vocab, which carries a STAMPED URL: a payload that grows
+ *        a new field must arrive at a new address, or browsers holding the old
+ *        one keep answering with it for a day.
  * USED BY the Bible index's inline filter, and the rail's Bible search panel
  *        (dwbible includes/class-dwbible-menu-search.php).
  */
