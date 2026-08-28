@@ -36,15 +36,18 @@ for lang in en de; do
 
   # 1. A query the resolver cannot place renders the index with the filter
   #    holding it — that response is the one that must not be kept.
+  #    Matched with `case`, never `echo "$body" | grep`: grep -q exits at the
+  #    first match, echo takes SIGPIPE for the rest of a 74 KB page, and under
+  #    `set -o pipefail` that reads as a FAILING check — a race that fails a
+  #    passing site about half the time.
   q_body=$(curl -sk "$idx?q=$MARKER")
-  echo "$q_body" | grep -q "value=\"$MARKER\""
-  check "$lang: an unresolvable query renders with the filter holding it" $? ""
+  case "$q_body" in *"value=\"$MARKER\""*) r=0 ;; *) r=1 ;; esac
+  check "$lang: an unresolvable query renders with the filter holding it" $r ""
 
   # 2. …and the plain index, fetched right after, is still the plain index.
   idx_body=$(curl -sk "$idx")
-  echo "$idx_body" | grep -q "value=\"$MARKER\""
-  [ $? -ne 0 ]
-  check "$lang: the plain index did NOT inherit that query" $? "the query response was cached as the index"
+  case "$idx_body" in *"value=\"$MARKER\""*) r=1 ;; *) r=0 ;; esac
+  check "$lang: the plain index did NOT inherit that query" $r "the query response was cached as the index"
 
   # 3. A resolvable query redirects — and the index still does not.
   loc=$(curl -sk -o /dev/null -w '%{url_effective}' -L "$idx?q=Matthew+5:41")
