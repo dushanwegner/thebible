@@ -15,7 +15,8 @@
  *         maybe_redirect_query). One search, one grammar, one resolver.
  * INPUT   The nav item (dwtheme walker). OUTPUT: the action descriptor, or null
  *         for every row that is not the Bible index.
- * USED BY dwtheme inc/class-dw-menu-walker.php
+ * USED BY dwtheme inc/nav-action.php — it filters `walker_nav_menu_start_el`,
+ *         so the answer here reaches every nav the theme renders.
  *
  * @package dwbible
  */
@@ -84,10 +85,10 @@ class DwBible_Menu_Search {
 	 * The panel disclosed under the row: the search field itself.
 	 *
 	 * `.dw-nav-search` is the theme's field-in-a-nav-panel object: every
-	 * navigation surface knows how to draw it (the rail, its drawer, the sheet
-	 * menu), so the plugin says only WHAT the panel holds. The placeholder is
-	 * the index filter's own string, so both surfaces teach the reader the same
-	 * three forms in the same words.
+	 * navigation surface knows how to draw it (the rail and its drawer — the
+	 * shell is the only one), so the plugin says only WHAT the panel holds.
+	 * The placeholder is the index filter's own string, so both surfaces teach
+	 * the reader the same three forms in the same words.
 	 *
 	 * @param string $action_url The row's own URL — the index answers `?q=`.
 	 * @return string
