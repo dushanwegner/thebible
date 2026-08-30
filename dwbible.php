@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.30.01
+* Version: 1.26.08.31.01
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.30.01');
+    define('DWBIBLE_VERSION', '1.26.08.31.01');
 }
 
 // Load include classes before hooks are registered
@@ -39,7 +39,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-qr-image.php';
  */
 add_filter('dwcache_allowed_query_params', function ($params) {
     return array_merge((array) $params, array(
-        'dwbible_qr', 'dwbible_qr_download',
+        'dwbible_qr', 'dwbible_qr_download', 'dwbible_qr_range',
         'dwbible_og', 'dwbible_og_download', 'dwbible_og_nocache',
         // `q` — a typed Bible search (the drawer's Bible row). The SAME two
         // failures apply to it, and it was live for minutes on 2026-08-28:
