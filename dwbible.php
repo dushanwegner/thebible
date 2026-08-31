@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.31.07
+* Version: 1.26.08.31.08
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.31.07');
+    define('DWBIBLE_VERSION', '1.26.08.31.08');
 }
 
 // Load include classes before hooks are registered
@@ -950,8 +950,20 @@ class DwBible_Plugin {
      * Single source of truth: base_slugs() ∩ the dwi18n registry. Adding a language to
      * dwi18n (registry.php) automatically enrolls its Bible into the sitemaps here — the
      * regex, the per-book handler's allow-list, and the index all read THIS one list, so
-     * they can never drift. Datasets without a web locale (today: latin, italian) are
-     * intentionally omitted until they get a /{lang}/bible/ home.
+     * they can never drift. Adding `it` to the registry enrolled the Italian Bible here
+     * with no code change, which is the design working.
+     *
+     * LATIN is omitted, and permanently — not "until it gets a home". A sitemap <loc>
+     * is /{lang}/bible/…, so enrolling `latin` would require `la` to be a dwi18n
+     * locale, and a /la/ interface would be Latin beside Latin: it contradicts the
+     * interlinear model, where every page is the Vulgate PLUS a vernacular. There is
+     * therefore no Latin-only HTML page for a sitemap to list, and pointing a Latin
+     * sitemap at the shared interlinear URLs would publish the same addresses twice
+     * across two sitemaps. `/bible-sitemap-latin-*.xml` answering 404 is correct.
+     *
+     * Latin is not thereby hidden: it is exposed as DATA, which is what it is —
+     * /latin/{book}/index.json and friends, plus bible-index.json, which advertises it
+     * under _meta.translations with a per-book jsonUrl and lang:null. See dwbible#3.
      *
      * @return array<string,string> dataset-slug => web-locale code (e.g. 'french' => 'fr')
      */
