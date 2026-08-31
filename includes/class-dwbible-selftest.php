@@ -38,6 +38,45 @@ trait DwBible_SelfTest_Trait {
             return method_exists(__CLASS__, 'render_bible_page') && method_exists(__CLASS__, 'handle_request');
         });
 
+        $results[] = self::selftest_check('slugify_transliterates', function() {
+            // slugify() output becomes an address, so the mapping is pinned
+            // rather than trusted. The German pairs are the ones that matter:
+            // ä→ae, not a bare `a` and not nothing — book_map.json and
+            // abbreviations.de.json spell them that way, and a slug that
+            // disagreed with those files silently stopped matching (which is
+            // what happened, unnoticed, until 2026-08-31).
+            $cases = [
+                'Sprüche'      => 'sprueche',
+                'Matthäus'     => 'matthaeus',
+                '1 Makkabäer'  => '1-makkabaeer',
+                'Römer'        => 'roemer',
+                'Hebräer'      => 'hebraeer',
+                'Weiß'         => 'weiss',
+                // Romance accents fold to the base letter — `ue` is a German
+                // convention, not a universal one.
+                'Génesis'      => 'genesis',
+                'Genèse'       => 'genese',
+                'Ézéchiel'     => 'ezechiel',
+                'Giosuè'       => 'giosue',
+                'Première à Timothée' => 'premiere-a-timothee',
+                // …and the plain cases still behave.
+                'Genesis'      => 'genesis',
+                '1_Kings_Samuel' => '1-kings-samuel',
+                '  Spaced  Out ' => 'spaced-out',
+            ];
+            $failures = [];
+            foreach ($cases as $in => $expected) {
+                $got = DwBible_Plugin::slugify($in);
+                if ($got !== $expected) {
+                    $failures[] = "'$in' -> '$got' (expected '$expected')";
+                }
+            }
+            if ($failures) {
+                return new WP_Error('dwbible_selftest_slugify_failed', implode('; ', $failures));
+            }
+            return true;
+        });
+
         $results[] = self::selftest_check('text_utils_cases', function() {
             if (!class_exists('DwBible_Text_Utils')) {
                 return new WP_Error('dwbible_selftest_text_utils_missing', 'Text utils class missing (DwBible_Text_Utils).');

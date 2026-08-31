@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.31.02
+* Version: 1.26.08.31.03
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.31.02');
+    define('DWBIBLE_VERSION', '1.26.08.31.03');
 }
 
 // Load include classes before hooks are registered
@@ -620,8 +620,62 @@ class DwBible_Plugin {
         }
     }
 
+    /**
+     * A book name reduced to the ASCII form the URLs and lookups are built on.
+     *
+     * ─── Why the umlauts are spelled out and not stripped ─────────────────
+     *
+     * This used to be `strtolower()` plus "delete everything outside a-z0-9-",
+     * which DROPPED accented letters rather than transliterating them:
+     * `Sprüche` came out `sprche`, `Matthäus` `matthus`, `Génesis` `gnesis`.
+     *
+     * That was survivable only because it was wrong CONSISTENTLY — nearly every
+     * caller slugifies both sides of a comparison, so an index entry and an
+     * inbound URL segment were mangled identically and still matched. The
+     * mangled forms are dead strings, not addresses: `/latin-bibel/sprche/`
+     * 404s, while `/latin-bibel/sprueche/` serves — because the correct
+     * transliterations live in DATA (book_map.json, abbreviations.de.json) and
+     * were never produced here. Measured before this changed, on all five.
+     *
+     * So the old behaviour cost nothing visible and hid one real thing: any
+     * caller that slugified a display name and compared it against that data
+     * could never match, which is exactly what made book_map_consistency
+     * unfixable until it stopped using this function.
+     *
+     * German convention decides the mapping — ä→ae, ö→oe, ü→ue, ß→ss — because
+     * that is the convention the data already spells out (`Sprueche`,
+     * `Matthaeus`, `1_Makkabaeer`). Those pairs are applied FIRST, before any
+     * generic accent folding, or `ü` would become a bare `u` and disagree with
+     * every one of those files. Everything else folds to its base letter, which
+     * is right for the Romance datasets: `Génesis` → `genesis`, `Genèse` →
+     * `genese`.
+     *
+     * Deliberately NOT remove_accents(): that function's German handling is
+     * locale-dependent (`ä` becomes `a` or `ae` depending on the site language),
+     * and a function whose output becomes an address may not change meaning
+     * with a setting.
+     */
     public static function slugify($name) {
-        $slug = strtolower($name);
+        $slug = (string) $name;
+
+        // German first — two-letter forms that generic folding would destroy.
+        $slug = strtr($slug, [
+            'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
+            'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue', 'ẞ' => 'Ss',
+        ]);
+
+        // Everything else to its base letter. mb_strtolower because the plain
+        // one is byte-wise and would leave an accented capital untouched.
+        $slug = function_exists('mb_strtolower') ? mb_strtolower($slug, 'UTF-8') : strtolower($slug);
+        $slug = strtr($slug, [
+            'á'=>'a','à'=>'a','â'=>'a','ã'=>'a','å'=>'a','ā'=>'a',
+            'é'=>'e','è'=>'e','ê'=>'e','ë'=>'e','ē'=>'e',
+            'í'=>'i','ì'=>'i','î'=>'i','ï'=>'i','ī'=>'i',
+            'ó'=>'o','ò'=>'o','ô'=>'o','õ'=>'o','ø'=>'o','ō'=>'o',
+            'ú'=>'u','ù'=>'u','û'=>'u','ū'=>'u',
+            'ç'=>'c','ñ'=>'n','ý'=>'y','ÿ'=>'y','æ'=>'ae','œ'=>'oe',
+        ]);
+
         $slug = str_replace([' ', '__'], ['-', '-'], $slug);
         $slug = str_replace(['_', '\\', '/'], ['-', '-', '-'], $slug);
         $slug = preg_replace('/[^a-z0-9\-]+/', '', $slug);
