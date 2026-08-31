@@ -527,6 +527,18 @@ trait DwBible_SelfTest_Trait {
                     'must_not_contain' => [],
                 ],
                 [
+                    // A cited psalm is SINGULAR in every language — "Psalm 23",
+                    // not "Psalms 23" — while the book itself is plural. Both
+                    // forms are names, so both link; this pins the singular,
+                    // because it is the one the content is written in and the
+                    // one an expansion pass would naturally get wrong.
+                    'name' => 'psalm_singular_links',
+                    'slug' => 'bible',
+                    'in' => 'Psalm 23:1',
+                    'must_contain' => ['>Psalm 23:1</a>'],
+                    'must_not_contain' => [],
+                ],
+                [
                     // The three false positives that made widening this map
                     // unsafe, measured on the real corpus 2026-08-31. German
                     // for "on the 30th" and "it", plus a hex colour. None may
