@@ -26,24 +26,41 @@ their interlinear counterpart. Use interlinear slugs for stable links.
 /{slug}/{book}/{chapter}:{from}-{to}/  chapter with verse range highlighted
 ```
 
-IMPORTANT: verse references use a **colon**, not a slash.
-`/latin-bibel/ephesians/6:11/` is correct.
-`/latin-bibel/ephesians/6/11/` is NOT a valid HTML page URL.
+Verse references may be written with a **colon** or a **slash** — both resolve,
+in every language and for ranges. The colon is canonical:
+
+```
+/en/biblia/ioannes/3:16     200  (direct)
+/en/biblia/ioannes/3/16     301 → /en/biblia/ioannes/3:16/
+```
+
+So prefer the colon and you spend no redirect; use the slash and you spend one.
+Under a legacy prefix (`/latin-bible/`, `/latin-bibel/`, `/bible/`) BOTH forms
+redirect, because the prefix itself is what is being canonicalised — not the
+separator.
+
+What actually decides whether a citation resolves is the **prefix**, not the
+separator: a bare `/ephesians/6:11/` 404s exactly like `/ephesians/6/11/` does.
 
 Book slugs in HTML URLs follow the first language in the combo:
 - `latin-bibel` → German names (prediger, psalmen, matthaus, markus …)
 - `latin-bible` → English names (ecclesiastes, psalms, matthew, mark …)
 Cross-language names also resolve — the router tries all datasets.
 
-**Working examples:**
+**Working examples** — the canonical shape is `/{lang}/biblia/{latin-book}/…`,
+where the BOOK segment is always the Latin slug whatever the page language:
 ```
-https://latinprayer.org/latin-bibel/ephesians/6/         chapter
-https://latinprayer.org/latin-bibel/ephesians/6:11/      verse highlighted
-https://latinprayer.org/latin-bibel/ephesians/6:10-18/   range highlighted
-https://latinprayer.org/latin-bible/john/3:16/           Latin+English verse
-https://latinprayer.org/latin-bibel/prediger/1/          Ecclesiastes ch.1 (German slug)
-https://latinprayer.org/latin-bibel/psalmen/23/          Psalm 23 (German slug)
+https://latinprayer.org/de/biblia/ephesios/6/          chapter, German
+https://latinprayer.org/de/biblia/ephesios/6:11/       verse highlighted
+https://latinprayer.org/de/biblia/ephesios/6:10-18/    range highlighted
+https://latinprayer.org/en/biblia/ioannes/3:16/        Latin+English verse
+https://latinprayer.org/de/biblia/ecclesiastes/1/      Ecclesiastes ch.1
+https://latinprayer.org/de/biblia/psalmi/23/           Psalm 23
 ```
+
+Vernacular book slugs still resolve and 301 to the canonical form — `prediger`,
+`psalmen`, `juan`, `giovanni` all land correctly — so a citation built from a
+reader's own language is safe. It just costs a redirect.
 
 ### JSON API
 

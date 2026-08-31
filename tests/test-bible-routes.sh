@@ -356,18 +356,36 @@ if len(books) != 73:
 total_ch = sum(b.get('totalChapters', 0) for b in books)
 if total_ch != 1333:
     problems.append('chapter total %d != 1333' % total_ch)
+# The book segment of a real URL is the LATIN slug in every language, so a
+# book's `slug` must be identical across its translations and must appear in
+# both urls it publishes. Until 2026-08-31 this asserted the segment equalled
+# canonicalSlug (`john`), which was the pre-/biblia/ contract.
 mism = []
+differs = 0
 for b in books:
     cslug = b.get('canonicalSlug', '')
+    slugs = set()
     for lg in want_langs:
         t = b.get('translations', {}).get(lg)
         if not t:
             mism.append('%s/%s:missing' % (cslug, lg)); continue
-        m = re.search(r'/%s/([^/]+)/index\.json' % re.escape(lg), t.get('jsonUrl', ''))
-        if m and m.group(1) != cslug:
-            mism.append('%s/%s->%s' % (cslug, lg, m.group(1)))
+        sl = t.get('slug', '')
+        slugs.add(sl)
+        for field in ('url', 'jsonUrl'):
+            if '/%s/' % sl not in t.get(field, ''):
+                mism.append('%s/%s:%s lacks /%s/' % (cslug, lg, field, sl))
+    if len(slugs) > 1:
+        mism.append('%s: slug differs across translations (%s)' % (cslug, ','.join(sorted(slugs))))
+    if slugs and cslug not in slugs:
+        differs += 1
 if mism:
     problems.append('%d slug mis-mappings (e.g. %s)' % (len(mism), '; '.join(mism[:3])))
+# Proof it is the Latin slug and not the canonical key: John must be `ioannes`.
+john = next((b for b in books if b.get('canonicalSlug') == 'john'), None)
+if not john or john.get('translations', {}).get('bible', {}).get('slug') != 'ioannes':
+    problems.append('John does not publish the Latin slug `ioannes`')
+if differs < 10:
+    problems.append('only %d books differ from canonicalSlug — slug looks like the key, not the URL' % differs)
 print('ok' if not problems else 'FAIL: ' + ' | '.join(problems))
 " 2>/dev/null)
 if [ "$UNIFIED_RESULT" != "ok" ]; then
@@ -411,6 +429,42 @@ if ! fetch "$BASE_URL/bible-sitemap-italian-genesis.xml" | grep -q "/it/biblia/g
     FAILED_URLS+=("$BASE_URL/bible-sitemap-italian-genesis.xml (no /it/biblia/ urls)")
 fi
 
+# ── 9b. The unified index publishes addresses that RESOLVE ──────────
+#
+# bible-index.json is what an agent reads INSTEAD of crawling, so a stale URL
+# in it is worse than a stale link on a page: nothing will notice. Until
+# 2026-08-31 every `url` in it was the pre-/biblia/ shape and 301'd, `slug` was
+# the canonical key (`john`) rather than the real Latin slug (`ioannes`), and
+# `jsonUrl` had the production host baked in while `url` followed the request.
+#
+# A sample is checked rather than all 876, because this runs against prod.
+section "Unified index publishes live URLs"
+INDEX_JSON=$(fetch "$BASE_URL/bible-index.json")
+INDEX_URLS=$(echo "$INDEX_JSON" | python3 -c "
+import json, sys
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+out = []
+for b in d.get('books', [])[:4]:
+    for ds, t in b.get('translations', {}).items():
+        out.append(t.get('url', ''))
+        out.append(t.get('jsonUrl', ''))
+print('\n'.join(u for u in out if u))
+" 2>/dev/null || echo "")
+if [ -z "$INDEX_URLS" ]; then
+    TOTAL=$((TOTAL + 1))
+    echo "  FAIL bible-index.json unreadable or published no urls"
+    FAILURES=$((FAILURES + 1))
+    FAILED_URLS+=("$BASE_URL/bible-index.json (no urls)")
+else
+    while IFS= read -r iu; do
+        [ -z "$iu" ] && continue
+        # DIRECT 200 — a redirect here means the index is a hop behind the router.
+        check "$iu" 200 "index url $iu"
+    done <<< "$INDEX_URLS"
+fi
 # ── 10. Cross-dataset name resolution ───────────────────────────────
 section "Cross-dataset name resolution"
 # English names on Latin pages

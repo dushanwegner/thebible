@@ -434,6 +434,8 @@ trait DwBible_JSON_API_Trait {
 
         // Merge into unified book list.
         $site_url = site_url();
+        // The locale a language-less dataset (latin) is published under.
+        $default_lang = function_exists('dwi18n_default') ? dwi18n_default() : 'en';
         $books = [];
         foreach ( $by_slug as $slug => $ds_books ) {
             // Prefer Latin as the canonical source of order/testament/totalChapters,
@@ -452,11 +454,44 @@ trait DwBible_JSON_API_Trait {
                 // Resolve the HTML slug via THIS dataset's own order number.
                 $ds_order = intval( $b['order'] );
                 $ds_slug  = isset( $html_slugs[ $ds ][ $ds_order ] ) ? $html_slugs[ $ds ][ $ds_order ] : $b['slug'];
+                // ── Publish the addresses the site ACTUALLY serves ───────
+                //
+                // All three fields here used to be wrong in a way that only an
+                // automated consumer would notice, which is the worst kind:
+                //
+                //   url      was /{dataset}/{ds_slug}/ — the pre-/biblia/ shape.
+                //            Every one of them 301s now. This file is what an
+                //            agent reads INSTEAD of crawling, so handing it a
+                //            list of redirects is the one place being a hop
+                //            behind is not harmless.
+                //   slug     was the dataset's own HTML slug (`john`), but the
+                //            book segment of a real URL is the LATIN slug
+                //            (`ioannes`) in every language. Anything building a
+                //            URL from it built the wrong one.
+                //   jsonUrl  came from the source index.json with the host baked
+                //            in as latinprayer.org, so on any other host the
+                //            same object carried a local `url` beside a
+                //            production `jsonUrl` — the two could not both be
+                //            right, and a staging consumer silently reached
+                //            production.
+                //
+                // The book segment is the Latin slug regardless of language, so
+                // `slug` is the same in every translation — that repetition is
+                // the truth about the URL shape, not redundancy to optimise away.
+                $lang = function_exists('dwbible_i18n_lang_for_slug') ? dwbible_i18n_lang_for_slug($ds) : '';
+                $latin_slug = self::latin_slug_for_key($slug);
+                if ($latin_slug === '') { $latin_slug = $ds_slug; }
                 $entry['translations'][ $ds ] = [
                     'name'    => $b['name'],
-                    'slug'    => $ds_slug,
-                    'url'     => $site_url . '/' . $ds . '/' . $ds_slug . '/',
-                    'jsonUrl' => $b['jsonUrl'],
+                    // Latin has no web locale by design — every page is Latin
+                    // PLUS a vernacular, so there is no /la/ to point at. Null
+                    // says that; the url below falls back to the default locale,
+                    // where the Latin is on the page just the same.
+                    'lang'    => $lang !== '' ? $lang : null,
+                    'slug'    => $latin_slug,
+                    'url'     => $site_url . '/' . ($lang !== '' ? $lang : $default_lang)
+                                 . '/' . self::CANONICAL_SECTION . '/' . $latin_slug . '/',
+                    'jsonUrl' => $site_url . '/' . $ds . '/' . $latin_slug . '/index.json',
                 ];
             }
             $books[] = $entry;
