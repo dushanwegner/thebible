@@ -101,55 +101,34 @@ trait DwBible_AutoLink_Trait {
 
         $unified = [];
         foreach ($slugs as $dataset_slug) {
-            $abbr = self::get_abbreviation_map($dataset_slug);
+            // ── BOOK NAMES ONLY, NEVER ABBREVIATIONS ─────────────────────
+            //
+            // An abbreviation is two or three letters, so it collides with
+            // ordinary words in whatever language a page happens to be written
+            // in — and this map is applied to every page regardless. Measured
+            // on the real corpus before this line existed:
+            //
+            //   "Am 30.7.2021 habe ich einen Essay …"  → Amos 30
+            //   "… und es 3 Tage braucht …"            → Exodus 3
+            //   "ba 61414" (a hex colour, 13 times)    → Baruch 61414
+            //
+            // German for "on the" and "it". Amos has 9 chapters, so the first
+            // linked to a chapter that does not exist. The same corpus holds 28
+            // full-name references with ZERO false positives.
+            //
+            // This is the whole safety mechanism, not a heuristic: it is what
+            // makes it safe to widen this map to every language at all, which
+            // is the point of dwbible#8. Short forms keep working wherever the
+            // input is already KNOWN to be a reference — URLs, the search box,
+            // the reference parser. Only prose the site is guessing about is
+            // gated. load_name_map() owns the name-vs-abbreviation test and the
+            // reasons it is not a length comparison.
+            $abbr = DwBible_Abbreviations_Loader::load_name_map($dataset_slug);
             if (!is_array($abbr) || empty($abbr)) {
                 continue;
             }
             foreach ($abbr as $key => $short) {
                 if (!is_string($key) || $key === '' || !is_string($short) || $short === '') {
-                    continue;
-                }
-                // ── FULL BOOK NAMES ONLY ──────────────────────────────────
-                //
-                // A token shorter than the book's own name is an abbreviation
-                // (`Gen` < `Genesis`, `Am` < `Amos`, `Gv` < `John`), and
-                // abbreviations are not safe to hunt for in arbitrary prose.
-                // They are two or three letters, so they collide with ordinary
-                // words in other languages, and this map is applied to every
-                // page regardless of the language it is written in. Measured on
-                // the real corpus before this line existed:
-                //
-                //   "Am 30.7.2021 habe ich einen Essay …"  → Amos 30
-                //   "… und es 3 Tage braucht …"            → Exodus 3
-                //   "ba 61414" (a hex colour, 13 times)    → Baruch 61414
-                //
-                // German for "on the" and "it". Amos has 9 chapters, so the
-                // first one linked to a chapter that does not exist.
-                //
-                // Full names carry their own disambiguation — nobody writes
-                // "Genesis 1" meaning anything but Genesis — and the same
-                // corpus contains 28 of them with ZERO false positives. So the
-                // rule is the whole safety mechanism, not a heuristic: it is
-                // what makes it safe to widen this map to more languages at
-                // all, which is the point of dwbible#8.
-                //
-                // Short forms keep working everywhere the input is already
-                // known to be a reference — URLs (/latin-bible/Gen/), the
-                // search box, the reference parser. This gate is only for prose
-                // the site is guessing about. Content was normalised to full
-                // names in the same pass (86 expansions across 49 posts).
-                // The test is "five characters, or the book's own name" — NOT
-                // "at least as long as the canonical key", which was the first
-                // attempt and was wrong for German: the key `Sprueche` is an
-                // ASCII transliteration LONGER than the real name `Sprüche`, so
-                // comparing lengths threw away every umlaut spelling and
-                // Matthäus 5:3 stopped linking. Five is the floor because the
-                // shortest genuine names — Job, Ruth, Mark, Luke, Acts, Amos,
-                // Joel, John — are all exactly their own key, and every
-                // abbreviation in the data is four characters or fewer.
-                $token_len = mb_strlen($key, 'UTF-8');
-                $is_own_name = ($key === mb_strtolower($short, 'UTF-8'));
-                if ($token_len < 5 && !$is_own_name) {
                     continue;
                 }
                 $entry = ['short' => $short, 'slug' => $dataset_slug];

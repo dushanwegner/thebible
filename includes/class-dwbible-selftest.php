@@ -515,10 +515,15 @@ trait DwBible_SelfTest_Trait {
                     'must_not_contain' => [],
                 ],
                 [
-                    'name' => 'la_sigla',
+                    // `Io` is an abbreviation and is deliberately NOT linked;
+                    // the Latin NAME is. And the href lands under /en/, not
+                    // /la/: Latin has no web locale by design — every page is
+                    // Latin PLUS a vernacular, so there is no Latin-only
+                    // reading surface to point at (see dwbible#3).
+                    'name' => 'la_name',
                     'slug' => 'latin',
-                    'in' => 'Io 1:1',
-                    'must_contain' => ['>Io 1:1</a>', '/la/biblia/ioannes/1:1'],
+                    'in' => 'Ioannes 1:1',
+                    'must_contain' => ['>Ioannes 1:1</a>', '/biblia/ioannes/1:1'],
                     'must_not_contain' => [],
                 ],
                 [
