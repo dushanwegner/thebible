@@ -263,16 +263,18 @@ for i in "${!GERMAN_BOOKS[@]}"; do
 done
 
 # ── 4. Sample books on /latin/ (single-language, no redirect) ───────
-section "Sample books on /latin/ → /en/biblia/"
-# A single-language slug redirects to the interlinear, which is why the Latin
-# dataset lands under /en/ rather than a /la/ prefix: there is no Latin-only
-# reading surface, every page is Latin PLUS a vernacular.
-check_canonical "$BASE_URL/latin/genesis/"    "/en/biblia/genesis/"    "latin/genesis"
-check_canonical "$BASE_URL/latin/josue/"      "/en/biblia/iosue/"      "latin/josue"
-check_canonical "$BASE_URL/latin/psalms/"     "/en/biblia/psalmi/"     "latin/psalms"
-check_canonical "$BASE_URL/latin/isaias/"     "/en/biblia/isaias/"     "latin/isaias"
-check_canonical "$BASE_URL/latin/matthew/"    "/en/biblia/matthaeus/"  "latin/matthew"
-check_canonical "$BASE_URL/latin/apocalypse/" "/en/biblia/apocalypsis/" "latin/apocalypse"
+section "Sample books on /latin/ (the Vulgate alone)"
+# /latin/ is a DATASET url and STAYS PUT — it is the one surface showing the
+# Vulgate without a vernacular column. The BOOK slug is still canonicalised to
+# its Latin form (josue -> iosue), so the page is reached at /latin/{latin}/.
+# Until 2026-08-31 every one of these 302'd to /en/biblia/, which meant the
+# pure Vulgate could not be read anywhere.
+check_canonical "$BASE_URL/latin/genesis/"    "/latin/genesis/"     "latin/genesis"
+check_canonical "$BASE_URL/latin/josue/"      "/latin/iosue/"       "latin/josue"
+check_canonical "$BASE_URL/latin/psalms/"     "/latin/psalmi/"      "latin/psalms"
+check_canonical "$BASE_URL/latin/isaias/"     "/latin/isaias/"      "latin/isaias"
+check_canonical "$BASE_URL/latin/matthew/"    "/latin/matthaeus/"   "latin/matthew"
+check_canonical "$BASE_URL/latin/apocalypse/" "/latin/apocalypsis/" "latin/apocalypse"
 
 # ── 5. Redirects: /bible/ → /latin-bible/ ───────────────────────────
 section "Single-language → interlinear redirects"
@@ -429,6 +431,33 @@ if ! fetch "$BASE_URL/bible-sitemap-italian-genesis.xml" | grep -q "/it/biblia/g
     FAILED_URLS+=("$BASE_URL/bible-sitemap-italian-genesis.xml (no /it/biblia/ urls)")
 fi
 
+# ── 9a. The Vulgate alone, unlisted ─────────────────────────────────
+#
+# /latin/{book}/ is a DATASET url, not a language-less one — the only surface
+# that shows the Vulgate without a vernacular column. It used to 302 to the
+# negotiated /{lang}/biblia/, which meant the pure Vulgate could not be read
+# at all. Deliberately UNLISTED: noindex, no sitemap, and not the url any
+# index advertises, because the Latin text is already on all five locale
+# pages and an indexed Latin-only page would compete with them.
+section "The Vulgate alone at /latin/ (unlisted)"
+check "$BASE_URL/latin/"                200 "latin/ book list"
+check "$BASE_URL/latin/genesis/"        200 "latin/genesis (no redirect)"
+check "$BASE_URL/latin/genesis/1"       200 "latin/genesis/1"
+check "$BASE_URL/latin/ioannes/3:16"    200 "latin/ioannes/3:16"
+check "$BASE_URL/latin/genesis/index.json" 200 "latin json still served"
+# It must carry noindex — this is the whole reason it is safe to serve.
+TOTAL=$((TOTAL + 1))
+if ! fetch "$BASE_URL/latin/genesis/1" | grep -qi 'name="robots"[^>]*noindex'; then
+    echo "  FAIL /latin/genesis/1 is missing its noindex"
+    FAILURES=$((FAILURES + 1))
+    FAILED_URLS+=("$BASE_URL/latin/genesis/1 (no noindex)")
+fi
+# …and it must stay out of the sitemaps.
+check "$BASE_URL/bible-sitemap-latin-genesis.xml" 404 "latin sitemap stays 404"
+# The vernacular routes must be UNAFFECTED — they are still canonicalised away.
+check_canonical "$BASE_URL/bible/genesis/" "/en/biblia/genesis/" "bible/genesis still canonicalises"
+check_canonical "$BASE_URL/bibel/hiob/"    "/de/biblia/iob/"     "bibel/hiob still canonicalises"
+
 # ── 9b. The unified index publishes addresses that RESOLVE ──────────
 #
 # bible-index.json is what an agent reads INSTEAD of crawling, so a stale URL
@@ -468,8 +497,8 @@ fi
 # ── 10. Cross-dataset name resolution ───────────────────────────────
 section "Cross-dataset name resolution"
 # English names on Latin pages
-check_canonical "$BASE_URL/latin/genesis/" "/en/biblia/genesis/" "latin/genesis (shared name)"
-check_canonical "$BASE_URL/latin/josue/"   "/en/biblia/iosue/"   "latin/josue (Vulgate name on latin)"
+check_canonical "$BASE_URL/latin/genesis/" "/latin/genesis/" "latin/genesis (shared name)"
+check_canonical "$BASE_URL/latin/josue/"   "/latin/iosue/"   "latin/josue (Vulgate name on latin)"
 # German names on interlinear combo (may redirect to canonical form)
 check_follow "$BASE_URL/latin-bibel/hiob/" "latin-bibel/hiob (German name)"
 check_follow "$BASE_URL/latin-bibel/psalmen/" "latin-bibel/psalmen (German name)"

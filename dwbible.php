@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.31.08
+* Version: 1.26.08.31.09
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.31.08');
+    define('DWBIBLE_VERSION', '1.26.08.31.09');
 }
 
 // Load include classes before hooks are registered
@@ -133,6 +133,10 @@ class DwBible_Plugin {
         // Priority 1: run before redirect_canonical (priority 10) which
         // would otherwise add a trailing slash to .json URLs.
         add_action('template_redirect', [__CLASS__, 'handle_request'], 1);
+
+
+        // The Latin-only surface is deliberately unlisted — same note.
+        add_action('wp_head', [__CLASS__, 'noindex_latin_only'], 1);
 
         // Bible text is static — keep dwcache entries indefinitely (flush manually on data updates).
         add_filter( 'dwcache_ttl', [__CLASS__, 'infinite_ttl_for_bible'], 10, 2 );
@@ -655,6 +659,18 @@ class DwBible_Plugin {
      * and a function whose output becomes an address may not change meaning
      * with a setting.
      */
+    /**
+     * `noindex` on the Latin-only surface. See the note above: the Vulgate is
+     * on all five locale pages already, so letting this one be indexed would
+     * have the site competing with itself for the same text. `follow` because
+     * the links on it are ordinary Bible links worth crawling.
+     */
+    public static function noindex_latin_only() {
+        if (get_query_var(self::QV_SLUG) === 'latin' && !get_query_var(self::QV_FORMAT)) {
+            echo '<meta name="robots" content="noindex, follow">' . "\n";
+        }
+    }
+
     public static function slugify($name) {
         $slug = (string) $name;
 

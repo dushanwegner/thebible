@@ -121,9 +121,31 @@ add_filter('do_parse_request', function ($do, $wp = null, $extra = null) {
         }
     }
 
+    // ── The Vulgate on its own stays where it is ──────────────────────────
+    //
+    // /latin/{book}/ is a DATASET url, not a language-less one, and it is the
+    // only surface on the site that shows the Vulgate without a vernacular
+    // column. Sending it to the negotiated /{lang}/biblia/ — which is what the
+    // branch below used to do, calling it "latin-only: no web language" —
+    // meant the pure Vulgate could not be read at all: every route to it
+    // landed on an interlinear page instead.
+    //
+    // `la` is deliberately NOT a dwi18n locale (dwbible#3): a /la/ interface
+    // would be Latin beside Latin, which contradicts the interlinear model. So
+    // this is a dataset carve-out and nothing more. The page is unlisted —
+    // noindex, out of every sitemap, and not the `url` any index advertises —
+    // because the Latin text is already on all five locale pages and an
+    // indexed Latin-only page would have the site competing with itself.
+    //
+    // The .json branches above already returned before reaching here, so the
+    // machine paths are untouched by this.
+    if ($slug === 'latin') {
+        return $do;
+    }
+
     $lang = dwbible_i18n_lang_for_slug($slug);
     if ($lang === '') {
-        // latin-only: no web language → negotiate (302, visitor-dependent).
+        // No web language for this slug → negotiate (302, visitor-dependent).
         $lang = function_exists('dwi18n_negotiate_lang') ? dwi18n_negotiate_lang() : 'en';
         $code = 302;
     } else {
