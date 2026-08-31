@@ -354,11 +354,13 @@ trait DwBible_SelfTest_Trait {
                     'must_not_contain' => [],
                 ],
                 [
-                    'name' => 'en_abbrev_short',
+                    // An abbreviation is deliberately NOT linked in prose —
+                    // see the "FULL BOOK NAMES ONLY" note in the autolinker.
+                    'name' => 'en_abbrev_not_linked',
                     'slug' => 'bible',
                     'in' => 'Gen 1:1',
-                    'must_contain' => ['>Gen 1:1</a>'],
-                    'must_not_contain' => [],
+                    'must_contain' => ['Gen 1:1'],
+                    'must_not_contain' => ['href="'],
                 ],
                 [
                     'name' => 'en_numeric_prefix',
@@ -426,8 +428,8 @@ trait DwBible_SelfTest_Trait {
                 [
                     'name' => 'multiple_refs',
                     'slug' => 'bible',
-                    'in' => 'Gen 1:1 and Ex 3:14',
-                    'must_contain' => ['>Gen 1:1</a>', '>Ex 3:14</a>'],
+                    'in' => 'Genesis 1:1 and Exodus 3:14',
+                    'must_contain' => ['>Genesis 1:1</a>', '>Exodus 3:14</a>'],
                     'must_not_contain' => [],
                 ],
                 [
@@ -475,12 +477,13 @@ trait DwBible_SelfTest_Trait {
                 [
                     'name' => 'de_comma_verse',
                     'slug' => 'bibel',
-                    'in' => 'Joh 6,5',
+                    'in' => 'Johannes 6,5',
                     // The LINK TEXT stays the reader's own language; the HREF is
                     // the canonical Latin section under the dataset's language
                     // prefix. These two being different is the whole point of
-                    // the URL shape, so both are asserted.
-                    'must_contain' => ['>Joh 6:5</a>', '/de/biblia/ioannes/6:5'],
+                    // the URL shape, so both are asserted. The German COMMA
+                    // verse separator is what this case exists for.
+                    'must_contain' => ['>Johannes 6:5</a>', '/de/biblia/ioannes/6:5'],
                     'must_not_contain' => [],
                 ],
                 [
@@ -517,6 +520,17 @@ trait DwBible_SelfTest_Trait {
                     'in' => 'Io 1:1',
                     'must_contain' => ['>Io 1:1</a>', '/la/biblia/ioannes/1:1'],
                     'must_not_contain' => [],
+                ],
+                [
+                    // The three false positives that made widening this map
+                    // unsafe, measured on the real corpus 2026-08-31. German
+                    // for "on the 30th" and "it", plus a hex colour. None may
+                    // ever become a Bible link again.
+                    'name' => 'german_prose_is_not_a_reference',
+                    'slug' => 'bibel',
+                    'in' => 'Am 30.7.2021 habe ich einen Essay geschrieben, und es 3 Tage dauerte; ba 61414.',
+                    'must_contain' => ['Am 30.7.2021'],
+                    'must_not_contain' => ['href="'],
                 ],
             ];
 
