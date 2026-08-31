@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.08.31.09
+* Version: 1.26.08.31.10
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.08.31.09');
+    define('DWBIBLE_VERSION', '1.26.08.31.10');
 }
 
 // Load include classes before hooks are registered
@@ -2346,9 +2346,31 @@ JS;
         // Crawl-delay: Bible has ~31k verse pages. Without throttling,
         // aggressive crawlers (Google, Bing) can saturate the server.
         // Inject Crawl-delay into the default User-agent: * block.
+        // ── One `User-agent: *` group, not two ────────────────────────────
+        //
+        // The short-code rules go INTO the existing group rather than after it.
+        // A second `User-agent: *` block is ambiguous — the spec has crawlers
+        // pick the most specific matching group, and real parsers differ on
+        // whether duplicate groups merge or the first one wins. One group
+        // cannot be read two ways.
+        //
+        // /qr/XXXX and /q/XXXX are redirects for printed cards: each sends a
+        // scanner to a page that IS indexed, so crawling the code yields
+        // nothing indexable and spends budget on 46,656 possible addresses.
+        // Nobody had been told to stay out, which is why a crawler enumerating
+        // the space — one code per request, ~90 a day — was not misbehaving by
+        // any rule we had published. It is published now.
+        //
+        // `Allow: /qr/$` keeps the bare address crawlable: that is where the
+        // page explaining these codes belongs, and it is the one thing under
+        // the prefix that is real content.
         $output = preg_replace(
             '/^(User-agent:\s*\*\s*\n)/mi',
-            "$1Crawl-delay: 2\n",
+            "$1Crawl-delay: 2\n"
+            . "# Short codes are redirects, not content — the destination is indexed.\n"
+            . "Disallow: /qr/\n"
+            . "Disallow: /q/\n"
+            . "Allow: /qr/$\n",
             $output,
             1
         );
