@@ -84,6 +84,36 @@ check_follow() {
     fi
 }
 
+# Follow redirects and assert BOTH the final status and WHERE it landed.
+#
+# This is the helper the old-URL sections need, and it is deliberately
+# stricter than the `check … 200` it replaces. Those assertions only ever
+# proved "something answered 200 in the end" — which a redirect pointing at
+# the WRONG book satisfies perfectly. Since every one of these addresses now
+# travels through a redirect, the destination is the only part still worth
+# asserting, so it is named explicitly per route.
+check_canonical() {
+    local url="$1"
+    local expected_path="$2"
+    local label="$3"
+    local expected_code="${4:-200}"
+    TOTAL=$((TOTAL + 1))
+    local result code final
+    result=$(fetch -o /dev/null -L -w "%{http_code} %{url_effective}" "$url")
+    result="${result:-000 }"
+    code="${result%% *}"
+    final="${result#* }"
+    if [ "$code" != "$expected_code" ]; then
+        echo "  FAIL [final $code != $expected_code] $label"
+        FAILURES=$((FAILURES + 1))
+        FAILED_URLS+=("$url (final $code != $expected_code)")
+    elif [ -n "$expected_path" ] && [[ "$final" != *"$expected_path" ]]; then
+        echo "  FAIL [landed on '$final', expected *$expected_path] $label"
+        FAILURES=$((FAILURES + 1))
+        FAILED_URLS+=("$url (landed on $final, expected *$expected_path)")
+    fi
+}
+
 # Expect a 301 redirect to a URL containing the expected substring
 check_redirect() {
     local url="$1"
@@ -149,6 +179,32 @@ GERMAN_BOOKS=(
     1-timotheus 2-timotheus titus philemon hebraeer jakobus
     1-petrus 2-petrus 1-johannes 2-johannes 3-johannes judas offenbarung
 )
+# The Latin book slug each of the above lands on, SAME ORDER as BOOKS and
+# GERMAN_BOOKS. Written out rather than derived, deliberately: deriving them
+# from the plugin would test it against itself and pass no matter what it
+# said. These are the addresses as they exist in the world, so a change to
+# latin_slug_for_key() has to come and break this list on purpose.
+#
+# Verified against the live site on 2026-08-31 — all 73 English and all 73
+# German forms land on exactly these, with zero mismatches.
+LATIN_BOOKS=(
+    genesis exodus leviticus numeri deuteronomium
+    iosue iudices ruth 1-samuelis 2-samuelis
+    3-regum 4-regum 1-paralipomenon 2-paralipomenon 1-esdrae
+    2-esdrae-nehemias tobias iudith esther iob
+    psalmi proverbia ecclesiastes canticum-canticorum sapientia
+    ecclesiasticus isaias ieremias lamentationes baruch
+    ezechiel daniel osee ioel amos
+    abdias ionas michaeas nahum habacuc
+    sophonias aggaeus zacharias malachias 1-machabaeorum
+    2-machabaeorum matthaeus marcus lucas ioannes
+    actus-apostolorum romanos 1-corinthios 2-corinthios galatas
+    ephesios philippenses colossenses 1-thessalonicenses 2-thessalonicenses
+    1-timotheum 2-timotheum titum philemonem hebraeos
+    iacobi 1-petri 2-petri 1-ioannis 2-ioannis
+    3-ioannis iudae apocalypsis
+)
+
 
 # ── 1. Selftest endpoint ────────────────────────────────────────────
 # Checks that the 4 data-consistency selftest checks pass.
@@ -160,7 +216,10 @@ GERMAN_BOOKS=(
 # is.
 section "Selftest (data consistency)"
 TOTAL=$((TOTAL + 1))
-SELFTEST_JSON=$(fetch "$BASE_URL/bible/?dwbible_selftest=1")
+# NOT "$BASE_URL/bible/?…" — that address 301s now, fetch does not follow,
+# and the empty body made all four checks report MISSING. The selftest is not
+# a Bible route at all; the site root answers it.
+SELFTEST_JSON=$(fetch "$BASE_URL/?dwbible_selftest=1")
 SELFTEST_OK=true
 for check_name in osis_dataset_consistency interlinear_osis_resolution book_map_consistency all_books_resolve_in_combos; do
     # A 500 still carries the JSON body, but a fatal error would not — and
@@ -190,40 +249,52 @@ if [ "$SELFTEST_OK" != "true" ]; then
 fi
 
 # ── 2. All 73 books on /latin-bible/ (the primary interlinear combo) ─
-section "All 73 books on /latin-bible/"
-for book in "${BOOKS[@]}"; do
-    check "$BASE_URL/latin-bible/$book/" 200 "latin-bible/$book"
+section "All 73 books on /latin-bible/ → /en/biblia/"
+for i in "${!BOOKS[@]}"; do
+    check_canonical "$BASE_URL/latin-bible/${BOOKS[$i]}/" "/en/biblia/${LATIN_BOOKS[$i]}/" "latin-bible/${BOOKS[$i]}"
 done
 
 # ── 3. All 73 German books on /latin-bibel/ ─────────────────────────
 # Some German slugs redirect to canonical (Vulgate) form — that's OK.
 # We follow redirects and just verify the final page loads (200).
-section "All 73 German books on /latin-bibel/ (follow redirects)"
-for book in "${GERMAN_BOOKS[@]}"; do
-    check_follow "$BASE_URL/latin-bibel/$book/" "latin-bibel/$book"
+section "All 73 German books on /latin-bibel/ → /de/biblia/"
+for i in "${!GERMAN_BOOKS[@]}"; do
+    check_canonical "$BASE_URL/latin-bibel/${GERMAN_BOOKS[$i]}/" "/de/biblia/${LATIN_BOOKS[$i]}/" "latin-bibel/${GERMAN_BOOKS[$i]}"
 done
 
 # ── 4. Sample books on /latin/ (single-language, no redirect) ───────
-section "Sample books on /latin/"
-for book in genesis josue psalms isaias matthew apocalypse; do
-    check "$BASE_URL/latin/$book/" 200 "latin/$book"
-done
+section "Sample books on /latin/ → /en/biblia/"
+# A single-language slug redirects to the interlinear, which is why the Latin
+# dataset lands under /en/ rather than a /la/ prefix: there is no Latin-only
+# reading surface, every page is Latin PLUS a vernacular.
+check_canonical "$BASE_URL/latin/genesis/"    "/en/biblia/genesis/"    "latin/genesis"
+check_canonical "$BASE_URL/latin/josue/"      "/en/biblia/iosue/"      "latin/josue"
+check_canonical "$BASE_URL/latin/psalms/"     "/en/biblia/psalmi/"     "latin/psalms"
+check_canonical "$BASE_URL/latin/isaias/"     "/en/biblia/isaias/"     "latin/isaias"
+check_canonical "$BASE_URL/latin/matthew/"    "/en/biblia/matthaeus/"  "latin/matthew"
+check_canonical "$BASE_URL/latin/apocalypse/" "/en/biblia/apocalypsis/" "latin/apocalypse"
 
 # ── 5. Redirects: /bible/ → /latin-bible/ ───────────────────────────
 section "Single-language → interlinear redirects"
-check_redirect "$BASE_URL/bible/" "/latin-bible/" "bible/ → latin-bible/"
-check_redirect "$BASE_URL/bibel/" "/latin-bibel/" "bibel/ → latin-bibel/"
-check_redirect "$BASE_URL/bible/genesis/" "/latin-bible/genesis/" "bible/genesis/ → latin-bible/genesis/"
-check_redirect "$BASE_URL/bible/josue/" "/latin-bible/josue/" "bible/josue/ → latin-bible/josue/"
-check_redirect "$BASE_URL/bibel/hiob/" "/latin-bibel/hiob/" "bibel/hiob/ → latin-bibel/hiob/"
+# The dataset slug picks the LANGUAGE PREFIX and the book turns Latin:
+# /bibel/hiob/ → /de/biblia/iob/. Both halves are asserted, because a redirect
+# that got the language right and the book wrong would still answer 200.
+check_canonical "$BASE_URL/bible/"         "/en/biblia/"         "bible/ → en"
+check_canonical "$BASE_URL/bibel/"         "/de/biblia/"         "bibel/ → de"
+check_canonical "$BASE_URL/bible/genesis/" "/en/biblia/genesis/" "bible/genesis/"
+check_canonical "$BASE_URL/bible/josue/"   "/en/biblia/iosue/"   "bible/josue/ (Vulgate name)"
+check_canonical "$BASE_URL/bibel/hiob/"    "/de/biblia/iob/"     "bibel/hiob/ (German name)"
 
 # ── 6. Chapter and verse pages ──────────────────────────────────────
 section "Chapter and verse pages"
-check "$BASE_URL/latin-bible/genesis/1" 200 "latin-bible/genesis/1"
-check "$BASE_URL/latin-bible/john/3:16" 200 "latin-bible/john/3:16"
-check "$BASE_URL/latin-bible/romans/8:28-30" 200 "latin-bible/romans/8:28-30"
-check "$BASE_URL/latin-bible/psalms/23" 200 "latin-bible/psalms/23"
-check "$BASE_URL/latin-bibel/psalmen/23" 200 "latin-bibel/psalmen/23"
+# The chapter and the verse range survive the redirect intact — that is the
+# part worth asserting, since a redirect that keeps the book but drops "8:28-30"
+# still lands on a 200 page.
+check_canonical "$BASE_URL/latin-bible/genesis/1"      "/en/biblia/genesis/1/"       "latin-bible/genesis/1"
+check_canonical "$BASE_URL/latin-bible/john/3:16"      "/en/biblia/ioannes/3:16/"    "latin-bible/john/3:16"
+check_canonical "$BASE_URL/latin-bible/romans/8:28-30" "/en/biblia/romanos/8:28-30/" "latin-bible/romans/8:28-30"
+check_canonical "$BASE_URL/latin-bible/psalms/23"      "/en/biblia/psalmi/23/"       "latin-bible/psalms/23"
+check_canonical "$BASE_URL/latin-bibel/psalmen/23"     "/de/biblia/psalmi/23/"       "latin-bibel/psalmen/23"
 
 # ── 7. JSON API ─────────────────────────────────────────────────────
 section "JSON API"
@@ -315,8 +386,14 @@ check "$BASE_URL/llms-full.txt" 200 "llms-full.txt"
 # ── 9. Sitemaps ─────────────────────────────────────────────────────
 section "Sitemaps"
 check "$BASE_URL/sitemap-index.xml" 200 "sitemap-index.xml"
-# Per-book sitemaps serve only for datasets with a real web home (web_bible_datasets):
-# en/de/es/fr → 200. Homeless datasets (latin/italian — no /{lang}/bible/ yet) → 404.
+# Per-book sitemaps serve only for datasets with a real web home
+# (web_bible_datasets). That is now **five** languages — en/de/es/fr/**it** —
+# and Latin alone is homeless: /it/biblia/genesis/ answers 200 while
+# /la/biblia/genesis/ answers 404, because every web page is Latin PLUS a
+# vernacular and there is no Latin-only reading surface to point a sitemap at.
+#
+# Italian was listed as homeless here until 2026-08-31. It had gained its home
+# some time before that and nothing noticed, because this suite could not run.
 check "$BASE_URL/bible-sitemap-bible-genesis.xml" 200 "bible-sitemap-bible-genesis.xml (en)"
 check "$BASE_URL/bible-sitemap-bibel-genesis.xml" 200 "bible-sitemap-bibel-genesis.xml (de)"
 check "$BASE_URL/bible-sitemap-spanish-genesis.xml" 200 "bible-sitemap-spanish-genesis.xml (es)"
@@ -324,13 +401,21 @@ check "$BASE_URL/bible-sitemap-french-genesis.xml" 200 "bible-sitemap-french-gen
 check "$BASE_URL/bible-sitemap-bible-josue.xml" 200 "bible-sitemap-bible-josue.xml"
 check "$BASE_URL/bible-sitemap-bible-apocalypse.xml" 200 "bible-sitemap-bible-apocalypse.xml"
 check "$BASE_URL/bible-sitemap-latin-genesis.xml" 404 "bible-sitemap-latin-genesis.xml (homeless → 404)"
-check "$BASE_URL/bible-sitemap-italian-genesis.xml" 404 "bible-sitemap-italian-genesis.xml (homeless → 404)"
+check "$BASE_URL/bible-sitemap-italian-genesis.xml" 200 "bible-sitemap-italian-genesis.xml (it)"
+# …and it must list ITALIAN urls. A 200 alone would pass on a sitemap full of
+# some other language's pages, which is the failure worth catching here.
+TOTAL=$((TOTAL + 1))
+if ! fetch "$BASE_URL/bible-sitemap-italian-genesis.xml" | grep -q "/it/biblia/genesis/"; then
+    echo "  FAIL italian sitemap does not list /it/biblia/genesis/ urls"
+    FAILURES=$((FAILURES + 1))
+    FAILED_URLS+=("$BASE_URL/bible-sitemap-italian-genesis.xml (no /it/biblia/ urls)")
+fi
 
 # ── 10. Cross-dataset name resolution ───────────────────────────────
 section "Cross-dataset name resolution"
 # English names on Latin pages
-check "$BASE_URL/latin/genesis/" 200 "latin/genesis (shared name)"
-check "$BASE_URL/latin/josue/" 200 "latin/josue (Vulgate name on latin)"
+check_canonical "$BASE_URL/latin/genesis/" "/en/biblia/genesis/" "latin/genesis (shared name)"
+check_canonical "$BASE_URL/latin/josue/"   "/en/biblia/iosue/"   "latin/josue (Vulgate name on latin)"
 # German names on interlinear combo (may redirect to canonical form)
 check_follow "$BASE_URL/latin-bibel/hiob/" "latin-bibel/hiob (German name)"
 check_follow "$BASE_URL/latin-bibel/psalmen/" "latin-bibel/psalmen (German name)"
@@ -346,14 +431,20 @@ check_follow "$BASE_URL/latin-bible/Rev/" "latin-bible/Rev (abbreviation)"
 
 # ── 12. 3-way interlinear combos ────────────────────────────────────
 section "3-way interlinear combos"
-check "$BASE_URL/bible-bibel-latin/genesis/1" 200 "bible-bibel-latin/genesis/1"
-check "$BASE_URL/bible-bibel-latin/psalms/23" 200 "bible-bibel-latin/psalms/23"
-check "$BASE_URL/bible-bibel-latin/john/1" 200 "bible-bibel-latin/john/1"
+# A 3-way combo KEEPS its own path — unlike /latin-bible/, which is swapped
+# for a language prefix. Only the book slug turns Latin. Worth pinning: the two
+# families look alike and behave differently.
+check_canonical "$BASE_URL/bible-bibel-latin/genesis/1" "/bible-bibel-latin/genesis/1" "bible-bibel-latin/genesis/1"
+check_canonical "$BASE_URL/bible-bibel-latin/psalms/23" "/bible-bibel-latin/psalmi/23" "bible-bibel-latin/psalms/23"
+check_canonical "$BASE_URL/bible-bibel-latin/john/1"    "/bible-bibel-latin/ioannes/1" "bible-bibel-latin/john/1"
 
 # ── 13. Expected 404s (should NOT resolve) ──────────────────────────
 section "Expected 404s"
-check "$BASE_URL/latin-bible/not-a-book/" 404 "not-a-book → 404"
-check "$BASE_URL/latin-bible/foobar/" 404 "foobar → 404"
+# A nonsense book is redirected to the canonical shape BEFORE it is refused,
+# so the 404 is at the end of the chain, not at the start. Asserting the raw
+# status here is what made these two look broken.
+check_canonical "$BASE_URL/latin-bible/not-a-book/" "/en/biblia/not-a-book/" "not-a-book → 404" 404
+check_canonical "$BASE_URL/latin-bible/foobar/"     "/en/biblia/foobar/"     "foobar → 404"     404
 
 # ── Report ───────────────────────────────────────────────────────────
 echo ""
