@@ -20,6 +20,36 @@ FAILURES=0
 TOTAL=0
 FAILED_URLS=()
 
+# ── curl, once ───────────────────────────────────────────────────────
+#
+# Every request goes through here, for two reasons that each cost a whole
+# run when they were not handled:
+#
+#  1. `set -e` + `code=$(curl …)` means ANY curl failure kills the script
+#     mid-suite. On 2026-08-31 that looked exactly like "the selftest is
+#     broken": the run printed its first section header and stopped, with
+#     no failure line, because curl had exited 60 — a certificate error —
+#     and the shell aborted before anything could be reported. A transport
+#     failure is a RESULT ("000"), not a reason to stop testing routes.
+#  2. Local by Flywheel serves a self-signed certificate, so a run against
+#     latinprayer.local could never get past its first request. The suite
+#     is meant to be runnable before a deploy, not only after one.
+#
+# --insecure is added ONLY for a *.local / localhost host, so it can never
+# weaken a run against the real site.
+CURL_OPTS=(-s --max-time 30)
+case "$BASE_URL" in
+    *.local|*.local/*|https://localhost*|http://localhost*|*127.0.0.1*)
+        CURL_OPTS+=(--insecure)
+        echo "  (self-signed host — certificate verification off)"
+        ;;
+esac
+
+# Never fatal: prints curl's output, or nothing, and always succeeds.
+fetch() {
+    curl "${CURL_OPTS[@]}" "$@" 2>/dev/null || true
+}
+
 # ── Helpers ──────────────────────────────────────────────────────────
 
 # Expect exact HTTP status (no redirect following)
@@ -29,7 +59,8 @@ check() {
     local label="$3"
     TOTAL=$((TOTAL + 1))
     local code
-    code=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null)
+    code=$(fetch -o /dev/null -w "%{http_code}" "$url")
+    code="${code:-000}"
     if [ "$code" != "$expected" ]; then
         echo "  FAIL [$code != $expected] $label"
         FAILURES=$((FAILURES + 1))
@@ -44,7 +75,8 @@ check_follow() {
     local label="$2"
     TOTAL=$((TOTAL + 1))
     local code
-    code=$(curl -s -o /dev/null -L -w "%{http_code}" "$url" 2>/dev/null)
+    code=$(fetch -o /dev/null -L -w "%{http_code}" "$url")
+    code="${code:-000}"
     if [ "$code" != "200" ]; then
         echo "  FAIL [final $code != 200] $label"
         FAILURES=$((FAILURES + 1))
@@ -59,7 +91,8 @@ check_redirect() {
     local label="$3"
     TOTAL=$((TOTAL + 1))
     local header
-    header=$(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" "$url" 2>/dev/null)
+    header=$(fetch -o /dev/null -w "%{http_code} %{redirect_url}" "$url")
+    header="${header:-000 }"
     local code="${header%% *}"
     local target="${header#* }"
     if [ "$code" != "301" ]; then
@@ -119,17 +152,21 @@ GERMAN_BOOKS=(
 
 # ── 1. Selftest endpoint ────────────────────────────────────────────
 # Checks that the 4 data-consistency selftest checks pass.
-# The selftest overall may return 500 due to other (pre-existing) issues,
-# so we parse the JSON and check only the data-consistency checks.
+#
+# Only those four are read, deliberately: this suite is about ROUTES, and a
+# failure in an unrelated check belongs to whoever owns that check, not to a
+# run that was asked whether the Bible answers. The endpoint answers 500
+# whenever any check is red, so its status code is not usable here — the JSON
+# is.
 section "Selftest (data consistency)"
 TOTAL=$((TOTAL + 1))
-SELFTEST_JSON=$(curl -s "$BASE_URL/bible/?dwbible_selftest=1" 2>/dev/null)
+SELFTEST_JSON=$(fetch "$BASE_URL/bible/?dwbible_selftest=1")
 SELFTEST_OK=true
 for check_name in osis_dataset_consistency interlinear_osis_resolution book_map_consistency all_books_resolve_in_combos; do
-    # The selftest endpoint may return a 500 HTML page (pre-existing, unrelated
-    # checks can fail); json.load then throws. Under `set -euo pipefail` that
-    # non-zero pipe would abort the whole script before the later sections run,
-    # so tolerate it with `|| echo MISSING` and let the per-check logic report.
+    # A 500 still carries the JSON body, but a fatal error would not — and
+    # json.load then throws. Under `set -euo pipefail` that non-zero pipe would
+    # abort the whole script before the later sections run, so tolerate it with
+    # `|| echo MISSING` and let the per-check logic report it as a failure.
     result=$(echo "$SELFTEST_JSON" | python3 -c "
 import json, sys
 try:
@@ -229,7 +266,7 @@ check "$BASE_URL/bibel/ephesios/6.json" 200 "bibel/…json served directly (no r
 #     Daniel had landed under canonical Joel).
 section "Unified index content invariants"
 TOTAL=$((TOTAL + 1))
-UNIFIED_JSON=$(curl -s "$BASE_URL/bible-index.json" 2>/dev/null)
+UNIFIED_JSON=$(fetch "$BASE_URL/bible-index.json")
 UNIFIED_RESULT=$(echo "$UNIFIED_JSON" | python3 -c "
 import json, sys, re
 try:

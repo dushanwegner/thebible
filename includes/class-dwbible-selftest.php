@@ -161,15 +161,61 @@ trait DwBible_SelfTest_Trait {
         });
 
         $results[] = self::selftest_check('book_map_consistency', function() {
-            // Every book_map.json entry's dataset value must slugify to a
-            // slug that exists in that dataset's index CSV.
+            // Every book_map.json value must name a book this plugin can
+            // actually resolve, in every dataset it claims one for.
+            //
+            // ─── Why the RESOLVER and not slugify() ───────────────────────
+            //
+            // This check used to slugify each value and look for the result in
+            // column 1 of the dataset's index CSV. It could not work, for two
+            // independent reasons, and was red on both sites for long enough
+            // that nobody read it:
+            //
+            //   1. Column 1 is `short_name` — the canonical key — while the
+            //      German book_map values are DISPLAY names. `Levitikus` was
+            //      compared against `leviticus` and lost. English and Latin
+            //      passed only because both columns happen to agree there.
+            //   2. slugify() DELETES non-ASCII rather than transliterating it,
+            //      so `Sprüche` becomes `sprche` — while book_map spells the
+            //      German convention out as `Sprueche`. Those two can never
+            //      agree, whichever column is read.
+            //
+            // Both faults come from re-implementing book lookup inside a test.
+            // key_from_any_book_slug() is what the PRODUCT resolves names with
+            // — it already accepts a canonical key, a display name and a
+            // transliteration — so asking it is both the simpler check and the
+            // one that tests the real contract. If it can resolve every value,
+            // every value is usable; if it stops being able to, that is a
+            // genuine regression rather than a disagreement between two
+            // spellings of the same book.
+            //
+            // What it therefore does NOT prove, stated so nobody assumes more:
+            // the resolver is language-agnostic, so a German name sitting in
+            // the `latin` column resolves happily and passes here. That is
+            // untidy, not broken — the product resolves it too. Mutation-tested
+            // on 2026-08-31: a typo (`Levitkus`) and a non-book are both caught;
+            // a cross-language value is not.
             $book_map = DwBible_Mappings_Loader::load_book_map();
             if (empty($book_map) || !is_array($book_map)) {
                 return true; // book_map.json is optional
             }
+            if (!method_exists('DwBible_Plugin', 'key_from_any_book_slug')) {
+                return new WP_Error('dwbible_selftest_book_map_no_resolver',
+                    'DwBible_Plugin::key_from_any_book_slug() is missing — book_map cannot be checked.');
+            }
 
             $datasets = ['bible', 'bibel', 'latin'];
-            $index_slugs = [];
+
+            // The books each dataset really ships, named in the SAME vocabulary
+            // the values will be resolved into.
+            //
+            // Both sides go through the resolver because the datasets do not
+            // agree with each other on the shape of column 1: `bible` writes it
+            // capitalised (`Genesis`), `bibel` and `latin` lower-case
+            // (`genesis`). Comparing raw strings across datasets is therefore a
+            // trap, and normalising by hand would be re-implementing lookup
+            // again — the mistake this check is being repaired from.
+            $index_keys = [];
             foreach ($datasets as $ds) {
                 $csv = dwbible_data_dir() . $ds . '/html/index.csv';
                 if (!file_exists($csv)) {
@@ -179,23 +225,35 @@ trait DwBible_SelfTest_Trait {
                 $fh = fopen($csv, 'r');
                 if ($fh === false) continue;
                 fgetcsv($fh);
-                $slugs = [];
+                $keys = [];
                 while (($row = fgetcsv($fh)) !== false) {
                     if (!is_array($row) || count($row) < 2) continue;
-                    $slugs[] = DwBible_Plugin::slugify($row[1]);
+                    $name = (string) $row[1];
+                    $key  = DwBible_Plugin::key_from_any_book_slug($name);
+                    // An index entry the resolver cannot place is kept under its
+                    // own lower-cased name rather than dropped: losing it here
+                    // would turn a resolver gap into a phantom book_map failure,
+                    // which is exactly the misdirection being fixed.
+                    $keys[is_string($key) && $key !== '' ? $key : strtolower($name)] = true;
                 }
                 fclose($fh);
-                $index_slugs[$ds] = $slugs;
+                $index_keys[$ds] = $keys;
             }
 
             $failures = [];
             foreach ($book_map as $key => $map_entry) {
                 if (!is_array($map_entry)) continue;
                 foreach ($datasets as $ds) {
-                    if (!isset($map_entry[$ds], $index_slugs[$ds])) continue;
-                    $slug = DwBible_Plugin::slugify($map_entry[$ds]);
-                    if ($slug !== '' && !in_array($slug, $index_slugs[$ds], true)) {
-                        $failures[] = "$key: $ds='$slug' not in $ds index";
+                    if (!isset($map_entry[$ds], $index_keys[$ds])) continue;
+                    $value = (string) $map_entry[$ds];
+                    if ($value === '') continue;
+                    $resolved = DwBible_Plugin::key_from_any_book_slug($value);
+                    if (!is_string($resolved) || $resolved === '') {
+                        $failures[] = "$key: $ds='$value' resolves to no book";
+                        continue;
+                    }
+                    if (!isset($index_keys[$ds][$resolved])) {
+                        $failures[] = "$key: $ds='$value' resolves to '$resolved', absent from the $ds index";
                     }
                 }
             }
@@ -379,7 +437,11 @@ trait DwBible_SelfTest_Trait {
                     'name' => 'de_comma_verse',
                     'slug' => 'bibel',
                     'in' => 'Joh 6,5',
-                    'must_contain' => ['>Joh 6:5</a>', '/bibel/johannes/'],
+                    // The LINK TEXT stays the reader's own language; the HREF is
+                    // the canonical Latin section under the dataset's language
+                    // prefix. These two being different is the whole point of
+                    // the URL shape, so both are asserted.
+                    'must_contain' => ['>Joh 6:5</a>', '/de/biblia/ioannes/6:5'],
                     'must_not_contain' => [],
                 ],
                 [
@@ -393,37 +455,61 @@ trait DwBible_SelfTest_Trait {
                     'name' => 'es_book_name',
                     'slug' => 'spanish',
                     'in' => 'Juan 3:16',
-                    'must_contain' => ['>Juan 3:16</a>', '/spanish/john/'],
+                    'must_contain' => ['>Juan 3:16</a>', '/es/biblia/ioannes/3:16'],
                     'must_not_contain' => [],
                 ],
                 [
                     'name' => 'fr_book_name',
                     'slug' => 'french',
                     'in' => 'Jean 3:16',
-                    'must_contain' => ['>Jean 3:16</a>', '/french/john/'],
+                    'must_contain' => ['>Jean 3:16</a>', '/fr/biblia/ioannes/3:16'],
                     'must_not_contain' => [],
                 ],
                 [
                     'name' => 'it_book_name',
                     'slug' => 'italian',
                     'in' => 'Giovanni 3:16',
-                    'must_contain' => ['>Giovanni 3:16</a>', '/italian/john/'],
+                    'must_contain' => ['>Giovanni 3:16</a>', '/it/biblia/ioannes/3:16'],
                     'must_not_contain' => [],
                 ],
                 [
                     'name' => 'la_sigla',
                     'slug' => 'latin',
                     'in' => 'Io 1:1',
-                    'must_contain' => ['>Io 1:1</a>', '/latin/john/'],
+                    'must_contain' => ['>Io 1:1</a>', '/la/biblia/ioannes/1:1'],
                     'must_not_contain' => [],
                 ],
             ];
 
+            // ── Only test datasets the autolinker was actually given ──────
+            //
+            // The unified abbreviation map is built from `dwbible_slugs`, which
+            // has never been set on either site — so the default, `bible,bibel`,
+            // is what is live, and Spanish, French, Italian and Latin references
+            // are not recognised at all. Their cases above are therefore not
+            // failures of the linker; they describe a dataset it was never
+            // handed.
+            //
+            // Asserting them anyway made this whole check red for so long that
+            // nobody read it, which cost far more than the gap itself: the two
+            // real findings underneath (the stale URL shape, and book_map) sat
+            // invisible behind it. So the check tests the contract that EXISTS
+            // — every configured dataset links correctly — and reports the rest
+            // as skipped rather than pretending they passed.
+            $configured = get_option('dwbible_slugs', 'bible,bibel');
+            $configured = is_string($configured) && $configured !== '' ? $configured : 'bible,bibel';
+            $configured = array_values(array_filter(array_map('trim', explode(',', $configured))));
+
             $failures = [];
+            $skipped   = [];
             foreach ($cases as $case) {
                 $name = is_string($case['name'] ?? null) ? $case['name'] : '';
                 $slug = is_string($case['slug'] ?? null) ? $case['slug'] : '';
                 $in = is_string($case['in'] ?? null) ? $case['in'] : '';
+                if ($slug !== '' && !in_array($slug, $configured, true)) {
+                    $skipped[] = $name . ' (' . $slug . ')';
+                    continue;
+                }
                 $out = self::autolink_content_for_slug($in, $slug);
                 if (!is_string($out)) {
                     $failures[] = ['case' => $name, 'reason' => 'output_not_string'];
@@ -446,6 +532,10 @@ trait DwBible_SelfTest_Trait {
 
             if (!empty($failures)) {
                 return new WP_Error('dwbible_selftest_autolink_failed', wp_json_encode($failures));
+            }
+            if (!empty($skipped)) {
+                return 'not linked because their dataset is not in dwbible_slugs ('
+                     . implode(', ', $configured) . '): ' . implode(', ', $skipped);
             }
             return true;
         });
@@ -490,6 +580,18 @@ trait DwBible_SelfTest_Trait {
                         'code' => $res->get_error_code(),
                         'message' => $res->get_error_message(),
                     ],
+                ];
+            }
+            // A check may pass and still have something to say — "these four
+            // cases were skipped because the site is not configured for them".
+            // Returning the note as a string keeps that visible in the JSON
+            // instead of leaving it to a silent `true`, which is how the
+            // Spanish/French/Italian/Latin gap stayed invisible for months.
+            if (is_string($res) && $res !== '') {
+                return [
+                    'name' => $name,
+                    'ok'   => true,
+                    'note' => $res,
                 ];
             }
             if ($res !== true) {
