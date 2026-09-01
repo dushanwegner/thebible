@@ -198,18 +198,167 @@ function check(name, cond, detail) {
     const d = await r.json();
     const tokens = d.tokens || [];
     const verses = d.verses || [];
+    const gloss = d.gloss || {};
     return {
       ok: true,
       books: tokens.length,
       withVerses: verses.filter((v) => String(v).length).length,
       johnChapters: (verses[tokens.findIndex((t) => t.split(' ').indexOf('john') === 1)] || '').split(',').length,
+      // The arrays are only usable if they are the same length — a short one
+      // does not fail loudly, it files a name under the wrong book.
+      names: (d.names || []).length,
+      slugs: (d.slugs || []).length,
+      named: (d.names || []).filter((n) => n).length,
+      slugged: (d.slugs || []).filter((s) => s).length,
+      langs: Object.keys(gloss).sort(),
+      glossLens: Object.keys(gloss).map((k) => gloss[k].length),
+      // Canonical Bible order, not alphabetical by an internal key.
+      first: (d.names || [])[0],
+      last: (d.names || [])[tokens.length - 1],
     };
   }, vocabUrl);
   check('every book in the payload carries its verse counts',
         payload.ok && payload.books === 73 && payload.withVerses === payload.books, JSON.stringify(payload));
+  check('…and a name and a slug it can be offered under',
+        payload.named === 73 && payload.slugged === 73, JSON.stringify(payload));
+  check('the parallel arrays are all one length',
+        payload.names === 73 && payload.slugs === 73
+        && payload.glossLens.every((n) => n === 73), JSON.stringify(payload));
+  check('all five vernaculars carry a gloss',
+        JSON.stringify(payload.langs) === JSON.stringify(['bibel', 'bible', 'french', 'italian', 'spanish']),
+        JSON.stringify(payload.langs));
+  check('the books are in canonical Bible order',
+        payload.first === 'Genesis' && payload.last === 'Apocalypsis', JSON.stringify(payload));
+
+  // — The answers: WHICH books, in which order, leading where —
+  // The check at the end of the field says a book was understood; the rows say
+  // which one. "2 thessa" is the case that made this necessary.
+  async function answers(text) {
+    await page.fill('.dw-nav-panel input[name="q"]', text);
+    await page.waitForTimeout(120);
+    return page.evaluate(() => {
+      const list = document.querySelector('.dw-nav-search__answers');
+      const input = document.querySelector('.dw-nav-panel input[name="q"]');
+      return {
+        hidden: list.hasAttribute('hidden'),
+        expanded: input.getAttribute('aria-expanded'),
+        rows: [...list.querySelectorAll('a')].map((a) => ({
+          name: a.querySelector('.dw-shell-subnav__name').textContent,
+          gloss: a.querySelector('.dw-shell-subnav__gloss')
+            ? a.querySelector('.dw-shell-subnav__gloss').textContent : '',
+          href: a.getAttribute('href'),
+        })),
+      };
+    });
+  }
+
+  let a = await answers('');
+  check('an empty field offers nothing', a.hidden === true && a.rows.length === 0
+        && a.expanded === 'false', JSON.stringify(a));
+
+  a = await answers('xyzzy');
+  check('gibberish offers nothing', a.hidden === true && a.rows.length === 0, JSON.stringify(a));
+
+  a = await answers('2 thessa');
+  check('a half-typed epistle names exactly one book',
+        a.rows.length === 1 && a.rows[0].name === '2 Thessalonicenses', JSON.stringify(a));
+  check('…glossed in the language being read',
+        a.rows[0] && a.rows[0].gloss === '2. Thessalonians', JSON.stringify(a));
+  check('…and the row IS the link, canonical, no redirect hop',
+        a.rows[0] && /\/en\/biblia\/2-thessalonicenses\/$/.test(a.rows[0].href), JSON.stringify(a));
+  check('the field announces the list', a.expanded === 'true' && a.hidden === false, JSON.stringify(a));
+
+  a = await answers('jo');
+  check('an ambiguous prefix names every book it could be, in Bible order',
+        JSON.stringify(a.rows.map((r) => r.name))
+          === JSON.stringify(['Iosue', 'Iob', 'Ioel', 'Ionas', 'Ioannes', '1 Ioannis', '2 Ioannis', '3 Ioannis']),
+        JSON.stringify(a.rows.map((r) => r.name)));
+
+  a = await answers('Matthew 5:41');
+  check('a citation is on the row and in its href',
+        a.rows.length === 1 && a.rows[0].name === 'Matthaeus 5:41'
+        && /\/en\/biblia\/matthaeus\/5:41\/$/.test(a.rows[0].href), JSON.stringify(a));
+
+  // Three books answer to "John"; only the two that HAVE a 3:16 are offered
+  // (2 and 3 John are one chapter long), which is how the list narrows to the
+  // answer as a reference is finished.
+  a = await answers('John 3:16');
+  check('a citation rules out the books that cannot hold it',
+        JSON.stringify(a.rows.map((r) => r.name)) === JSON.stringify(['Ioannes 3:16', '1 Ioannis 3:16']),
+        JSON.stringify(a.rows.map((r) => r.name)));
+
+  // — The keyboard —
+  await page.fill('.dw-nav-panel input[name="q"]', 'jo');
+  await page.waitForTimeout(120);
+  await page.press('.dw-nav-panel input[name="q"]', 'ArrowDown');
+  await page.press('.dw-nav-panel input[name="q"]', 'ArrowDown');
+  const kb = await page.evaluate(() => {
+    const input = document.querySelector('.dw-nav-panel input[name="q"]');
+    const rows = [...document.querySelectorAll('.dw-nav-search__answers a')];
+    const on = rows.filter((r) => r.classList.contains('is-active'));
+    return {
+      count: on.length,
+      at: rows.indexOf(on[0]),
+      name: on[0] ? on[0].querySelector('.dw-shell-subnav__name').textContent : null,
+      described: input.getAttribute('aria-activedescendant') === (on[0] ? on[0].id : ''),
+      selected: on[0] ? on[0].getAttribute('aria-selected') : null,
+      // The field keeps what was typed — arrowing is not editing.
+      value: input.value,
+    };
+  });
+  check('the arrows walk the list, one row at a time',
+        kb.count === 1 && kb.at === 1 && kb.name === 'Iob' && kb.value === 'jo', JSON.stringify(kb));
+  check('…and the field says which row it is on',
+        kb.described === true && kb.selected === 'true', JSON.stringify(kb));
+
+  // Escape closes the innermost open thing and nothing else: the answers go,
+  // the panel and the drawer around them stay. (The theme already makes the
+  // same promise one level up — the panel's Escape does not close the nav.)
+  await page.press('.dw-nav-panel input[name="q"]', 'Escape');
+  const esc = await page.evaluate(() => ({
+    hidden: document.querySelector('.dw-nav-search__answers').hasAttribute('hidden'),
+    expanded: document.querySelector('.dw-nav-panel input[name="q"]').getAttribute('aria-expanded'),
+    panelOpen: !document.querySelector('.dw-nav-panel').hasAttribute('hidden'),
+    drawerOpen: document.body.classList.contains('dw-shell-drawer-open'),
+  }));
+  check('Escape puts the list away', esc.hidden === true && esc.expanded === 'false', JSON.stringify(esc));
+  check('…and takes nothing else with it',
+        esc.panelOpen === true && esc.drawerOpen === true, JSON.stringify(esc));
+  // A second Escape is the panel's own, and belongs to the theme (nav-action.js).
+  // Not asserted here: what it does to the drawer is dwtheme's business, not
+  // this field's.
+
+  // Enter on a CHOSEN row follows it; Enter on the field itself still submits
+  // to the server (proven by the four navigation cases below, which never touch
+  // the arrows and still land on the right page).
+  await page.fill('.dw-nav-panel input[name="q"]', 'jo');
+  await page.waitForTimeout(120);
+  await page.press('.dw-nav-panel input[name="q"]', 'ArrowDown');
+  await page.press('.dw-nav-panel input[name="q"]', 'ArrowDown');
+  await Promise.all([
+    page.waitForURL(/\/biblia\/iob\/?$/, { timeout: 15000 }),
+    page.press('.dw-nav-panel input[name="q"]', 'Enter'),
+  ]);
+  check('Enter follows the chosen row', /\/biblia\/iob\/?$/.test(page.url()), page.url());
+
+  // — Clicking a row is the same act —
+  await openDrawer(BASE);
+  await page.click('.dw-nav-action');
+  await page.waitForTimeout(400);
+  await page.fill('.dw-nav-panel input[name="q"]', 'ruth');
+  await page.waitForTimeout(200);
+  await Promise.all([
+    page.waitForURL(/\/biblia\/ruth\/?$/, { timeout: 15000 }),
+    page.click('.dw-nav-search__answers a'),
+  ]);
+  check('tapping a row opens the book', /\/biblia\/ruth\/?$/.test(page.url()), page.url());
 
   // — The whole chain: a citation reaches the verse —
-  // (the panel is still open from the checks above)
+  // Enter WITHOUT choosing a row: the form submits and the server's resolver
+  // answers, exactly as it does with JS off. The suggestions are a shortcut
+  // past that resolver, never a second one.
+  await openDrawer(BASE);
+  await page.click('.dw-nav-action');
   await page.fill('.dw-nav-panel input[name="q"]', 'Matthew 5:41');
   await Promise.all([
     page.waitForURL(/matthaeus\/5:41\/?$/, { timeout: 15000 }),
@@ -273,6 +422,31 @@ function check(name, cond, detail) {
         fallback.open === true && fallback.value === 'zzzz', JSON.stringify(fallback));
   check('and the filter has already run over it',
         fallback.visibleBooks === 0 && fallback.empty === true, JSON.stringify(fallback));
+
+  // — The gloss follows the reader, not the site —
+  // The row's name is the Latin spine on every localized index; the second name
+  // is the language being read. A German reader typing "2 thessa" must see
+  // "2 Thessalonicher", not the English gloss the /en/ leg above checked.
+  const de = BASE.replace(/\/(en|de|es|fr|it)\/?$/, '/de/');
+  await openDrawer(de);
+  await page.click('.dw-nav-action');
+  await page.waitForTimeout(600); // the vocabulary lands on this page too
+  await page.fill('.dw-nav-panel input[name="q"]', '2 thessa');
+  await page.waitForTimeout(200);
+  const german = await page.evaluate(() => {
+    const a = document.querySelector('.dw-nav-search__answers a');
+    return {
+      ds: document.querySelector('form.dw-nav-search').getAttribute('data-dwbible-gloss'),
+      name: a ? a.querySelector('.dw-shell-subnav__name').textContent : null,
+      gloss: a ? a.querySelector('.dw-shell-subnav__gloss').textContent : null,
+      href: a ? a.getAttribute('href') : null,
+    };
+  });
+  check('the German drawer glosses in German',
+        german.ds === 'bibel' && german.name === '2 Thessalonicenses'
+        && german.gloss === '2 Thessalonicher', JSON.stringify(german));
+  check('…and its rows stay on the German index',
+        /\/de\/biblia\/2-thessalonicenses\/$/.test(german.href || ''), JSON.stringify(german));
 
   await browser.close();
   console.log(failures ? failures + ' FAILURES' : 'all pass');

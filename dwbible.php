@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.09.01.01
+* Version: 1.26.09.01.02
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.01.01');
+    define('DWBIBLE_VERSION', '1.26.09.01.02');
 }
 
 // Load include classes before hooks are registered
@@ -1666,6 +1666,85 @@ class DwBible_Plugin {
             'æ'=>'ae','œ'=>'oe','ß'=>'ss',
         ];
         return strtr($s, $map);
+    }
+
+    /**
+     * THE BOOK DIRECTORY: every book once, in canonical order, with the name
+     * and the URL slug that every localized index shows for it.
+     *
+     * Read from the LATIN dataset because that is what a localized index is
+     * built from: `/de/biblia/` is internally `latin-bibel`, and
+     * build_index_html takes the FIRST half of a combo as its primary — so the
+     * row on the German, Spanish and Italian index alike reads "3 Regum". One
+     * list therefore serves every language, and the vernacular name is the
+     * gloss beside it (book_names_by_dataset).
+     *
+     * ⚠️ Keyed by the book's own identity, like the vocabulary and the verse
+     * counts — never by a dataset's order number. Order is used only to SORT
+     * this one dataset against itself, which is the one thing it is reliable
+     * for.
+     *
+     * The slug is the CANONICAL one (latin_slug_for_key), not the dataset's own
+     * filename slug. The two differ often enough to matter — the Latin dataset
+     * files the first Gospel under `matthew`, and `/biblia/matthew/` 301s to
+     * `/biblia/matthaeus/` — so a link built from the filename costs a redirect
+     * on most books. A row built from this list lands in one hop.
+     *
+     * @return array<int,array{key:string,slug:string,name:string}>
+     */
+    public static function book_directory() {
+        static $cache = null;
+        if ( $cache !== null ) { return $cache; }
+
+        $rows = [];
+        foreach ( self::load_dataset_index('latin') as $b ) {
+            $short = isset($b['short_name']) ? (string) $b['short_name'] : '';
+            if ($short === '') { continue; }
+            $key = self::key_from_any_book_slug(self::slugify($short));
+            if ($key === null) { continue; }
+            $rows[] = [
+                'key'   => $key,
+                'slug'  => self::latin_slug_for_key($key),
+                'name'  => !empty($b['display_name']) ? (string) $b['display_name'] : self::pretty_label($short),
+                'order' => intval($b['order']),
+            ];
+        }
+        usort($rows, function ($a, $b) { return $a['order'] - $b['order']; });
+
+        $out = [];
+        foreach ($rows as $r) { unset($r['order']); $out[] = $r; }
+
+        $cache = $out;
+        return $cache;
+    }
+
+    /**
+     * One dataset's display name for each book, BY CANONICAL KEY.
+     *
+     * The gloss beside a book name — "3 Regum · 1 Könige" — and the only safe
+     * way to build it. Grouping a language's names by the dataset's own order
+     * number files them under the WRONG books: the Italian index offsets ~27
+     * of them, which is how "Malachias" came to be glossed "Aggeo".
+     *
+     * @param string $dataset bible | bibel | spanish | french | italian | latin
+     * @return array<string,string> book key => that language's name
+     */
+    public static function book_names_by_dataset( $dataset ) {
+        static $cache = [];
+        $dataset = (string) $dataset;
+        if ( isset($cache[$dataset]) ) { return $cache[$dataset]; }
+
+        $out = [];
+        foreach ( self::load_dataset_index($dataset) as $b ) {
+            $short = isset($b['short_name']) ? (string) $b['short_name'] : '';
+            if ($short === '') { continue; }
+            $key = self::key_from_any_book_slug(self::slugify($short));
+            if ($key === null) { continue; }
+            $out[$key] = !empty($b['display_name']) ? (string) $b['display_name'] : self::pretty_label($short);
+        }
+
+        $cache[$dataset] = $out;
+        return $out;
     }
 
     /**

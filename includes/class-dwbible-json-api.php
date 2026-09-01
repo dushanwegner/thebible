@@ -336,46 +336,91 @@ trait DwBible_JSON_API_Trait {
      * sprueche, matthaeus) and the Italian book-order offset.
      */
     /**
-     * /bible-books.json — the search VOCABULARY, and nothing else.
+     * /bible-books.json — the search VOCABULARY, and what a hit can be OFFERED as.
      *
-     * Every prefix-token that names a book, in every configured language, as a
-     * flat list. It answers exactly one question, the one the rail's Bible
-     * search asks on every keystroke: does what the reader wrote name a book?
-     * — so it carries no names, no URLs and no chapter counts (that is
-     * bible-index.json, 140 KB, and the wrong tool for a highlight).
+     * Every prefix-token that names a book, in every configured language, plus
+     * the two things a match has to carry to become a row the reader can tap:
+     * the name the index shows for it and the slug it lives at. Still not
+     * bible-index.json (140 KB, six translations' worth of URLs) — one name,
+     * one slug, one gloss per language, ~16 KB.
+     *
+     * ⚠️ SIX PARALLEL ARRAYS, ONE ORDER. tokens[i], verses[i], names[i],
+     * slugs[i] and every gloss[lang][i] are the same book, in CANONICAL BIBLE
+     * ORDER — the order the index page shows, so a list of candidates reads
+     * Iosue · Iudicum · Ruth rather than alphabetically by an internal key.
      *
      * Language-independent on purpose: every language's names are already
-     * tokens in the same list, so one cached file serves all five locales.
-     * Cached like the rest of the API — the vocabulary only changes when a
-     * dataset does.
+     * tokens in the same list, and `names`/`slugs` are the Latin spine that
+     * every localized index is built from, so ONE cached file still serves all
+     * locales. The vernacular name is the gloss, and all five ride along.
+     * Cached like the rest of the API — it only changes when a dataset does.
      */
     private static function serve_book_vocabulary() {
-        // Both maps are keyed by the book's canonical identity and emitted in the
-        // same sequence, so tokens[i] and verses[i] are the same book.
+        // All four maps are keyed by the book's canonical identity — never by a
+        // dataset's order number — so they can be joined without shifting a
+        // language's names onto the wrong books.
         $tokens = DwBible_Plugin::search_tokens_by_book();
         $verses = DwBible_Plugin::verse_counts_by_book();
-        ksort( $tokens );
+
+        // Canonical order comes from the book directory. A book the vocabulary
+        // knows but the directory does not still has to be FINDABLE — it just
+        // cannot be offered as a row — so it rides along at the end with no
+        // name and no slug rather than being dropped from the search.
+        $order = [];
+        $seen  = [];
+        foreach ( DwBible_Plugin::book_directory() as $entry ) {
+            $key = $entry['key'];
+            if ( ! isset( $tokens[ $key ] ) || isset( $seen[ $key ] ) ) { continue; }
+            $seen[ $key ] = true;
+            $order[]      = $entry;
+        }
+        foreach ( array_keys( $tokens ) as $key ) {
+            if ( isset( $seen[ $key ] ) ) { continue; }
+            $order[] = [ 'key' => $key, 'slug' => '', 'name' => '' ];
+        }
+
+        // The five vernaculars. Latin is not among them: it is already `names`.
+        $gloss_sets = [];
+        foreach ( [ 'bible', 'bibel', 'spanish', 'french', 'italian' ] as $ds ) {
+            $gloss_sets[ $ds ] = DwBible_Plugin::book_names_by_dataset( $ds );
+        }
 
         $out_tokens = [];
         $out_verses = [];
-        foreach ( $tokens as $key => $line ) {
-            $out_tokens[] = $line;
+        $out_names  = [];
+        $out_slugs  = [];
+        $out_gloss  = array_fill_keys( array_keys( $gloss_sets ), [] );
+
+        foreach ( $order as $entry ) {
+            $key          = $entry['key'];
+            $out_tokens[] = $tokens[ $key ] ?? '';
             // Verses per chapter, comma-joined: the shortest honest way to say
             // "chapter 4 has 54 verses" 1,334 times. An empty string means the
             // numbers are unknown for that book, and the reader is not told a
             // citation is wrong on the strength of data we do not have.
             $out_verses[] = isset( $verses[ $key ] ) ? implode( ',', $verses[ $key ] ) : '';
+            $out_names[]  = $entry['name'];
+            $out_slugs[]  = $entry['slug'];
+            foreach ( $gloss_sets as $ds => $names ) {
+                // An empty gloss means "this language calls it what the spine
+                // calls it, or has no name for it" — the row then shows one name.
+                $g = $names[ $key ] ?? '';
+                $out_gloss[ $ds ][] = ( $g !== '' && $g !== $entry['name'] ) ? $g : '';
+            }
         }
 
         self::send_json_headers();
         echo wp_json_encode( [
             '_meta' => [
-                'content' => 'Search vocabulary — every token that names a book (all languages), and how long each book is',
-                'usage'   => 'Prefix-match a normalized query against any token; a hit means the query names a book. verses[i] is that book\'s verse count per chapter, so a citation can be checked for being POSSIBLE before it is followed.',
+                'content' => 'Search vocabulary — every token that names a book (all languages), how long each book is, and the name/slug each book is offered under',
+                'usage'   => 'Prefix-match a normalized query against any token; a hit means the query names a book. Parallel arrays, canonical Bible order: verses[i] is that book\'s verse count per chapter (so a citation can be checked for being POSSIBLE before it is followed), names[i] and slugs[i] are what every localized index shows and links to, and gloss.<dataset>[i] is that language\'s own name where it differs.',
                 'books'   => count( $out_tokens ),
             ],
             'tokens' => $out_tokens,
             'verses' => $out_verses,
+            'names'  => $out_names,
+            'slugs'  => $out_slugs,
+            'gloss'  => $out_gloss,
         ] );
     }
 
