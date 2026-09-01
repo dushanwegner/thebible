@@ -366,6 +366,32 @@ class DwBible_OG_Image {
         $latin_text = $strip_invisible($latin_text);
         $text       = $strip_invisible($text);
 
+        // Outer quotation marks for OG images; wrapping is delegated to clean_verse_quotes().
+        $qL = '»';
+        $qR = '«';
+
+        // One-visible-outer-quote-pair wrap for a verse string: normalize inner quotes, strip any
+        // stray leading/trailing guillemets, then wrap once in qL/qR.
+        $wrap_quotes = function ($s) use ($qL, $qR) {
+            $s = DwBible_Plugin::clean_verse_text_for_output($s, false);
+            $s = preg_replace('/^[«»‹›\s]+/u', '', (string) $s);
+            $s = preg_replace('/[«»‹›\s]+$/u', '', (string) $s);
+            return $qL . $s . $qR;
+        };
+        $latin_clean = $latin_text !== '' ? $wrap_quotes($latin_text) : '';
+        $vern_clean  = $text       !== '' ? $wrap_quotes($text)       : '';
+
+        // Display-only Latin typography (dwlp_latin_typography(), defined in dwlatinprayer) —
+        // the same guard the web reader applies to .verse-body, so the Clementine spacing
+        // "oculis ejus ; spirituum" can never wrap into a line that starts with ";". It has to
+        // run AFTER the wrap above, because clean_verse_text_for_output() normalizes every
+        // non-breaking space back to a plain one. The GD word wrapper splits on ASCII /\s+/
+        // (no /u), so the U+00A0 it inserts glues the mark to the preceding word.
+        // Soft dependency: no-ops if dwlatinprayer isn't active.
+        if ($latin_clean !== '' && function_exists('dwlp_latin_typography')) {
+            $latin_clean = dwlp_latin_typography($latin_clean);
+        }
+
         $w = max(100, intval(get_option('dwbible_og_width', 1200)));
         $h = max(100, intval(get_option('dwbible_og_height', 630)));
         $bg = (string) get_option('dwbible_og_bg_color', '#111111');
@@ -440,8 +466,11 @@ class DwBible_OG_Image {
             'logo_dy' => $logo_dy_opt,
             'lh_main' => $lh_main_opt,
             'lang' => $lang,
-            'latin' => $latin_text,
-            'text' => $text,
+            // The final drawn strings, not the raw dataset text: a change in the quote
+            // wrapping or the Latin typography guard must invalidate images already on
+            // disk, or the old rendering keeps being served for the same verse URL.
+            'latin' => $latin_clean,
+            'text' => $vern_clean,
             'ref' => $ref,
         ];
         $hash = substr(sha1(wp_json_encode($cache_parts)), 0, 16);
@@ -541,26 +570,10 @@ class DwBible_OG_Image {
             }
         }
 
-        $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
-        // Outer quotation marks for OG images; wrapping is delegated to clean_verse_quotes().
-        $qL = '»';
-        $qR = '«';
-
         $ref_size = $font_ref;
         // Force bottom placement; align opposite of logo side
         $refpos = 'bottom';
         $refalign = ($logo_side === 'left') ? 'right' : 'left';
-
-        // One-visible-outer-quote-pair wrap for a verse string: normalize inner quotes, strip any
-        // stray leading/trailing guillemets, then wrap once in qL/qR.
-        $wrap_quotes = function ($s) use ($qL, $qR) {
-            $s = DwBible_Plugin::clean_verse_text_for_output($s, false);
-            $s = preg_replace('/^[«»‹›\s]+/u', '', (string) $s);
-            $s = preg_replace('/[«»‹›\s]+$/u', '', (string) $s);
-            return $qL . $s . $qR;
-        };
-        $latin_clean = $latin_text !== '' ? $wrap_quotes($latin_text) : '';
-        $vern_clean  = $text       !== '' ? $wrap_quotes($text)       : '';
 
         $use_ttf = (is_string($font_file) && $font_file !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file));
         $use_ttf_vern = (is_string($font_file_vern) && $font_file_vern !== '' && function_exists('imagettfbbox') && function_exists('imagettftext') && file_exists($font_file_vern));
