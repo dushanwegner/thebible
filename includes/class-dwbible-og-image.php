@@ -381,15 +381,23 @@ class DwBible_OG_Image {
         $latin_clean = $latin_text !== '' ? $wrap_quotes($latin_text) : '';
         $vern_clean  = $text       !== '' ? $wrap_quotes($text)       : '';
 
-        // Display-only Latin typography (dwlp_latin_typography(), defined in dwlatinprayer) —
-        // the same guard the web reader applies to .verse-body, so the Clementine spacing
-        // "oculis ejus ; spirituum" can never wrap into a line that starts with ";". It has to
-        // run AFTER the wrap above, because clean_verse_text_for_output() normalizes every
-        // non-breaking space back to a plain one. The GD word wrapper splits on ASCII /\s+/
-        // (no /u), so the U+00A0 it inserts glues the mark to the preceding word.
+        // Display-only typography (defined in dwlatinprayer) — the same guard the web reader
+        // applies to .verse-body, so the Clementine spacing "oculis ejus ; spirituum" can never
+        // wrap into a line that starts with ";". It has to run AFTER the wrap above, because
+        // clean_verse_text_for_output() normalizes every non-breaking space back to a plain one.
+        // The GD word wrapper splits on ASCII /\s+/ (no /u), so the U+00A0 it inserts glues the
+        // mark to the preceding word.
+        //
+        // The VERNACULAR line takes the bare punctuation guard, not the Latin entry point: the
+        // space before : ; ! ? is a typographic situation, not a language: our French edition
+        // writes it 28,887 times and the Italian likewise, while de/en/es never do, so the guard
+        // is a no-op there rather than a rule that needs a language switch.
         // Soft dependency: no-ops if dwlatinprayer isn't active.
         if ($latin_clean !== '' && function_exists('dwlp_latin_typography')) {
             $latin_clean = dwlp_latin_typography($latin_clean);
+        }
+        if ($vern_clean !== '' && function_exists('dwlp_latin_guard_orphan_punctuation')) {
+            $vern_clean = dwlp_latin_guard_orphan_punctuation($vern_clean);
         }
 
         $w = max(100, intval(get_option('dwbible_og_width', 1200)));
