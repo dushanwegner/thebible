@@ -204,14 +204,26 @@ trait DwBible_AutoLink_Trait {
                  . '(?:(?:(?:\s|\x{00A0})*[:\x{2236}\x{FE55}\x{FF1A}](?:\s|\x{00A0})*|,)(\d+)(?:[-\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}\x{2212}](\d+))?)?'
                  . '(?!\p{L})/u';
 
-        $parts = preg_split('/(<a\s[^>]*>.*?<\/a>)/us', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+        // Split out anything that must not be rewritten: a whole existing anchor
+        // (so a linked reference is never linked twice) AND ANY OTHER TAG.
+        //
+        // The tag half matters as much as the anchor half. Without it the
+        // matcher happily rewrites reference-looking text inside an ATTRIBUTE
+        // — `data-prayer="Júdica me (Psalmus 42)"` on the Mass page became
+        // `data-prayer="Júdica me (<a class="dwbible-ref" …`, whose quotes
+        // ended the attribute early and spilled the rest of the anchor onto the
+        // page as visible text. A linker that edits markup it cannot see is
+        // only ever one attribute away from that.
+        $parts = preg_split('/(<a\s[^>]*>.*?<\/a>|<[^>]+>)/us', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
         if ($parts === false) {
             return $content;
         }
 
         $result = '';
         foreach ($parts as $part) {
-            if (preg_match('/^<a\s/i', $part)) {
+            // Any captured chunk that IS markup passes through untouched; only
+            // the text between tags is offered to the matcher.
+            if ($part !== '' && $part[0] === '<') {
                 $result .= $part;
             } else {
                 $normalized_part = preg_replace('/&(nbsp|NBSP);/u', "\xC2\xA0", $part);

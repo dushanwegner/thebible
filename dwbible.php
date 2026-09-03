@@ -9,7 +9,7 @@
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.01.03');
+    define('DWBIBLE_VERSION', '1.26.09.03.01');
 }
 
 // Load include classes before hooks are registered
