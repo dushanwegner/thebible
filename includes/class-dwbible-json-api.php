@@ -129,10 +129,80 @@ trait DwBible_JSON_API_Trait {
             exit;
         }
 
-        // Serve the static file with appropriate headers
-        self::send_json_headers();
-        readfile( $file );
+        // Serve the pre-generated file. This is the busiest path in the API — every
+        // chapter and every index — so its validator is derived from the file's own
+        // mtime and size rather than by hashing the bytes on each request.
+        self::send_json_file( $file );
         exit;
+    }
+
+    /**
+     * Serve a pre-generated JSON file, answering a conditional request when we can.
+     *
+     * The validator is `mtime-size`, which for a file written by the generator
+     * changes whenever the content does — a regeneration rewrites the file, moving
+     * the mtime even if the length is unchanged. That is why the file does not need
+     * to be read to produce it, which matters: this path serves ~8.7 KB per chapter
+     * and ~19.8 KB for the index.
+     *
+     * `Last-Modified` is sent alongside `ETag` so a client that only implements
+     * `If-Modified-Since` is served too. Before this, neither header existed, so a
+     * far-future `If-Modified-Since` still returned a full 200 body.
+     *
+     * @param string $file Absolute path to an existing JSON file.
+     */
+    private static function send_json_file( $file ) {
+        $mtime = @filemtime( $file );
+        $size  = @filesize( $file );
+
+        if ( $mtime === false || $size === false ) {
+            // Cannot validate it — serve it plainly rather than risk a wrong ETag.
+            self::send_json_headers();
+            readfile( $file );
+            return;
+        }
+
+        $etag     = '"' . $mtime . '-' . $size . '"';
+        $modified = gmdate( 'D, d M Y H:i:s', $mtime ) . ' GMT';
+
+        $inm = isset( $_SERVER['HTTP_IF_NONE_MATCH'] )
+            ? (string) wp_unslash( $_SERVER['HTTP_IF_NONE_MATCH'] )
+            : '';
+        $ims = isset( $_SERVER['HTTP_IF_MODIFIED_SINCE'] )
+            ? (string) wp_unslash( $_SERVER['HTTP_IF_MODIFIED_SINCE'] )
+            : '';
+
+        $fresh = false;
+        if ( $inm !== '' ) {
+            // If-None-Match takes precedence over If-Modified-Since (RFC 9110).
+            foreach ( explode( ',', $inm ) as $candidate ) {
+                $candidate = trim( $candidate );
+                if ( str_starts_with( $candidate, 'W/' ) ) {
+                    $candidate = substr( $candidate, 2 );
+                }
+                if ( $candidate === $etag || $candidate === '*' ) {
+                    $fresh = true;
+                    break;
+                }
+            }
+        } elseif ( $ims !== '' ) {
+            $since = strtotime( $ims );
+            if ( $since !== false && $mtime <= $since ) {
+                $fresh = true;
+            }
+        }
+
+        self::send_json_headers();
+        header( 'ETag: ' . $etag );
+        header( 'Last-Modified: ' . $modified );
+
+        if ( $fresh ) {
+            status_header( 304 );
+            header_remove( 'Content-Type' );
+            return;
+        }
+
+        readfile( $file );
     }
 
     /**
@@ -255,8 +325,7 @@ trait DwBible_JSON_API_Trait {
             $response['text']  = $matched[0]['text'];
         }
 
-        self::send_json_headers();
-        echo json_encode( $response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+        self::send_json( $response );
         exit;
     }
 
@@ -276,6 +345,57 @@ trait DwBible_JSON_API_Trait {
             'spanish' => [ 'name' => 'Straubinger',        'language' => 'es', 'languageName' => 'Spanish' ],
             'italian' => [ 'name' => 'Martini',            'language' => 'it', 'languageName' => 'Italian' ],
         ];
+    }
+
+    /**
+     * Encode, answer a conditional request if we can, otherwise send the body.
+     *
+     * Every successful response goes through here so the validator is derived from
+     * the exact bytes being sent. An ETag computed from the body cannot serve stale
+     * content: if the content changed, the hash changed.
+     *
+     * WHY: these endpoints carried `Cache-Control: public, max-age=86400` but no
+     * validator at all — no `ETag`, no `Last-Modified` — so a client that wanted to
+     * revalidate could not. A far-future `If-Modified-Since` still returned a full
+     * 200. Measured over 14 days: 3,455 successful JSON fetches, and Cloudflare
+     * reports `cf-cache-status: DYNAMIC` on them, so the edge is not absorbing the
+     * repeats either. Every app launch re-downloaded chapters it already had.
+     *
+     * A chapter body is ~8.7 KB and the index ~19.8 KB; a 304 is a few hundred.
+     *
+     * @param array $response The response payload.
+     */
+    private static function send_json( array $response ) {
+        $body = json_encode( $response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+        $etag = '"' . md5( (string) $body ) . '"';
+
+        // If-None-Match is a comma-separated list and entries may be weak (W/"…").
+        // Compare on the opaque part so a weak validator still matches — these
+        // responses are byte-identical when they match, so weak is safe here.
+        $inm = isset( $_SERVER['HTTP_IF_NONE_MATCH'] )
+            ? (string) wp_unslash( $_SERVER['HTTP_IF_NONE_MATCH'] )
+            : '';
+        if ( $inm !== '' ) {
+            foreach ( explode( ',', $inm ) as $candidate ) {
+                $candidate = trim( $candidate );
+                if ( str_starts_with( $candidate, 'W/' ) ) {
+                    $candidate = substr( $candidate, 2 );
+                }
+                if ( $candidate === $etag || $candidate === '*' ) {
+                    self::send_json_headers();
+                    // A 304 carries no body, and must not claim a length for one.
+                    header( 'ETag: ' . $etag );
+                    status_header( 304 );
+                    header_remove( 'Content-Type' );
+                    exit;
+                }
+            }
+        }
+
+        self::send_json_headers();
+        header( 'ETag: ' . $etag );
+        echo $body;
+        exit;
     }
 
     /**
@@ -561,15 +681,9 @@ trait DwBible_JSON_API_Trait {
             'books' => $books,
         ];
 
-        status_header( 200 );
-        header( 'Content-Type: application/json; charset=UTF-8' );
-        header( 'Access-Control-Allow-Origin: *' );
-        header( 'Access-Control-Allow-Methods: GET, OPTIONS' );
-        header( 'Cache-Control: public, max-age=86400' );
-        header( 'X-Content-Type-Options: nosniff' );
-        header( 'X-Powered-By: Latin Prayer (latinprayer.org)' );
-        echo json_encode( $response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-        exit;
+        // Was an inline copy of send_json_headers() — the duplicate is why this
+        // endpoint would have been missed by a change made only to the helper.
+        self::send_json( $response );
     }
 
     /**
