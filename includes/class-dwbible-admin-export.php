@@ -55,7 +55,10 @@ class DwBible_Admin_Export {
         }
         $bible_name = ($slug === 'bibel') ? 'Deutsch (Menge)' : 'English (Douay-Rheims)';
         fwrite($out, $bible_name . "\n");
-        fwrite($out, "schema|slug|book|chapter|verse|text\n");
+        // The header must name exactly the fields each row writes below —
+        // it declared a leading "schema" column that no row ever emitted, so
+        // any parser following the header read every field off by one.
+        fwrite($out, "slug|book|chapter|verse|text\n");
         foreach ($rows as $row) {
             $short = isset($row[1]) ? (string) $row[1] : '';
             $file = isset($row[3]) ? (string) $row[3] : '';

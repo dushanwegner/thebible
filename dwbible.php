@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.09.04.02
+* Version: 1.26.09.04.03
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.04.02');
+    define('DWBIBLE_VERSION', '1.26.09.04.03');
 }
 
 // Load include classes before hooks are registered
@@ -57,9 +57,19 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-qa.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-sync-report.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-text-utils.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-utils.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-settings.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-export.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-ai.php';
+// The three admin screens, loaded only where they can be reached: their only
+// callers are add_menu_page/add_submenu_page callbacks and one admin_post
+// handler, all of which run with is_admin() true (admin-post.php included).
+//
+// class-dwbible-admin-utils.php above is NOT gated with them: it backs the
+// upload_mimes and wp_check_filetype_and_ext filters, which fire wherever a
+// file is uploaded — REST media uploads from the block editor included.
+// Likewise class-dwbible-admin-meta.php, hooked to save_post.
+if (is_admin()) {
+    require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-settings.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-export.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-admin-ai.php';
+}
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-front-meta.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-footer-renderer.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-dwbible-data-paths.php';
@@ -144,6 +154,10 @@ class DwBible_Plugin {
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
+        // The settings page renders a form posting this action to admin-post.php.
+        // Nothing hooked it, so the "Download .txt" button answered 400 and the
+        // feature was unreachable while still being advertised in the UI.
+        add_action('admin_post_dwbible_export_bible', ['DwBible_Admin_Export', 'handle_export_bible_txt']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
 
         add_filter('upload_mimes', [__CLASS__, 'allow_font_uploads']);
