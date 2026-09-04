@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.09.04.01
+* Version: 1.26.09.04.02
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.04.01');
+    define('DWBIBLE_VERSION', '1.26.09.04.02');
 }
 
 // Load include classes before hooks are registered
@@ -184,59 +184,8 @@ class DwBible_Plugin {
         // appends the site name via the 'site' part.
         add_filter( 'document_title_parts', [ __CLASS__, 'filter_document_title_parts' ], 20 );
 
-        // One-time migration from thebible_* → dwbible_* option/meta names
-        add_action('init', [__CLASS__, 'migrate_from_thebible'], 5);
-
         register_activation_hook(__FILE__, [__CLASS__, 'activate']);
         register_deactivation_hook(__FILE__, [__CLASS__, 'deactivate']);
-    }
-
-    /**
-     * One-time migration: rename thebible_* options and post meta to dwbible_*.
-     * Runs once, then sets a flag so it never runs again.
-     */
-    public static function migrate_from_thebible() {
-        if (get_option('dwbible_migrated_from_thebible')) {
-            return;
-        }
-
-        global $wpdb;
-
-        // Rename all thebible_* options to dwbible_*
-        $options = $wpdb->get_results(
-            "SELECT option_id, option_name FROM {$wpdb->options} WHERE option_name LIKE 'thebible_%'"
-        );
-        foreach ($options as $opt) {
-            $new_name = 'dwbible_' . substr($opt->option_name, strlen('thebible_'));
-            // Only rename if the new name doesn't already exist
-            if (false === get_option($new_name)) {
-                $wpdb->update(
-                    $wpdb->options,
-                    ['option_name' => $new_name],
-                    ['option_id' => $opt->option_id]
-                );
-            }
-        }
-
-        // Rename thebible_slug post meta to dwbible_slug
-        $wpdb->query(
-            "UPDATE {$wpdb->postmeta} SET meta_key = 'dwbible_slug' WHERE meta_key = 'thebible_slug'"
-        );
-
-        // Update active_plugins: dwbible/thebible.php → dwbible/dwbible.php
-        $active = get_option('active_plugins', []);
-        $updated = false;
-        foreach ($active as $i => $plugin) {
-            if ($plugin === 'dwbible/thebible.php') {
-                $active[$i] = 'dwbible/dwbible.php';
-                $updated = true;
-            }
-        }
-        if ($updated) {
-            update_option('active_plugins', $active);
-        }
-
-        update_option('dwbible_migrated_from_thebible', '1', false);
     }
 
     public static function maybe_flush_rewrite_rules() {
