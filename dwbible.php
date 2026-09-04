@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.09.04.03
+* Version: 1.26.09.04.04
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.04.03');
+    define('DWBIBLE_VERSION', '1.26.09.04.04');
 }
 
 // Load include classes before hooks are registered
@@ -2240,8 +2240,19 @@ JS;
         $n = count($datasets);
         if ($n < 2) return [];
 
+        // A dataset may not appear twice in one combo. An interlinear column set
+        // is a set: `/bible-bible/` would print English beside English, and
+        // `/bible-bible-bible/` three times. They were generated anyway -- 102 of
+        // the 252 combos, and since each combo costs 12 rewrite rules, 1224 of
+        // the 3560 rules in the `rewrite_rules` option, which is autoloaded and
+        // unserialized on EVERY request.
+        //
+        // get_registered_slugs() in this same file already excludes self-pairs
+        // (`if ( $a !== $b )`), so the plugin held both answers at once: routes
+        // existed for slugs it did not consider registered.
         for ($i = 0; $i < $n; $i++) {
             for ($j = 0; $j < $n; $j++) {
+                if ($j === $i) continue;
                 $out[] = $datasets[$i] . '-' . $datasets[$j];
             }
         }
@@ -2249,7 +2260,9 @@ JS;
         if ($max_len >= 3 && $n >= 3) {
             for ($i = 0; $i < $n; $i++) {
                 for ($j = 0; $j < $n; $j++) {
+                    if ($j === $i) continue;
                     for ($k = 0; $k < $n; $k++) {
+                        if ($k === $i || $k === $j) continue;
                         $out[] = $datasets[$i] . '-' . $datasets[$j] . '-' . $datasets[$k];
                     }
                 }
