@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.09.03.02
+* Version: 1.26.09.04.01
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.03.02');
+    define('DWBIBLE_VERSION', '1.26.09.04.01');
 }
 
 // Load include classes before hooks are registered
@@ -145,9 +145,6 @@ class DwBible_Plugin {
         add_action('admin_enqueue_scripts', [__CLASS__, 'admin_enqueue']);
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
-
-        // TODO: Delete this one-time VOTD cleanup block after it has run on production
-        add_action('admin_init', [__CLASS__, 'one_time_delete_votd_data']);
 
         add_filter('upload_mimes', [__CLASS__, 'allow_font_uploads']);
         add_filter('wp_check_filetype_and_ext', [__CLASS__, 'allow_font_filetype'], 10, 5);
@@ -286,59 +283,6 @@ class DwBible_Plugin {
         if ($added) {
             update_option('dwbible_slugs', implode(',', array_values(array_unique($parts))));
         }
-    }
-
-    /**
-     * One-time cleanup: delete all dwbible_votd posts, post meta, and related options.
-     * TODO: Remove this method (and its hook in init()) after it has run on production.
-     */
-    public static function one_time_delete_votd_data() {
-        if (get_option('dwbible_votd_cleanup_done')) {
-            return;
-        }
-
-        global $wpdb;
-
-        // Delete all VOTD post meta and posts in one sweep
-        $post_ids = $wpdb->get_col(
-            $wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = %s", 'dwbible_votd')
-        );
-
-        $deleted = 0;
-        foreach ($post_ids as $pid) {
-            if (wp_delete_post((int) $pid, true)) {
-                $deleted++;
-            }
-        }
-
-        // Clean up VOTD-related options
-        delete_option('dwbible_votd_by_date');
-        delete_option('dwbible_votd_all');
-        delete_option('dwbible_votd_rss_title');
-        delete_option('dwbible_votd_rss_lang_first');
-        delete_option('dwbible_votd_rss_lang_last');
-        delete_option('dwbible_votd_rss_date_format');
-        delete_option('dwbible_votd_rss_description_tpl');
-        delete_option('dwbible_votd_rss_days');
-
-        // Mark as done so this never runs again
-        update_option('dwbible_votd_cleanup_done', '1', false);
-
-        if ($deleted > 0) {
-            add_action('admin_notices', function () use ($deleted) {
-                echo '<div class="notice notice-success is-dismissible"><p>'
-                    . 'VOTD cleanup: deleted ' . intval($deleted) . ' verse-of-the-day posts and related options.'
-                    . '</p></div>';
-            });
-        }
-    }
-
-    public static function add_settings_page() {
-        self::admin_menu();
-    }
-
-    public static function enqueue_admin_assets($hook) {
-        self::admin_enqueue($hook);
     }
 
     private static function ordered_book_slugs() {
