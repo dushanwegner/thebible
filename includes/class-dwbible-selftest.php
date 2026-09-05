@@ -154,9 +154,6 @@ trait DwBible_SelfTest_Trait {
             $index_slugs = [];
             foreach ($datasets as $ds) {
                 $csv = dwbible_data_dir() . $ds . '/html/index.csv';
-                if (!file_exists($csv)) {
-                    $csv = dwbible_data_dir() . $ds . '_books_html/index.csv';
-                }
                 if (!file_exists($csv)) continue;
                 $fh = fopen($csv, 'r');
                 if ($fh === false) continue;
@@ -293,9 +290,6 @@ trait DwBible_SelfTest_Trait {
             $index_keys = [];
             foreach ($datasets as $ds) {
                 $csv = dwbible_data_dir() . $ds . '/html/index.csv';
-                if (!file_exists($csv)) {
-                    $csv = dwbible_data_dir() . $ds . '_books_html/index.csv';
-                }
                 if (!file_exists($csv)) continue;
                 $fh = fopen($csv, 'r');
                 if ($fh === false) continue;

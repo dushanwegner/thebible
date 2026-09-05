@@ -15,12 +15,7 @@ trait DwBible_Interlinear_Trait {
         $data_base = dwbible_data_dir();
         $index_file = $data_base . $dataset_slug . '/html/index.csv';
         if (!file_exists($index_file)) {
-            $old = $data_base . $dataset_slug . '_books_html/index.csv';
-            if (file_exists($old)) {
-                $index_file = $old;
-            } else {
-                return null;
-            }
+            return null;
         }
 
         if (($fh = fopen($index_file, 'r')) === false) return null;
@@ -58,8 +53,6 @@ trait DwBible_Interlinear_Trait {
         $data_base = dwbible_data_dir();
         $root = $data_base . $dataset_slug . '/html/';
         if (is_dir($root)) return trailingslashit($root);
-        $old = $data_base . $dataset_slug . '_books_html/';
-        if (is_dir($old)) return trailingslashit($old);
         return null;
     }
 

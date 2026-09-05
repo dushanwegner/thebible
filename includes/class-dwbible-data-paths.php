@@ -26,16 +26,15 @@ class DwBible_Data_Paths {
                 return $h;
             }
         }
+        // There is one data layout: <dataset>/html/. This path is returned even
+        // when the directory is absent — an unknown dataset slug yields a path
+        // that does not exist, so the caller's file_exists() fails on the path
+        // it actually asked for.
         $slug = get_query_var(DwBible_Plugin::QV_SLUG);
         if (!is_string($slug) || $slug === '') {
             $slug = 'bible';
         }
-        $old = dwbible_data_dir() . $slug . '_books_html/';
-        if (is_dir($old)) {
-            return $old;
-        }
-        $fallback = dwbible_data_dir() . 'bible_books_html/';
-        return $fallback;
+        return dwbible_data_dir() . $slug . '/html/';
     }
 
     public static function text_dir() {
@@ -46,15 +45,14 @@ class DwBible_Data_Paths {
                 return $t;
             }
         }
+        // There is one data layout: <dataset>/text/. This path is returned even
+        // when the directory is absent — an unknown dataset slug yields a path
+        // that does not exist, so the caller's file_exists() fails on the path
+        // it actually asked for.
         $slug = get_query_var(DwBible_Plugin::QV_SLUG);
         if (!is_string($slug) || $slug === '') {
             $slug = 'bible';
         }
-        $old = dwbible_data_dir() . $slug . '_books_text/';
-        if (is_dir($old)) {
-            return $old;
-        }
-        $fallback = dwbible_data_dir() . 'bible_books_text/';
-        return $fallback;
+        return dwbible_data_dir() . $slug . '/text/';
     }
 }

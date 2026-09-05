@@ -129,12 +129,6 @@ trait DwBible_Book_TOC_Trait {
         $order = (int) ( $entry['order'] ?? 0 );
         $data_base = dwbible_data_dir();
         $index_file = $data_base . $first_dataset . '/html/index.csv';
-        if ( ! file_exists( $index_file ) ) {
-            $old = $data_base . $first_dataset . '_books_html/index.csv';
-            if ( file_exists( $old ) ) {
-                $index_file = $old;
-            }
-        }
         if ( file_exists( $index_file ) && ( $fh = fopen( $index_file, 'r' ) ) !== false ) {
             fgetcsv( $fh ); // header
             while ( ( $row = fgetcsv( $fh ) ) !== false ) {

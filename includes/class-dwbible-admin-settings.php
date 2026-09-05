@@ -56,12 +56,6 @@ class DwBible_Admin_Settings {
                 $ok = is_dir($root) || wp_mkdir_p($root);
                 if ( $ok ) {
                     @file_put_contents( trailingslashit($root) . 'copyright.md', $ft );
-                } else {
-                    // Legacy fallback
-                    $dir = dwbible_data_dir() . $fs . '_books_html/';
-                    if ( is_dir($dir) || wp_mkdir_p($dir) ) {
-                        @file_put_contents( trailingslashit($dir) . 'copyright.txt', $ft );
-                    }
                 }
             }
             echo '<div class="updated notice"><p>Footers saved.</p></div>';
@@ -340,7 +334,7 @@ class DwBible_Admin_Settings {
             <h2>Per‑Bible footers</h2>
             <form method="post">
                 <?php wp_nonce_field('dwbible_footer_save_all', 'dwbible_footer_nonce_all'); ?>
-                <p class="description">Preferred location: <code>wp-content/plugins/dwbible/data/{slug}/copyright.md</code>. Legacy fallback: <code>data/{slug}_books_html/copyright.txt</code>.</p>
+                <p class="description">Stored at <code>wp-content/plugins/dwbible/data/{slug}/copyright.md</code>.</p>
                 <table class="form-table" role="presentation">
                     <tbody>
                         <?php foreach ($known as $slug => $label): ?>
@@ -350,9 +344,6 @@ class DwBible_Admin_Settings {
                             $val = '';
                             if ( file_exists( $root . 'copyright.md' ) ) {
                                 $val = (string) file_get_contents( $root . 'copyright.md' );
-                            } else {
-                                $legacy = dwbible_data_dir() . $slug . '_books_html/copyright.txt';
-                                if ( file_exists( $legacy ) ) { $val = (string) file_get_contents( $legacy ); }
                             }
                         ?>
                         <tr>
