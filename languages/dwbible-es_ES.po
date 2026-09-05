@@ -75,3 +75,7 @@ msgstr "Volver al libro"
 
 msgid "Adjacent books"
 msgstr "Libros adyacentes"
+
+# The Bible index page heading (/<lang>/biblia/)
+msgid "The Bible"
+msgstr "La Biblia"

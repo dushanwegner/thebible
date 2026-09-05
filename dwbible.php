@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.09.05.02
+* Version: 1.26.09.05.03
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.05.02');
+    define('DWBIBLE_VERSION', '1.26.09.05.03');
 }
 
 // Load include classes before hooks are registered
@@ -1383,7 +1383,10 @@ class DwBible_Plugin {
         $content = self::build_index_html();
         $footer = self::render_footer_html();
         if ($footer !== '') { $content .= $footer; }
-        self::output_with_theme('The Bible', $content, 'index');
+        // Translated: dwi18n switches WP's locale from the URL's language
+        // segment, so the catalogue that already localises the book groups
+        // ('Pentateuch' -> 'Pentateuco') carries this heading too.
+        self::output_with_theme(__('The Bible', 'dwbible'), $content, 'index');
     }
 
     private static function extract_chapter_from_html($html, $ch) {
