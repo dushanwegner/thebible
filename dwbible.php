@@ -2,14 +2,14 @@
 /*
 * Plugin Name: DW Bible
 * Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.09.04.04
+* Version: 1.26.09.05.01
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.04.04');
+    define('DWBIBLE_VERSION', '1.26.09.05.01');
 }
 
 // Load include classes before hooks are registered
@@ -2194,6 +2194,24 @@ JS;
 
         $out .= '</div>';
         return $out;
+    }
+
+    /**
+     * Every dataset slug this install actually ships — single languages plus the
+     * generated combos.
+     *
+     * Public because the SELF-TEST must derive its coverage from the same source
+     * the router and the sitemap use. It hardcoded `['bible','bibel','latin']` in
+     * three places and `['bible','latin']` in a fourth, so Spanish, French and
+     * Italian — half the shipped product, ~84 MB of data, all six live — were
+     * never checked at all (dwbible#15). A self-test that answers "I did not
+     * look" as "yes" is worse than no self-test, and the way those three came to
+     * be missing is precisely that the list was repeated rather than derived.
+     *
+     * @return string[] e.g. ['bible','bibel','spanish',…,'bible-latin',…]
+     */
+    public static function all_slugs() {
+        return self::base_slugs();
     }
 
     private static function base_slugs() {

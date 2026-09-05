@@ -3,6 +3,42 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 trait DwBible_SelfTest_Trait {
+    /**
+     * The single-language datasets this install ships, derived — never listed.
+     *
+     * dwbible#15: three of the four checks below hardcoded ['bible','bibel',
+     * 'latin'] and a fourth ['bible','latin'], so Spanish, French and Italian
+     * were never verified. A broken index.csv, an unresolvable book slug or a
+     * missing OSIS mapping in any of the three passed in silence. Deriving means
+     * a seventh dataset extends this file automatically instead of quietly
+     * falling outside it, which is exactly how these three went missing.
+     */
+    private static function datasets() {
+        $out = [];
+        foreach (DwBible_Plugin::all_slugs() as $slug) {
+            if (strpos($slug, '-') === false) { $out[] = $slug; }
+        }
+        return $out;
+    }
+
+    /**
+     * The TWO-part combo slugs (latin-bible, bible-spanish, …), derived.
+     *
+     * Deliberately not every combo: this install generates 150 of them, and
+     * 150 combos x 6 datasets x ~73 books is ~65,000 resolutions for a check
+     * that runs on a web request. The two-part set is 30 and reaches every
+     * dataset, which is the property the check needs. That is a real limit on
+     * coverage, so it is stated here and in the check's own failure text rather
+     * than left for someone to infer from a green tick.
+     */
+    private static function combo_slugs() {
+        $out = [];
+        foreach (DwBible_Plugin::all_slugs() as $slug) {
+            if (substr_count($slug, '-') === 1) { $out[] = $slug; }
+        }
+        return $out;
+    }
+
     public static function render_selftest() {
         $results = [];
 
@@ -114,7 +150,7 @@ trait DwBible_SelfTest_Trait {
                 return new WP_Error('dwbible_selftest', 'OSIS mapping empty or invalid.');
             }
 
-            $datasets = ['bible', 'bibel', 'latin'];
+            $datasets = self::datasets();
             $index_slugs = [];
             foreach ($datasets as $ds) {
                 $csv = dwbible_data_dir() . $ds . '/html/index.csv';
@@ -175,7 +211,7 @@ trait DwBible_SelfTest_Trait {
                 return new WP_Error('dwbible_selftest', 'OSIS mapping empty.');
             }
 
-            $datasets = ['bible', 'bibel', 'latin'];
+            $datasets = self::datasets();
             $failures = [];
 
             foreach ($osis['books'] as $code => $entry) {
@@ -243,7 +279,7 @@ trait DwBible_SelfTest_Trait {
                     'DwBible_Plugin::key_from_any_book_slug() is missing — book_map cannot be checked.');
             }
 
-            $datasets = ['bible', 'bibel', 'latin'];
+            $datasets = self::datasets();
 
             // The books each dataset really ships, named in the SAME vocabulary
             // the values will be resolved into.
@@ -306,25 +342,32 @@ trait DwBible_SelfTest_Trait {
         $results[] = self::selftest_check('all_books_resolve_in_combos', function() {
             // Every book in every dataset's index must resolve via
             // canonical_book_slug_from_url() for relevant combo slugs.
-            $combos = ['latin-bible', 'latin-bibel'];
-            $datasets = ['bible', 'latin'];
+            // A combo is only asked about the datasets it is MADE of. Pairing
+            // every dataset with every combo instead looks thorough and is
+            // nonsense: it asks whether the German '1-koenige' resolves under
+            // /bible-spanish/, which it must not, and the check then reports a
+            // healthy install as broken. Verified while widening this — the
+            // first version produced exactly those failures.
             $failures = [];
+            $index_cache = [];
+            $examined = 0;
 
-            foreach ($datasets as $ds) {
-                $csv = dwbible_data_dir() . $ds . '/html/index.csv';
-                if (!file_exists($csv)) continue;
-                $fh = fopen($csv, 'r');
-                if ($fh === false) continue;
-                fgetcsv($fh);
-                $book_slugs = [];
-                while (($row = fgetcsv($fh)) !== false) {
-                    if (!is_array($row) || count($row) < 2) continue;
-                    $book_slugs[] = DwBible_Plugin::slugify($row[1]);
-                }
-                fclose($fh);
-
-                foreach ($combos as $combo) {
-                    foreach ($book_slugs as $slug) {
+            foreach (self::combo_slugs() as $combo) {
+                foreach (explode('-', $combo) as $ds) {
+                    if (!isset($index_cache[$ds])) {
+                        $index_cache[$ds] = [];
+                        $csv = dwbible_data_dir() . $ds . '/html/index.csv';
+                        if (file_exists($csv) && ($fh = fopen($csv, 'r')) !== false) {
+                            fgetcsv($fh);
+                            while (($row = fgetcsv($fh)) !== false) {
+                                if (!is_array($row) || count($row) < 2) continue;
+                                $index_cache[$ds][] = DwBible_Plugin::slugify($row[1]);
+                            }
+                            fclose($fh);
+                        }
+                    }
+                    foreach ($index_cache[$ds] as $slug) {
+                        $examined++;
                         $result = self::canonical_book_slug_from_url($slug, $combo);
                         if ($result === null) {
                             $failures[] = "'$slug' via /$combo/ (from $ds index)";
@@ -336,6 +379,16 @@ trait DwBible_SelfTest_Trait {
 
             if (!empty($failures)) {
                 return new WP_Error('dwbible_selftest_resolution', 'Unresolvable: ' . implode('; ', $failures));
+            }
+            // REFUSE TO REPORT CLEAN HAVING LOOKED AT NOTHING. Every `continue`
+            // above is a silent skip — a missing index.csv, an unreadable file,
+            // a slug option that yields no combos — and with all of them taken
+            // this check returns true in exactly the state it exists to catch.
+            // That is the defect dwbible#15 was filed about, one level down.
+            if ($examined === 0) {
+                return new WP_Error('dwbible_selftest_examined_nothing',
+                    'Resolved 0 book/combo pairs — this check verified NOTHING. ' .
+                    'Datasets: ' . implode(',', self::datasets()) . '; combos: ' . count(self::combo_slugs()) . '.');
             }
             return true;
         });
