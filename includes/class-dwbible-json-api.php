@@ -342,7 +342,7 @@ trait DwBible_JSON_API_Trait {
             'bible'   => [ 'name' => 'Douay-Rheims',       'language' => 'en', 'languageName' => 'English' ],
             'bibel'   => [ 'name' => 'Menge',              'language' => 'de', 'languageName' => 'German' ],
             'french'  => [ 'name' => 'Crampon',            'language' => 'fr', 'languageName' => 'French' ],
-            'spanish' => [ 'name' => 'Straubinger',        'language' => 'es', 'languageName' => 'Spanish' ],
+            'spanish' => [ 'name' => 'Scío de San Miguel', 'language' => 'es', 'languageName' => 'Spanish' ],
             'italian' => [ 'name' => 'Martini',            'language' => 'it', 'languageName' => 'Italian' ],
         ];
     }

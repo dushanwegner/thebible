@@ -75,7 +75,7 @@ Programmatic access — no HTML, verse text only.
 /bible-index.json                            all books × all translations
 ```
 
-JSON slugs: `bible` (Douay-Rheims / en), `latin` (Clementine Vulgate / la), `bibel` (Menge / de), `spanish` (Straubinger / es), `french` (Crampon / fr), `italian` (Martini / it).
+JSON slugs: `bible` (Douay-Rheims / en), `latin` (Clementine Vulgate / la), `bibel` (Menge / de), `spanish` (Scío de San Miguel / es), `french` (Crampon / fr), `italian` (Martini / it).
 
 ## Key files
 

@@ -1,15 +1,15 @@
 <?php
 /*
 * Plugin Name: DW Bible
-* Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Straubinger (es), Crampon (fr), Martini (it).
-* Version: 1.26.09.05.03
+* Description: Provides /bible/ with links to books; renders selected book HTML using the site's template. Six languages: Vulgate (la), Douay-Rheims (en), Menge (de), Scío de San Miguel (es), Crampon (fr), Martini (it).
+* Version: 1.26.09.06.01
 * Author: Dushan Wegner
 */
 
 if (!defined('ABSPATH')) exit;
 
 if (!defined('DWBIBLE_VERSION')) {
-    define('DWBIBLE_VERSION', '1.26.09.05.03');
+    define('DWBIBLE_VERSION', '1.26.09.06.01');
 }
 
 // Load include classes before hooks are registered
@@ -1909,7 +1909,7 @@ class DwBible_Plugin {
         $translation_names = [
             'bible'   => ['name' => 'Douay-Rheims', 'code' => 'EN'],
             'bibel'   => ['name' => 'Menge',        'code' => 'DE'],
-            'spanish' => ['name' => 'Straubinger',  'code' => 'ES'],
+            'spanish' => ['name' => 'Scío de San Miguel', 'code' => 'ES'],
             'french'  => ['name' => 'Crampon',      'code' => 'FR'],
             'italian' => ['name' => 'Martini',      'code' => 'IT'],
         ];
@@ -2318,7 +2318,7 @@ JS;
                 'bible'   => 'Douay-Rheims',
                 'bibel'   => 'Menge',
                 'latin'   => 'Vulgate',
-                'spanish' => 'Straubinger',
+                'spanish' => 'Scío de San Miguel',
                 'french'  => 'Crampon',
                 'italian' => 'Martini',
             ];
